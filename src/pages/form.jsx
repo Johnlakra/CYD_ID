@@ -1,4 +1,3 @@
-'use client'
 
 // React Imports
 import { useState } from 'react'
@@ -10,103 +9,68 @@ import CardContent from '@mui/material/CardContent'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
-import useSWRMutation from 'swr/mutation'
-import { nanoid } from 'nanoid'
-
-
-async function sendRequest(url, { arg }) {
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(arg)
-    }).then(res => res.json())
-  }
-const initialData = {
-  name: '',
-  father_name: '',
-  mother_name: '',
-  date_of_birth: '',
-  date_of_baptism: '',
-  postal_address: '',
-  parish: '',
-  deanery: '',
-  educational_qualifiation: '',
-  phone: '',
-  involvement: '',
-}
-const api = process.env.API_URL || "https://script.google.com/macros/s/AKfycbyB9RCmichWXMagPaG0HKz3jHOlZ2-Dnkxsr75ay-111xssfEYmNc12l9Fpiltl599TkA/exec"
+import EncodeBase64 from './EncodeBase64'
 
 const FormDetails = () => {
+
   // States
+
+  const initialData = {
+    name: '',
+    father_name: '',
+    mother_name: '',
+    date_of_birth: '',
+    date_of_baptism: '',
+    postal_address: '',
+    parish: '',
+    deanery: '',
+    educational_qualifiation: '',
+    phone: '',
+    involvement: '',
+  }
   const [formData, setFormData] = useState(initialData)
   const [fileInput, setFileInput] = useState('')
   const [imgSrc, setImgSrc] = useState('/images/avatars/1.png')
-  const { trigger, isMutating } = useSWRMutation(api, sendRequest, /* options */)
-    console.log(api, "api")
-//   const handleDelete = value => {
-//     setLanguage(current => current.filter(item => item !== value))
-//   }
+  const [loading, setLoading] = useState(false);
 
-//   const handleChange = event => {
-//     setLanguage(event.target.value)
-//   }
+  
+  // Resgister form values
 
   const handleFormChange = (field, value) => {
     setFormData({ ...formData, [field]: value })
   }
 
-  const handleFileInputChange = file => {
-    const reader = new FileReader()
+  // Browse for image
+
+  const handleFileInputChange = async file => { 
     const { files } = file.target
 
-    if (files && files.length !== 0) {
-        reader.onload = () => setImgSrc(reader.result)
-        reader.readAsDataURL(files[0])
-        
-        if (reader.result !== null) {
-            setFileInput(reader.result)
-        }
-    }
+    await EncodeBase64(files[0]).then((base64) => {
+      if (base64 !== null) {
+        // Save base64 in a variable --> John
+      }
+    }).catch(() => {
+      console.log("File conversion error");
+    });
   }
+
+  // Reset image
 
   const handleFileInputReset = () => {
     setFileInput('')
     setImgSrc('/images/avatars/1.png')
   }
 
+  // Submit form
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Check other condition
-    if(imgSrc.length > 50000){
-        // show Error toast
-        return
-    }
-    try {
-        console.log(imgSrc, "imgSrc")
-        const payload = {
-            id: nanoid(),
-            name: formData.name,
-            father_name: formData.father_name,
-            mother_name: formData.mother_name,
-            date_of_birth: formData.date_of_birth,
-            date_of_baptism: formData.date_of_baptism,
-            postal_address: formData.postal_address,
-            parish: formData.parish,
-            deanery: formData.deanery,
-            educational_qualifiation: formData.educational_qualifiation,
-            phone: formData.phone,
-            involvement: formData.involvement,
-            form_upload: "test", 
-            photo: imgSrc 
-        }
-        const result = await trigger(payload)
-        console.log(result, "result")
-    } catch (error) {
-        // error handling
-        console.log('Somthing went wrong')
-    }
-    // console.log('Form Data Submitted:', payload);
+    // --> Do validation if required...
+    // --> Use Axios
   };
-//   "form_upload": "test",
+
+  // Main
+
   return (
     <Card>
       <CardContent className='mbe-5'>
@@ -230,7 +194,7 @@ const FormDetails = () => {
             </Grid>
             
             <Grid item xs={12} className='flex gap-4 flex-wrap pbs-6'>
-              <Button variant='contained' type='submit' disabled={isMutating}>
+              <Button variant='contained' type='submit' >
                 Save Changes
               </Button>
               <Button variant='outlined' type='reset' color='secondary' onClick={() => setFormData(initialData)}>
