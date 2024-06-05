@@ -45,7 +45,7 @@ const schema = yup.object().shape({
 });
 
 const deaneries = {
-  AJNALA: [
+  Ajnala: [
     "Ajnala",
     "Chamiyari",
     "Chogawan",
@@ -55,7 +55,7 @@ const deaneries = {
     "Punga",
     "Ramdas",
   ],
-  AMRITSAR: [
+  Amritsar: [
     "Amritsar Cantt.",
     "Bharariwal",
     "Gumtala",
@@ -65,7 +65,7 @@ const deaneries = {
     "Nai Abadi",
     "Rajasansi",
   ],
-  DHARIWAL: [
+  Dhariwal: [
     "Batala",
     "Dhariwal",
     "Dialgarh",
@@ -75,7 +75,7 @@ const deaneries = {
     "Qadian",
     "Sri Hargobindpur",
   ],
-  "FATEHGARH CHURIAN": [
+  "Fatehgarh Churian": [
     "Fatehgarh Churian",
     "Dera Baba Nanak",
     "Dharamkot Randhawa",
@@ -85,7 +85,7 @@ const deaneries = {
     "Majitha",
     "Pakharpura",
   ],
-  FEROZPUR: [
+  Ferozepur: [
     "Faridkot",
     "Ferozepur Badhni Jaimal Singh",
     "Ferozpur Canal Colony",
@@ -100,7 +100,7 @@ const deaneries = {
     "Talwandi Bhai",
     "Tehna, Faridkot",
   ],
-  GURDASPUR: [
+  Gurdaspur: [
     "Balun",
     "Dalhousie",
     "Dina Nagar",
@@ -114,7 +114,7 @@ const deaneries = {
     "Sidhwan Jamita",
     "Sujanpur, Pathankot",
   ],
-  HOSHIARPUR: [
+  Hoshiarpur: [
     "Kakkon",
     "Baijnath",
     "Balachaur",
@@ -130,7 +130,7 @@ const deaneries = {
     "Una",
     "Yol Camp",
   ],
-  "JALANDHAR CANTT.": [
+  "Jalandhar Cantt.": [
     "Apra",
     "Banga",
     "Behram",
@@ -143,7 +143,7 @@ const deaneries = {
     "Rawalpindi",
     "Sansarpur",
   ],
-  "JALANDHAR CITY": [
+  "Jalandhar City": [
     "Adampur",
     "Bootan",
     "Chogitty",
@@ -152,7 +152,7 @@ const deaneries = {
     "Lambapind",
     "Maqsudan-Nadanpur",
   ],
-  KAPURTHALA: [
+  Kartarpur: [
     "Hussainpur",
     "Kapurthala",
     "Kartarpur",
@@ -161,7 +161,7 @@ const deaneries = {
     "Shahkot",
     "Sultanpur Lodhi",
   ],
-  LUDHIANA: [
+  Ludhiana: [
     "BRS Nagar",
     "Jagraon",
     "Jalandhar Bypass, Ludhiana",
@@ -170,7 +170,7 @@ const deaneries = {
     "Raekot",
     "Sarabha Nagar",
   ],
-  MOGA: [
+  Moga: [
     "Baghapurana",
     "Buggipura",
     "Buttar",
@@ -182,7 +182,7 @@ const deaneries = {
     "Singhanwala, Moga",
     "Zira",
   ],
-  MUKTSAR: [
+  Muktsar: [
     "Abohar",
     "Bhagsar",
     "Danewala",
@@ -198,7 +198,7 @@ const deaneries = {
     "Panjgaraian",
     "Sikhwala",
   ],
-  SAHNEWAL: [
+  Sahnewal: [
     "Bhammian Kalan",
     "Jamalpur",
     "Khanna",
@@ -208,8 +208,8 @@ const deaneries = {
     "Sahnewal",
     "Samrala",
   ],
-  TANDA: ["Bhogpur", "Bholath", "Dasuya", "Mukerian", "Tanda", "Kishangarh"],
-  "TARN TARAN": [
+  Tanda: ["Bhogpur", "Bholath", "Dasuya", "Mukerian", "Tanda", "Kishangarh"],
+  "Tarn Taran": [
     "Akalgarh",
     "Beas",
     "Bhikhiwind",
