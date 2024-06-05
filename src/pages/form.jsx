@@ -19,6 +19,8 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import EncodeBase64 from "./EncodeBase64";
+import dayjs from "dayjs";
+import IDCard from "./IDCard";
 
 const schema = yup.object().shape({
   name: yup.string().required("Name is required."),
@@ -272,6 +274,7 @@ const FormDetails = () => {
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -283,17 +286,24 @@ const FormDetails = () => {
     console.log(payload,'payload');
     setLoading(true);
     try {
-      const response = await axios.get(
-        "https://script.google.com/macros/s/AKfycbyB9RCmichWXMagPaG0HKz3jHOlZ2-Dnkxsr75ay-111xssfEYmNc12l9Fpiltl599TkA/exec",
-        { ...data, id: "1" }
-      );
+      const response = await axios.post("http://localhost", {
+        ...payload,
+        date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
+        date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
+      });
       console.log(response.data);
+      setFormData({
+        ...payload,
+        date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
+        date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
+      });
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
+  console.log(watch());
   // Main
   return (
     <Box
@@ -605,6 +615,7 @@ const FormDetails = () => {
               </Grid>
             </Grid>
           </form>
+          {formData && <IDCard data={formData} />}
         </CardContent>
       </Card>
     </Box>
