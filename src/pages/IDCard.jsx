@@ -1,11 +1,30 @@
 import React, { useRef } from "react";
 import { jsPDF } from "jspdf";
 import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
-import IdPic from "../images/id-card-cyd.jpg";
+import ParishIdPic from "../images/Parish.jpg";
+import DeaneryIdPic from "../images/Deanery.jpg";
+import DexcoIdPic from "../images/Dexco.jpg";
 import dayjs from "dayjs";
 
 const IDCard = ({ data }) => {
   const componentRef = useRef();
+
+  // Determine background image based on data.level
+  let IdPic;
+  switch (data.level) {
+    case "parish":
+      IdPic = ParishIdPic;
+      break;
+    case "deanery":
+      IdPic = DeaneryIdPic;
+      break;
+    case "dexco":
+      IdPic = DexcoIdPic;
+      break;
+    default:
+      IdPic = ParishIdPic; // Default to parish image
+      break;
+  }
 
   const handlePrint = () => {
     const pdf = new jsPDF({

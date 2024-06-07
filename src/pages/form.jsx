@@ -44,6 +44,23 @@ const schema = yup.object().shape({
   involvement: yup.string().required("Involvement since is required."),
 });
 
+// Define options for Level and Designation dropdowns
+const levelOptions = ["parish", "deanery", "dexco"];
+
+const designationOptions = [
+  "President",
+  "Vice-President",
+  "Secretary",
+  "Joint Secretary",
+  "Treasurer",
+  "Media Secretary",
+  "Joint Media Secretary",
+  "Boy Representative",
+  "Girl Representative",
+  "Boy Spokesperson",
+  "Girl Spokesperson",
+];
+
 const deaneries = {
   Ajnala: [
     "Ajnala",
@@ -590,6 +607,38 @@ const FormDetails = () => {
                       error={!!errors.involvement}
                       helperText={errors.involvement?.message}
                     />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Controller
+                  name="level"
+                  control={control}
+                  render={({ field }) => (
+                    <select {...field}>
+                      <option value={null}>Select Level</option>
+                      {levelOptions.map((option, index) => (
+                        <option key={index} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Controller
+                  name="designation"
+                  control={control}
+                  render={({ field }) => (
+                    <select {...field}>
+                      <option value={null}>Select Designation</option>
+                      {designationOptions.map((option, index) => (
+                        <option key={index} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
                   )}
                 />
               </Grid>
