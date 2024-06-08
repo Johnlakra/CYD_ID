@@ -61,185 +61,6 @@ const designationOptions = [
   "Girl Spokesperson",
 ];
 
-const deaneries = {
-  Ajnala: [
-    "Ajnala",
-    "Chamiyari",
-    "Chogawan",
-    "Chuchakwal",
-    "Karyal",
-    "Othian",
-    "Punga",
-    "Ramdas",
-  ],
-  Amritsar: [
-    "Amritsar Cantt.",
-    "Bharariwal",
-    "Gumtala",
-    "Khasa",
-    "Lahorigate",
-    "Majitha Road",
-    "Nai Abadi",
-    "Rajasansi",
-  ],
-  Dhariwal: [
-    "Batala",
-    "Dhariwal",
-    "Dialgarh",
-    "Kalanaur",
-    "Mastkot",
-    "Naushera Majja Singh",
-    "Qadian",
-    "Sri Hargobindpur",
-  ],
-  "Fatehgarh Churian": [
-    "Fatehgarh Churian",
-    "Dera Baba Nanak",
-    "Dharamkot Randhawa",
-    "Ghanie ke Banger",
-    "Kotli",
-    "Machi Nangal",
-    "Majitha",
-    "Pakharpura",
-  ],
-  Ferozepur: [
-    "Faridkot",
-    "Ferozepur Badhni Jaimal Singh",
-    "Ferozpur Canal Colony",
-    "Ferozpur Cantt",
-    "Ferozpur City",
-    "Gulami Wala",
-    "Guru Har Sahai",
-    "Lohgarh-Sur Singh Wala",
-    "Mamdot",
-    "Mudki",
-    "Sadiq",
-    "Talwandi Bhai",
-    "Tehna, Faridkot",
-  ],
-  Gurdaspur: [
-    "Balun",
-    "Dalhousie",
-    "Dina Nagar",
-    "Dorangala",
-    "Gurdaspur",
-    "Jandwal, Pathankot",
-    "Kahnuwan",
-    "Narot Jaimal Singh",
-    "Pathankot City",
-    "Puranashalla",
-    "Sidhwan Jamita",
-    "Sujanpur, Pathankot",
-  ],
-  Hoshiarpur: [
-    "Kakkon",
-    "Baijnath",
-    "Balachaur",
-    "Bassi Bahian",
-    "Bhunga",
-    "Gaggal",
-    "Garshankar",
-    "Jindwari",
-    "Mehtiana, Khanaura",
-    "Nandachaur",
-    "Nangal",
-    "Palampur",
-    "Una",
-    "Yol Camp",
-  ],
-  "Jalandhar Cantt.": [
-    "Apra",
-    "Banga",
-    "Behram",
-    "Dhina-Chittewani",
-    "Jalandhar Cantt",
-    "Jandiala Manjki",
-    "Nawanshahar",
-    "Phagwara",
-    "Phulriwal",
-    "Rawalpindi",
-    "Sansarpur",
-  ],
-  "Jalandhar City": [
-    "Adampur",
-    "Bootan",
-    "Chogitty",
-    "Gakhalan",
-    "Jalandhar City",
-    "Lambapind",
-    "Maqsudan-Nadanpur",
-  ],
-  Kartarpur: [
-    "Hussainpur",
-    "Kapurthala",
-    "Kartarpur",
-    "Mehatpur",
-    "Nakodar",
-    "Shahkot",
-    "Sultanpur Lodhi",
-  ],
-  Ludhiana: [
-    "BRS Nagar",
-    "Jagraon",
-    "Jalandhar Bypass, Ludhiana",
-    "Kidwai Nagar",
-    "Phillaur",
-    "Raekot",
-    "Sarabha Nagar",
-  ],
-  Moga: [
-    "Baghapurana",
-    "Buggipura",
-    "Buttar",
-    "Dharamkot, Moga",
-    "Kot-Ise-Khan, Moga",
-    "Makhu",
-    "Moga",
-    "Nihal Singh Wala, Moga",
-    "Singhanwala, Moga",
-    "Zira",
-  ],
-  Muktsar: [
-    "Abohar",
-    "Bhagsar",
-    "Danewala",
-    "Fazilka",
-    "Gidderbaha",
-    "Jaiton",
-    "Jalalabad",
-    "Kotkapura",
-    "Malout Pind",
-    "Malout",
-    "Muktsar, Bir Sarkar",
-    "Muktsar",
-    "Panjgaraian",
-    "Sikhwala",
-  ],
-  Sahnewal: [
-    "Bhammian Kalan",
-    "Jamalpur",
-    "Khanna",
-    "Khanpur-Jassar-Sangowal-Rania",
-    "Machhiwara",
-    "Machian Khurd",
-    "Sahnewal",
-    "Samrala",
-  ],
-  Tanda: ["Bhogpur", "Bholath", "Dasuya", "Mukerian", "Tanda", "Kishangarh"],
-  "Tarn Taran": [
-    "Akalgarh",
-    "Beas",
-    "Bhikhiwind",
-    "Bhojian",
-    "Chabhal",
-    "Fatehabad",
-    "Harike",
-    "Jandiala Guru",
-    "Khem Karan",
-    "Patti",
-    "Tarn Taran",
-  ],
-};
 
 
 const FormDetails = () => {
@@ -303,7 +124,7 @@ const FormDetails = () => {
     console.log(payload,'payload');
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost", {
+      const response = await axios.post("http://localhost/cyd/", {
         ...payload,
         date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
         date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
@@ -611,37 +432,63 @@ const FormDetails = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <Controller
-                  name="level"
-                  control={control}
-                  render={({ field }) => (
-                    <select {...field}>
-                      <option value={null}>Select Level</option>
-                      {levelOptions.map((option, index) => (
-                        <option key={index} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                />
+                <FormControl
+                  fullWidth
+                  variant="outlined"
+                  error={!!errors.level}
+                >
+                  <InputLabel>Level</InputLabel>
+                  <Controller
+                    name="level"
+                    control={control}
+                    render={({ field }) => (
+                      <Select {...field} label="Level">
+                        <MenuItem value="">
+                          <em>Select Level</em>
+                        </MenuItem>
+                        {levelOptions.map((option, index) => (
+                          <MenuItem key={index} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                  <Typography variant="body2" color="error">
+                    {errors.level?.message}
+                  </Typography>
+                </FormControl>
               </Grid>
+
               <Grid item xs={12}>
-                <Controller
-                  name="designation"
-                  control={control}
-                  render={({ field }) => (
-                    <select {...field}>
-                      <option value={null}>Select Designation</option>
-                      {designationOptions.map((option, index) => (
-                        <option key={index} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                />
+                <FormControl
+                  fullWidth
+                  variant="outlined"
+                  error={!!errors.designation}
+                >
+                  <InputLabel>Designation</InputLabel>
+                  <Controller
+                    name="designation"
+                    control={control}
+                    render={({ field }) => (
+                      <Select {...field} label="Designation">
+                        <MenuItem value="">
+                          <em>Select Designation</em>
+                        </MenuItem>
+                        {designationOptions.map((option, index) => (
+                          <MenuItem key={index} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                  <Typography variant="body2" color="error">
+                    {errors.designation?.message}
+                  </Typography>
+                </FormControl>
               </Grid>
+
               <Grid item xs={12}>
                 <Box display="flex" justifyContent="space-between">
                   <Button
@@ -672,3 +519,190 @@ const FormDetails = () => {
 };
 
 export default FormDetails;
+
+const deaneries = {
+  "Ajnala": [
+    "Ajnala ",
+    "Chamiyari",
+    "Chogawan",
+    "Chuchakwal",
+    "Karyal",
+    "Othian",
+    "Punga",
+    "Ramdas",
+  ],
+  "Amritsar": [
+    "Amritsar Cantt.",
+    "Bharariwal",
+    "Gumtala",
+    "Khasa",
+    "Lahorigate",
+    "Majitha Road",
+    "Nai Abadi",
+    "Rajasansi",
+  ],
+  "Dhariwal": [
+    "Batala",
+    "Dhariwal",
+    "Dialgarh",
+    "Kalanaur",
+    "Mastkot",
+    "Naushera Majja Singh",
+    "Qadian",
+  ],
+  "Fatehgarh Churian": [
+    "Fatehgarh Churian",
+    "Dera Baba Nanak",
+    "Dharamkot Randhawa",
+    "Ghanie Ke Banger",
+    "Kotli",
+    "Machi Nangal",
+    "Majitha",
+    "Pakharpura",
+  ],
+  "Ferozpur": [
+    "Faridkot",
+    "Ferozepur Badhni Mahafariste Wala",
+    "Ferozpur Canal Colony",
+    "Ferozpur Cantt",
+    "Ferozpur City",
+    "Gulami Wala",
+    "Guru Har Sahai",
+    "Lohgarh-Sur Singh Wala (Station)",
+    "Mamdot",
+    "Mudki (Station)",
+    "Sadiq",
+    "Talwandi Bhai",
+    "Tehna, Faridkot",
+  ],
+  "Gurdaspur": [
+    "Balun (Station)",
+    "Dalhousie",
+    "Dina Nagar",
+    "Dorangala",
+    "Gurdaspur",
+    "Jandwal, Pathankot",
+    "Kahnuwan",
+    "Narot Jaimal Singh (Station)",
+    "Pathankot City",
+    "Puranashalla",
+    "Sidhwan Jamita, Joura Chitra",
+    "Sujanpur, Pathankot",
+  ],
+  "Hoshiarpur": [
+    "Kakkon",
+    "Baijnath",
+    "Balachaur",
+    "Bassi Bahian",
+    "Bhunga",
+    "Gaggal",
+    "Garshankar",
+    "Jindwari",
+    "Mehtiana, Khanaura",
+    "Nandachaur",
+    "Nangal",
+    "Palampur",
+    "Una",
+    "Yol Camp",
+  ],
+  "Jalandhar Cantt.": [
+    "Apra",
+    "Banga (Station)",
+    "Behram (Station)",
+    "Dhina-Chittewani",
+    "Jalandhar Cantt",
+    "Jandiala Manjki",
+    "Nawanshahar",
+    "Phagwara",
+    "Phulriwal",
+    "Rawalpindi",
+    "Sansarpur",
+  ],
+  "Jalandhar City": [
+    "Adampur",
+    "Bootan",
+    "Chogitty",
+    "Gakhalan",
+    "Jalandhar City",
+    "Lambapind",
+    "Maqsudan",
+  ],
+  "Kapurthala": [
+    "Hussainpur- Lodhi Bhulana",
+    "Kapurthala",
+    "Kishangarh",
+    "Kartarpur",
+    "Mehatpur",
+    "Nakodar",
+    "Shahkot",
+    "Sultanpur Lodhi",
+  ],
+  "Ludhiana": [
+    "BRS Nagar",
+    "Jagraon",
+    "Jalandhar Bypass, Ludhiana",
+    "Kidwai Nagar",
+    "Phillaur",
+    "Raekot",
+    "Sarabha Nagar",
+  ],
+  "Moga": [
+    "Baghapurana",
+    "Buggipura, Moga (Station)",
+    "Buttar, Moga (Station)",
+    "Dharamkot, Moga",
+    "Kot-Ise-Khan, Moga (Station)",
+    "Makhu",
+    "Moga",
+    "Nihal Singh Wala, Moga (Station)",
+    "Singhanwala, Moga",
+    "Zira",
+  ],
+  "Muktsar": [
+    "Abohar",
+    "Bhagsar",
+    "Danewala",
+    "Fazilka",
+    "Gidderbaha (Station)",
+    "Jaiton",
+    "Jalalabad",
+    "Kotkapura",
+    "Malout Pind",
+    "Malout",
+    "Muktsar, Bir Sarkar",
+    "Muktsar",
+    "Panjgaraian (Station)",
+    "Sikhwala",
+  ],
+  "Sahnewal": [
+    "Bhammian Kalan (Station)",
+    "Jamalpur",
+    "Khanna",
+    "Khanpur-Jassar-Sangowal-Rania",
+    "Machhiwara",
+    "Machian Khurd",
+    "Sahnewal",
+    "Samrala",
+  ],
+  "Tanda": [
+    "Bhogpur",
+    "Bholath",
+    "Dasuya",
+    "Mukerian",
+    "Tanda",
+    "Sri Hargobindpur",
+  ],
+  "Tarn Taran": [
+    "Akalgarh (Station)",
+    "Beas",
+    "Bhikhiwind",
+    "Bhojian",
+    "Chabhal (Station)",
+    "Fatehabad (Station)",
+    "Harike",
+    "Jandiala Guru",
+    "Khem Karan",
+    "Patti",
+    "Tarn Taran",
+  ],
+};
