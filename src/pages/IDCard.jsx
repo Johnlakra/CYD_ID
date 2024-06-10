@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 import { toPng } from "html-to-image";
 import { saveAs } from "file-saver";
 
+
 const IDCard = ({ data }) => {
   const ref = useRef(null);
 
