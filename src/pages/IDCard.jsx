@@ -90,10 +90,10 @@ const IDCard = ({ data }) => {
       return;
     }
 
-    toPng(ref.current, { cacheBust: true, scale: 1000 })
+    toPng(ref.current, { cacheBust: true, scale: 3 })
       .then((dataUrl) => {
         const link = document.createElement("a");
-        link.download = "id-card.png";
+        link.download = `${data.name}-${data.parish}-${data.phone}`;
         link.href = dataUrl;
         link.click();
       })
@@ -109,10 +109,8 @@ const IDCard = ({ data }) => {
         className="card-container"
         style={{
           position: "relative",
-          width: "58mm", 
-          height: "88mm",
-          // border: "1px solid #ccc",
-          // margin: "20px auto",
+          width: "146.3mm",
+          height: "221.8mm",
           backgroundImage: `url(${IdPic})`,
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
@@ -124,10 +122,10 @@ const IDCard = ({ data }) => {
           alt="User Pic"
           style={{
             position: "absolute",
-            top: "17mm",
-            left: "21mm",
-            width: "14mm",
-            height: "16mm",
+            top: "42.5mm",
+            left: "52.5mm",
+            width: "35mm",
+            height: "40mm",
             border: "1px solid #8D8D8D",
             objectFit: "cover",
             borderRadius: "2px",
@@ -136,10 +134,10 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "38mm",
+            top: "95mm",
             left: "50%",
             transform: "translateX(-50%)",
-            fontSize: "8px",
+            fontSize: "24px",
             color: "#C01E2C",
             fontFamily: "Roboto",
             textAlign: "center",
@@ -151,14 +149,14 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "33.3mm",
+            top: "83.3mm",
             left: "50%",
             transform: "translateX(-50%)",
-            fontSize: "16px",
+            fontSize: "48px",
             color: "#C01E2C",
             fontFamily: "TiroDevanagariHindi-Regular",
             textAlign: "center",
-            width: "219px",
+            width: "2190px",
           }}
         >
           {data.name}
@@ -166,9 +164,9 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "41mm",
-            left: "22mm",
-            fontSize: "10px",
+            top: "103mm",
+            left: "55mm",
+            fontSize: "30px",
             fontFamily: "Gafata",
           }}
         >
@@ -177,9 +175,9 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "45mm",
-            left: "22mm",
-            fontSize: "10px",
+            top: "107mm",
+            left: "55mm",
+            fontSize: "30px",
             fontFamily: "Gafata",
           }}
         >
@@ -188,9 +186,9 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "49.8mm",
-            left: "22mm",
-            fontSize: "10px",
+            top: "111mm",
+            left: "55mm",
+            fontSize: "30px",
             fontFamily: "Gafata",
           }}
         >
@@ -199,9 +197,9 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "54mm",
-            left: "22mm",
-            fontSize: "10px",
+            top: "115mm",
+            left: "55mm",
+            fontSize: "30px",
             fontFamily: "Gafata",
           }}
         >
@@ -210,9 +208,9 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "58.5mm",
-            left: "22mm",
-            fontSize: "10px",
+            top: "120mm",
+            left: "55mm",
+            fontSize: "30px",
             fontFamily: "Gafata",
           }}
         >
@@ -221,9 +219,9 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "63mm",
-            left: "22mm",
-            fontSize: "10px",
+            top: "126mm",
+            left: "55mm",
+            fontSize: "30px",
             fontFamily: "Gafata",
           }}
         >
@@ -232,9 +230,9 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "67.3mm",
-            left: "22mm",
-            fontSize: "10px",
+            top: "130mm",
+            left: "55mm",
+            fontSize: "30px",
             fontFamily: "Gafata",
             width: "35mm",
             whiteSpace: "pre-wrap",
@@ -245,9 +243,9 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "67.3mm",
-            left: "23mm",
-            fontSize: "10px",
+            top: "130mm",
+            left: "56mm",
+            fontSize: "30px",
             fontFamily: "Gafata",
             width: "35mm",
             whiteSpace: "pre-wrap",

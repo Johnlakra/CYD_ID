@@ -17,7 +17,17 @@ import CardHeader from "@mui/material/CardHeader";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
-import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 import EncodeBase64 from "./EncodeBase64";
 import dayjs from "dayjs";
 import IDCard from "./IDCard";
@@ -64,8 +74,6 @@ const designationOptions = [
   "Girl Spokesperson",
 ];
 
-
-
 const FormDetails = () => {
   const initialData = {
     name: "",
@@ -80,6 +88,7 @@ const FormDetails = () => {
     phone: "",
     involvement: "",
   };
+
   // States
   const [formData, setFormData] = useState(initialData);
   const [fileInput, setFileInput] = useState("");
@@ -88,6 +97,8 @@ const FormDetails = () => {
   const [selectedDeanery, setSelectedDeanery] = useState(
     Object.keys(deaneries)[0]
   );
+  const [openDialog, setOpenDialog] = useState(false);
+
   // Browse for image
   const handleFileInputChange = async (file) => {
     const { files } = file.target;
@@ -120,12 +131,12 @@ const FormDetails = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
-  console.log(errors, "errors");
+console.log(errors, "errors");
   // Submit form
   const onSubmit = async (data) => {
     console.log(data);
-    const payload = { ...data, photo:fileInput };
-    console.log(payload,'payload');
+    const payload = { ...data, photo: fileInput };
+    console.log(payload, "payload");
     setLoading(true);
     try {
       const response = await axios.post("http://localhost/cyd/", {
@@ -139,7 +150,8 @@ const FormDetails = () => {
         date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
         date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
       });
-       toast.success("Form submitted successfully!");
+      toast.success("Form submitted successfully!");
+      setOpenDialog(true);
     } catch (error) {
       console.error(error);
       toast.error(error.message);
@@ -147,8 +159,12 @@ const FormDetails = () => {
       setLoading(false);
     }
   };
-  // console.log(watch());
-  // Main
+
+  // Close dialog
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
   return (
     <Box
       display="flex"
@@ -167,7 +183,7 @@ const FormDetails = () => {
       >
         <CardHeader title="Form Details" />
         <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} >
             <CardContent>
               <Box mb={2}>
                 <Typography variant="h6">Upload Photo</Typography>
@@ -185,7 +201,6 @@ const FormDetails = () => {
                         width: 100,
                         height: 100,
                         backgroundColor: "white",
-                        // borderRadius: "50%",
                         objectFit: "cover",
                       }}
                     />
@@ -500,22 +515,15 @@ const FormDetails = () => {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <Box display="flex" justifyContent="space-between">
+                    <Box mt={2}>
                       <Button
+                        type="submit"
                         variant="contained"
                         color="primary"
-                        type="submit"
+                        fullWidth
                         disabled={loading}
                       >
                         {loading ? "Submitting..." : "Submit"}
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        onClick={() => reset(initialData)}
-                        disabled={loading}
-                      >
-                        Reset
                       </Button>
                     </Box>
                   </Grid>
@@ -523,20 +531,32 @@ const FormDetails = () => {
               </form>
             </CardContent>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <CardHeader title="Card Preview" />
-            <CardContent>{formData && <IDCard data={formData} />}</CardContent>
-          </Grid>
         </Grid>
       </Card>
+
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>ID Card</DialogTitle>
+        <DialogContent>
+          <IDCard data={formData} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
 
 export default FormDetails;
-
 const deaneries = {
-  "Ajnala": [
+  Ajnala: [
     "Ajnala ",
     "Chamiyari",
     "Chogawan",
@@ -546,7 +566,7 @@ const deaneries = {
     "Punga",
     "Ramdas",
   ],
-  "Amritsar": [
+  Amritsar: [
     "Amritsar Cantt.",
     "Bharariwal",
     "Gumtala",
@@ -556,7 +576,7 @@ const deaneries = {
     "Nai Abadi",
     "Rajasansi",
   ],
-  "Dhariwal": [
+  Dhariwal: [
     "Batala",
     "Dhariwal",
     "Dialgarh",
@@ -575,7 +595,7 @@ const deaneries = {
     "Majitha",
     "Pakharpura",
   ],
-  "Ferozpur": [
+  Ferozpur: [
     "Faridkot",
     "Ferozepur Badhni Mahafariste Wala",
     "Ferozpur Canal Colony",
@@ -590,7 +610,7 @@ const deaneries = {
     "Talwandi Bhai",
     "Tehna, Faridkot",
   ],
-  "Gurdaspur": [
+  Gurdaspur: [
     "Balun (Station)",
     "Dalhousie",
     "Dina Nagar",
@@ -604,7 +624,7 @@ const deaneries = {
     "Sidhwan Jamita, Joura Chitra",
     "Sujanpur, Pathankot",
   ],
-  "Hoshiarpur": [
+  Hoshiarpur: [
     "Kakkon",
     "Baijnath",
     "Balachaur",
@@ -642,7 +662,7 @@ const deaneries = {
     "Lambapind",
     "Maqsudan",
   ],
-  "Kapurthala": [
+  Kapurthala: [
     "Hussainpur- Lodhi Bhulana",
     "Kapurthala",
     "Kishangarh",
@@ -652,7 +672,7 @@ const deaneries = {
     "Shahkot",
     "Sultanpur Lodhi",
   ],
-  "Ludhiana": [
+  Ludhiana: [
     "BRS Nagar",
     "Jagraon",
     "Jalandhar Bypass, Ludhiana",
@@ -661,7 +681,7 @@ const deaneries = {
     "Raekot",
     "Sarabha Nagar",
   ],
-  "Moga": [
+  Moga: [
     "Baghapurana",
     "Buggipura, Moga (Station)",
     "Buttar, Moga (Station)",
@@ -673,7 +693,7 @@ const deaneries = {
     "Singhanwala, Moga",
     "Zira",
   ],
-  "Muktsar": [
+  Muktsar: [
     "Abohar",
     "Bhagsar",
     "Danewala",
@@ -689,7 +709,7 @@ const deaneries = {
     "Panjgaraian (Station)",
     "Sikhwala",
   ],
-  "Sahnewal": [
+  Sahnewal: [
     "Bhammian Kalan (Station)",
     "Jamalpur",
     "Khanna",
@@ -699,7 +719,7 @@ const deaneries = {
     "Sahnewal",
     "Samrala",
   ],
-  "Tanda": [
+  Tanda: [
     "Bhogpur",
     "Bholath",
     "Dasuya",
