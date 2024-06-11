@@ -123,25 +123,26 @@ const IDCard = ({ data }) => {
           style={{
             position: "absolute",
             top: "42.5mm",
-            left: "52.5mm",
-            width: "35mm",
-            height: "40mm",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "58mm",
+            height: "67mm",
             border: "1px solid #8D8D8D",
             objectFit: "cover",
-            borderRadius: "2px",
+            borderRadius: "14px",
           }}
         />
         <div
           style={{
             position: "absolute",
-            top: "95mm",
+            top: "121mm",
             left: "50%",
             transform: "translateX(-50%)",
-            fontSize: "24px",
+            fontSize: "16px",
             color: "#C01E2C",
             fontFamily: "Roboto",
             textAlign: "center",
-            width: "80px",
+            width: "2190px",
           }}
         >
           {data.designation}
@@ -149,12 +150,12 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "83.3mm",
+            top: "111.2mm",
             left: "50%",
             transform: "translateX(-50%)",
-            fontSize: "48px",
+            fontSize: "31.5px",
             color: "#C01E2C",
-            fontFamily: "TiroDevanagariHindi-Regular",
+            fontFamily: "Vidaloka",
             textAlign: "center",
             width: "2190px",
           }}
@@ -164,10 +165,11 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "103mm",
-            left: "55mm",
-            fontSize: "30px",
+            top: "128mm",
+            left: "54mm",
+            fontSize: "24.2px",
             fontFamily: "Gafata",
+            color: "#000000",
           }}
         >
           : {data.deanery}
@@ -175,10 +177,11 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "107mm",
-            left: "55mm",
-            fontSize: "30px",
+            top: "136.1mm",
+            left: "54mm",
+            fontSize: "24.2px",
             fontFamily: "Gafata",
+            color: "#000000",
           }}
         >
           : {data.parish}
@@ -186,10 +189,11 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "111mm",
-            left: "55mm",
-            fontSize: "30px",
+            top: "144.12mm",
+            left: "54mm",
+            fontSize: "24.2px",
             fontFamily: "Gafata",
+            color: "#000000",
           }}
         >
           : {dayjs(data.date_of_baptism).format("DD-MM-YYYY")}
@@ -197,10 +201,11 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "115mm",
-            left: "55mm",
-            fontSize: "30px",
+            top: "152.4mm",
+            left: "54mm",
+            fontSize: "24.2px",
             fontFamily: "Gafata",
+            color: "#000000",
           }}
         >
           : {dayjs(data.date_of_birth).format("DD-MM-YYYY")}
@@ -208,10 +213,11 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "120mm",
-            left: "55mm",
-            fontSize: "30px",
+            top: "160.68mm",
+            left: "54mm",
+            fontSize: "24.2px",
             fontFamily: "Gafata",
+            color: "#000000",
           }}
         >
           : {data.phone}
@@ -219,10 +225,11 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "126mm",
-            left: "55mm",
-            fontSize: "30px",
+            top: "168.96mm",
+            left: "54mm",
+            fontSize: "24.2px",
             fontFamily: "Gafata",
+            color: "#000000",
           }}
         >
           : {data.father_name}
@@ -230,10 +237,11 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "130mm",
-            left: "55mm",
-            fontSize: "30px",
+            top: "177.24mm",
+            left: "54mm",
+            fontSize: "24.2px",
             fontFamily: "Gafata",
+            color: "#000000",
             width: "35mm",
             whiteSpace: "pre-wrap",
           }}
@@ -243,12 +251,14 @@ const IDCard = ({ data }) => {
         <div
           style={{
             position: "absolute",
-            top: "130mm",
-            left: "56mm",
-            fontSize: "30px",
+            top: "177.5mm",
+            left: "56.9mm",
+            fontSize: "24.2px",
             fontFamily: "Gafata",
-            width: "35mm",
+            color: "#000000",
+            width: "82mm",
             whiteSpace: "pre-wrap",
+            lineHeight: "96.5%"
           }}
         >
           {data.postal_address}
