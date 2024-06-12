@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, Controller } from "react-hook-form";
 
-//Axios
+// Axios
 import axios from "axios";
 
 // MUI Imports
@@ -61,6 +61,7 @@ const schema = yup.object().shape({
 const levelOptions = ["parish", "deanery", "dexco"];
 
 const designationOptions = [
+  "Member",
   "President",
   "Vice-President",
   "Secretary",
@@ -87,6 +88,8 @@ const FormDetails = () => {
     educational_qualifiation: "",
     phone: "",
     involvement: "",
+    level: "",
+    designation: "",
   };
 
   // States
@@ -121,22 +124,19 @@ const FormDetails = () => {
     setImgSrc("/images/avatars/1.png");
   };
 
-  //UseForm
+  // UseForm
   const {
     control,
     handleSubmit,
     reset,
-    // watch,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
   });
-console.log(errors, "errors");
+
   // Submit form
   const onSubmit = async (data) => {
-    console.log(data);
     const payload = { ...data, photo: fileInput };
-    console.log(payload, "payload");
     setLoading(true);
     try {
       const response = await axios.post("http://localhost/cyd/", {
@@ -144,7 +144,6 @@ console.log(errors, "errors");
         date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
         date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
       });
-      console.log(response.data);
       setFormData({
         ...payload,
         date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
@@ -153,11 +152,19 @@ console.log(errors, "errors");
       toast.success("Form submitted successfully!");
       setOpenDialog(true);
     } catch (error) {
-      console.error(error);
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to reset the form
+  const resetForm = () => {
+    reset(initialData);
+    setFormData(initialData);
+    setFileInput("");
+    setImgSrc("/images/avatars/1.png");
+    setSelectedDeanery(Object.keys(deaneries)[0]);
   };
 
   // Close dialog
@@ -183,7 +190,7 @@ console.log(errors, "errors");
       >
         <CardHeader title="Form Details" />
         <Grid container spacing={2}>
-          <Grid item xs={12} >
+          <Grid item xs={12}>
             <CardContent>
               <Box mb={2}>
                 <Typography variant="h6">Upload Photo</Typography>
@@ -514,7 +521,7 @@ console.log(errors, "errors");
                     />
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid item xs={6}>
                     <Box mt={2}>
                       <Button
                         type="submit"
@@ -524,6 +531,18 @@ console.log(errors, "errors");
                         disabled={loading}
                       >
                         {loading ? "Submitting..." : "Submit"}
+                      </Button>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box mt={2}>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={resetForm}
+                        fullWidth
+                      >
+                        Reset
                       </Button>
                     </Box>
                   </Grid>
