@@ -67,6 +67,7 @@ const designationOptions = [
   "Secretary",
   "Joint Secretary",
   "Treasurer",
+  "Joint Treasurer",
   "Media Secretary",
   "Joint Media Secretary",
   "Boy Representative",
