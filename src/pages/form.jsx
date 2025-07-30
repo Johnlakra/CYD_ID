@@ -31,6 +31,7 @@ import {
 import EncodeBase64 from "./EncodeBase64";
 import dayjs from "dayjs";
 import IDCard from "./IDCard";
+import { CalendarMonth } from "@mui/icons-material";
 
 // Toast Notifications
 import { toast } from "react-toastify";
@@ -44,6 +45,7 @@ const schema = yup.object().shape({
     .date()
     .required("Date of Baptism is required.")
     .nullable(),
+    issue_date: yup.date().required("Issue Date is required.").nullable(),
   postal_address: yup.string().required("Postal Address is required."),
   parish: yup.string().required("Parish is required."),
   deanery: yup.string().required("Deanery is required."),
@@ -83,6 +85,7 @@ const FormDetails = () => {
     mother_name: "",
     date_of_birth: "",
     date_of_baptism: "",
+    issue_date: dayjs().format("YYYY-MM-DD"),
     postal_address: "",
     parish: "",
     deanery: "",
@@ -98,6 +101,7 @@ const FormDetails = () => {
   const [fileInput, setFileInput] = useState("");
   const [imgSrc, setImgSrc] = useState("/images/avatars/1.png");
   const [loading, setLoading] = useState(false);
+  const [issueDateOpen, setIssueDateOpen] = useState(false);
   const [selectedDeanery, setSelectedDeanery] = useState(
     Object.keys(deaneries)[0]
   );
@@ -140,15 +144,16 @@ const FormDetails = () => {
     const payload = { ...data, photo: fileInput };
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost/cyd/", {
-        ...payload,
-        date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
-        date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
-      });
+      // const response = await axios.post("http://localhost/cyd/", {
+      //   ...payload,
+      //   date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
+      //   date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
+      // });
       setFormData({
         ...payload,
         date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
         date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
+        issue_date: dayjs(payload.issue_date).format("YYYY-MM-DD"),
       });
       toast.success("Form submitted successfully!");
       setOpenDialog(true);
@@ -156,6 +161,8 @@ const FormDetails = () => {
       toast.error(error.message);
     } finally {
       setLoading(false);
+      console.log(payload,'payload');
+      
     }
   };
 
@@ -189,7 +196,41 @@ const FormDetails = () => {
           backgroundColor: "#F7F7F9",
         }}
       >
-        <CardHeader title="Form Details" />
+        <CardHeader 
+  title="Form Details" 
+  action={
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      {/* Issue Date Icon Button */}
+      <Button
+        onClick={() => setIssueDateOpen(true)}
+        sx={{
+          minWidth: { xs: 'auto', sm: 'auto' },
+          px: { xs: 1, sm: 2 },
+          py: 1,
+          backgroundColor: '#f5f5f5',
+          color: '#666',
+          '&:hover': {
+            backgroundColor: '#e0e0e0'
+          }
+        }}
+        variant="outlined"
+        size="small"
+        startIcon={<CalendarMonth fontSize="small" />}
+      >
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            display: { xs: 'none', sm: 'block' },
+            fontSize: '0.75rem'
+          }}
+        >
+          Issue Date
+        </Typography>
+      </Button>
+    </Box>
+  }
+/>
+
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <CardContent>
@@ -570,6 +611,40 @@ const FormDetails = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+  open={issueDateOpen}
+  onClose={() => setIssueDateOpen(false)}
+  maxWidth="xs"
+  fullWidth
+>
+  <DialogTitle>Set Issue Date</DialogTitle>
+  <DialogContent>
+    <Box mt={1}>
+      <Controller
+        name="issue_date"
+        control={control}
+        defaultValue={dayjs().format("YYYY-MM-DD")}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Issue Date"
+            type="date"
+            variant="outlined"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            error={!!errors.issue_date}
+            helperText={errors.issue_date?.message}
+          />
+        )}
+      />
+    </Box>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setIssueDateOpen(false)} color="primary">
+      Done
+    </Button>
+  </DialogActions>
+</Dialog>
     </Box>
   );
 };

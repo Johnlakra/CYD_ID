@@ -11,6 +11,8 @@ import { saveAs } from "file-saver";
 
 const IDCard = ({ data }) => {
   const ref = useRef(null);
+  console.log(data,'data');
+  
 
   let IdPic;
   switch (data.level) {
@@ -77,6 +79,9 @@ const IDCard = ({ data }) => {
 
     pdf.setDrawColor(0, 0, 0);
     pdf.roundedRect(imgX, imgY, imgWidth, imgHeight, radius, radius, "S");
+    pdf.setFontSize(7);
+    pdf.setTextColor(255, 255, 255);
+    pdf.text(`Issued: ${dayjs(data.issue_date).format("DD/MM/YY")} • Expires: ${dayjs(data.issue_date).add(2, 'year').format("DD/MM/YY")}`, centerX, 83, { align: "center" });
 
     if (data.photo) {
       pdf.addImage(data.photo, "JPEG", imgX, imgY, imgWidth, imgHeight);
@@ -263,7 +268,24 @@ const IDCard = ({ data }) => {
         >
           {data.postal_address}
         </div>
+        <div
+          style={{
+            position: "absolute",
+            top: "213mm",
+            left: "50%",
+            transform: "translateX(-50%)",
+            fontSize: "19px",
+            // fontWeight:'bold',
+            fontFamily: "roboto",
+            color: "#fff",
+            textAlign: "center",
+            width: "100mm",
+          }}
+        >
+          Issued: {dayjs(data.issue_date).format("DD-MM-YYYY")} • Valid till: {dayjs(data.issue_date).add(2, 'year').format("DD-MM-YYYY")}
+        </div>      
       </div>
+      
       {/* <button
         onClick={handlePrint}
         style={{
