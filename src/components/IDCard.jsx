@@ -1,9 +1,9 @@
 import React, { useCallback, useRef } from "react";
 import { jsPDF } from "jspdf";
 import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
-import ParishIdPic from "../images/Parish.jpg";
-import DeaneryIdPic from "../images/Deanery.jpg";
-import DexcoIdPic from "../images/Dexco.jpg";
+import ParishIdPic from "../assets/images/Parish.jpg";
+import DeaneryIdPic from "../assets/images/Deanery.jpg";
+import DexcoIdPic from "../assets/images/Dexco.jpg";
 import dayjs from "dayjs";
 import { toPng } from "html-to-image";
 import { saveAs } from "file-saver";
@@ -282,7 +282,39 @@ const IDCard = ({ data }) => {
             width: "100mm",
           }}
         >
-          Issued: {dayjs(data.issue_date).format("DD-MM-YYYY")} • Valid till: {dayjs(data.issue_date).add(2, 'year').format("DD-MM-YYYY")}
+          |
+        </div>  
+        <div
+          style={{
+            position: "absolute",
+            top: "213mm",
+            left: "50%",
+            transform: "translateX(-50%)",
+            fontSize: "19px",
+            // fontWeight:'bold',
+            fontFamily: "roboto",
+            color: "#fff",
+            textAlign: "left",
+            width: "100mm",
+          }}
+        >
+          Issued: {dayjs(data.issue_date).format("DD-MM-YYYY")}
+        </div>      
+        <div
+          style={{
+            position: "absolute",
+            top: "213mm",
+            left: "50%",
+            transform: "translateX(-50%)",
+            fontSize: "19px",
+            // fontWeight:'bold',
+            fontFamily: "roboto",
+            color: "#fff",
+            textAlign: "right",
+            width: "100mm",
+          }}
+        >
+          Valid for two years
         </div>      
       </div>
       
