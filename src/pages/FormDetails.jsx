@@ -35,6 +35,7 @@ import { CalendarMonth } from "@mui/icons-material";
 
 // Toast Notifications
 import { toast } from "react-toastify";
+import { baseURL } from "../api/apiClient";
 
 const schema = yup.object().shape({
   name: yup.string().required("Name is required."),
@@ -49,7 +50,7 @@ const schema = yup.object().shape({
   postal_address: yup.string().required("Postal Address is required."),
   parish: yup.string().required("Parish is required."),
   deanery: yup.string().required("Deanery is required."),
-  educational_qualifiation: yup
+  qualification: yup
     .string()
     .required("Educational Qualification is required."),
   phone: yup
@@ -94,7 +95,7 @@ const FormDetails = ({ authToken, user, onLogout }) => {
     postal_address: "",
     parish: "",
     deanery: firstDeanery,
-    educational_qualifiation: "",
+    qualification: "",
     phone: "",
     involvement: "",
     level: "",
@@ -160,9 +161,11 @@ const onSubmit = async (data) => {
 
     const payload = { ...data, photo: fileInput };
     setLoading(true);
+    console.log(payload,'payload');
+    
     
     try {
-      const response = await axios.post("http://localhost:3000/api/profiles", {
+      const response = await axios.post(`${baseURL}/profiles`, {
         ...payload,
         date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
         date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
@@ -400,7 +403,7 @@ console.log('Form is valid:', Object.keys(errors).length === 0);
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Controller
-                  name="educational_qualifiation"
+                  name="qualification"
                   control={control}
                   render={({ field }) => (
                     <TextField
@@ -408,8 +411,8 @@ console.log('Form is valid:', Object.keys(errors).length === 0);
                       label="Educational Qualification"
                       variant="outlined"
                       fullWidth
-                      error={!!errors.educational_qualifiation}
-                      helperText={errors.educational_qualifiation?.message}
+                      error={!!errors.qualification}
+                      helperText={errors.qualification?.message}
                     />
                   )}
                 />
