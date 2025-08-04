@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+export const baseURL = 'https://cydidbe-production.up.railway.app';
+// export const baseURL = 'http://localhost:3000';
 // Create axios instance
 const apiClient = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
   },

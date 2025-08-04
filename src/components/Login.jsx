@@ -11,6 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Card, CardContent } from '@mui/material';
+import { baseURL } from '../api/apiClient';
 
 const Login = ({ onLoginSuccess }) => {
   const [credentials, setCredentials] = useState({
@@ -25,7 +26,7 @@ const Login = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', credentials);
+      const response = await axios.post(`${baseURL}/auth/login`, credentials);
       
       if (response.data.success) {
         const { token, user } = response.data.data;
