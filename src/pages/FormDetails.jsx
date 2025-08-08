@@ -1,7 +1,7 @@
 "use client";
 
 // React Imports
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, Controller } from "react-hook-form";
@@ -27,11 +27,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Alert,
 } from "@mui/material";
 import EncodeBase64 from "../components/EncodeBase64";
 import dayjs from "dayjs";
 import IDCard from "../components/IDCard";
-import { CalendarMonth } from "@mui/icons-material";
+import { CalendarMonth, ArrowBack } from "@mui/icons-material";
 
 // Toast Notifications
 import { toast } from "react-toastify";
@@ -81,7 +82,7 @@ const designationOptions = [
   "Girl Spokesperson",
 ];
 
-const FormDetails = ({ authToken, user, onLogout }) => {
+const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete }) => {
 
   const deaneries = {
   Ajnala: [
@@ -325,34 +326,81 @@ const FormDetails = ({ authToken, user, onLogout }) => {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: initialData
   });
 
-  // Submit form
-const onSubmit = async (data) => {
+  // Load edit data when editProfile changes
+  useEffect(() => {
+    if (editProfile) {
+      // Map database field names to form field names
+      const editData = {
+        name: editProfile.name || "",
+        father_name: editProfile.father || "",
+        mother_name: editProfile.mother || "",
+        date_of_birth: editProfile.dob || "",
+        date_of_baptism: editProfile.date_of_baptism || "",
+        issue_date: editProfile.issue_date || dayjs().format("YYYY-MM-DD"),
+        postal_address: editProfile.postal_address || "",
+        parish: editProfile.parish || "",
+        deanery: editProfile.deanery || "",
+        qualification: editProfile.qualification || "",
+        phone: editProfile.phone || "",
+        involvement: editProfile.involvement || "",
+        level: editProfile.level || "",
+        designation: editProfile.designation || "",
+      };
 
-  // console.log(data);
-  
+      // Reset form with edit data
+      reset(editData);
+      setFormData(editData);
+      
+      // Set image if exists
+      if (editProfile.photo_url) {
+        setFileInput(editProfile.photo_url);
+        setImgSrc(editProfile.photo_url);
+      }
+      
+      // Set selected deanery for parish dropdown
+      if (editProfile.deanery) {
+        setSelectedDeanery(editProfile.deanery);
+      }
+    } else {
+      // Reset form for new profile
+      reset(initialData);
+      setFormData(initialData);
+      setFileInput("");
+      setImgSrc("");
+      setSelectedDeanery("");
+    }
+  }, [editProfile, reset]);
+
+  // Submit form
+  const onSubmit = async (data) => {
     if (!authToken) {
       toast.error('Please login first');
       return;
     }
 
     if (!fileInput) {
-    toast.error('Please upload a photo');
-    return;
-  }
+      toast.error('Please upload a photo');
+      return;
+    }
 
     const payload = { ...data, photo: fileInput };
     setLoading(true);
-    // console.log(payload,'payload');
-    
     
     try {
-      const response = await axios.post(`${baseURL}/profiles`, {
+      const url = editProfile 
+        ? `${baseURL}/profiles/${editProfile.id}` 
+        : `${baseURL}/profiles`;
+      
+      const method = editProfile ? 'put' : 'post';
+      
+      const response = await axios[method](url, {
         ...payload,
         date_of_baptism: dayjs(payload.date_of_baptism).format("YYYY-MM-DD"),
         date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
@@ -364,8 +412,6 @@ const onSubmit = async (data) => {
         }
       });
       
-      // console.log(response, 'response');
-      
       if (response.data.success) {
         setFormData({
           ...payload,
@@ -373,17 +419,25 @@ const onSubmit = async (data) => {
           date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
           issue_date: dayjs(payload.issue_date).format("YYYY-MM-DD"),
         });
-        toast.success("Form submitted successfully!");
+        
+        toast.success(editProfile ? "Profile updated successfully!" : "Profile created successfully!");
         setOpenDialog(true);
+        
+        // If editing, call completion callback after short delay
+        if (editProfile && onEditComplete) {
+          setTimeout(() => {
+            onEditComplete();
+          }, 2000);
+        }
       }
     } catch (error) {
       console.error('API Error:', error.response?.data || error.message);
       
       if (error.response?.status === 401) {
         toast.error('Session expired. Please login again.');
-        onLogout(); // This will redirect back to login
+        onLogout();
       } else {
-        toast.error(error.response?.data?.message || 'Failed to submit form');
+        toast.error(error.response?.data?.message || `Failed to ${editProfile ? 'update' : 'create'} profile`);
       }
     } finally {
       setLoading(false);
@@ -392,31 +446,52 @@ const onSubmit = async (data) => {
 
   // Function to reset the form
   const resetForm = () => {
-try {
-    reset(initialData);
-    setFormData(initialData);
-    setFileInput("");
-    setImgSrc("");
-    setSelectedDeanery("");
-  } catch (error) {
-    console.error('Error resetting form:', error);
-  }  };
+    try {
+      if (editProfile) {
+        // If editing, go back to manage profiles
+        if (onEditComplete) {
+          onEditComplete();
+        }
+      } else {
+        // If creating new, reset form
+        reset(initialData);
+        setFormData(initialData);
+        setFileInput("");
+        setImgSrc("");
+        setSelectedDeanery("");
+      }
+    } catch (error) {
+      console.error('Error resetting form:', error);
+    }
+  };
 
   // Close dialog
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
 
-//   console.log('Form errors:', errors);
-// console.log('Form is valid:', Object.keys(errors).length === 0);
-
   return (
     <Box sx={{ p: 3 }}>
+      {editProfile && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography>Editing profile for: <strong>{editProfile.name}</strong></Typography>
+            <Button
+              startIcon={<ArrowBack />}
+              onClick={() => onEditComplete && onEditComplete()}
+              size="small"
+            >
+              Back to Manage
+            </Button>
+          </Box>
+        </Alert>
+      )}
+
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 300, mb: 1 }}>
-        Create ID Card
+        {editProfile ? 'Edit ID Card Profile' : 'Create ID Card'}
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Fill out the form below to generate your digital ID card
+        {editProfile ? 'Update the profile information below' : 'Fill out the form below to generate your digital ID card'}
       </Typography>
 
       <Card
@@ -460,7 +535,7 @@ try {
                 alignItems="center"
               >
                 <img
-                  src={imgSrc}
+                  src={imgSrc || '/images/avatars/1.png'}
                   alt="Avatar"
                   style={{
                     width: 120,
@@ -646,7 +721,6 @@ try {
                   <Controller
                     name="deanery"
                     control={control}
-                    defaultValue={selectedDeanery}
                     render={({ field }) => (
                       <Select
                         {...field}
@@ -655,6 +729,8 @@ try {
                         onChange={(e) => {
                           field.onChange(e);
                           setSelectedDeanery(e.target.value);
+                          // Reset parish when deanery changes
+                          setValue('parish', '');
                         }}
                       >
                         {Object.keys(deaneries).map((deanery) => (
@@ -696,7 +772,7 @@ try {
                           ))
                         ) : (
                           <MenuItem value="">
-                            <em>None</em>
+                            <em>Select Deanery First</em>
                           </MenuItem>
                         )}
                       </Select>
@@ -793,7 +869,7 @@ try {
                     size="large"
                     sx={{ minWidth: 120 }}
                   >
-                    Reset
+                    {editProfile ? 'Cancel' : 'Reset'}
                   </Button>
                   <Button
                     type="submit"
@@ -802,12 +878,8 @@ try {
                     disabled={loading}
                     size="large"
                     sx={{ minWidth: 120 }}
-                    // onClick={() => {
-                    //   console.log('Button clicked');
-                    //   console.log('Current errors:', errors);
-                    // }}
                   >
-                    {loading ? "Submitting..." : "Generate ID Card"}
+                    {loading ? (editProfile ? "Updating..." : "Submitting...") : (editProfile ? "Update Profile" : "Generate ID Card")}
                   </Button>
                 </Box>
               </Grid>
@@ -822,7 +894,7 @@ try {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>ID Card Generated Successfully</DialogTitle>
+        <DialogTitle>{editProfile ? 'Profile Updated Successfully' : 'ID Card Generated Successfully'}</DialogTitle>
         <DialogContent>
           <IDCard data={formData} />
         </DialogContent>
@@ -845,7 +917,6 @@ try {
             <Controller
               name="issue_date"
               control={control}
-              defaultValue={dayjs().format("YYYY-MM-DD")}
               render={({ field }) => (
                 <TextField
                   {...field}
@@ -870,4 +941,3 @@ try {
 };
 
 export default FormDetails;
-
