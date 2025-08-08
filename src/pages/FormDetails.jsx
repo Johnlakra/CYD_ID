@@ -83,6 +83,193 @@ const designationOptions = [
 
 const FormDetails = ({ authToken, user, onLogout }) => {
 
+  const deaneries = {
+  Ajnala: [
+    "Ajnala ",
+    "Chamiyari",
+    "Chogawan",
+    "Chuchakwal",
+    "Karyal",
+    "Othian",
+    "Punga",
+    "Ramdas",
+  ],
+  Amritsar: [
+    "Amritsar Cantt.",
+    "Bharariwal",
+    "Gumtala",
+    "Khasa",
+    "Lahorigate",
+    "Majitha Road",
+    "Nai Abadi",
+    "Rajasansi",
+  ],
+  Dhariwal: [
+    "Batala",
+    "Dhariwal",
+    "Dialgarh",
+    "Kalanaur",
+    "Mastkot",
+    "Naushera Majja Singh",
+    "Qadian",
+  ],
+  "Fatehgarh Churian": [
+    "Fatehgarh Churian",
+    "Dera Baba Nanak",
+    "Dharamkot Randhawa",
+    "Ghanie Ke Banger",
+    "Kotli",
+    "Machi Nangal",
+    "Majitha",
+    "Pakharpura",
+  ],
+  Ferozpur: [
+    "Faridkot",
+    "Ferozepur Badhni Mahafariste Wala",
+    "Ferozpur Canal Colony",
+    "Ferozpur Cantt",
+    "Ferozpur City",
+    "Gulami Wala",
+    "Guru Har Sahai",
+    "Lohgarh-Sur Singh Wala (Station)",
+    "Mamdot",
+    "Mudki (Station)",
+    "Sadiq",
+    "Talwandi Bhai",
+    "Tehna, Faridkot",
+  ],
+  Gurdaspur: [
+    "Balun (Station)",
+    "Dalhousie",
+    "Dina Nagar",
+    "Dorangala",
+    "Gurdaspur",
+    "Jandwal, Pathankot",
+    "Kahnuwan",
+    "Narot Jaimal Singh (Station)",
+    "Pathankot City",
+    "Puranashalla",
+    "Sidhwan Jamita, Joura Chitra",
+    "Sujanpur, Pathankot",
+  ],
+  Hoshiarpur: [
+    "Kakkon",
+    "Baijnath",
+    "Balachaur",
+    "Bassi Bahian",
+    "Bhunga",
+    "Gaggal",
+    "Garshankar",
+    "Jindwari",
+    "Mehtiana, Khanaura",
+    "Nandachaur",
+    "Nangal",
+    "Palampur",
+    "Una",
+    "Yol Camp",
+  ],
+  "Jalandhar Cantt.": [
+    "Apra",
+    "Banga (Station)",
+    "Behram (Station)",
+    "Dhina-Chittewani",
+    "Jalandhar Cantt",
+    "Jandiala Manjki",
+    "Nawanshahar",
+    "Phagwara",
+    "Phulriwal",
+    "Rawalpindi",
+    "Sansarpur",
+  ],
+  "Jalandhar City": [
+    "Adampur",
+    "Bootan",
+    "Chogitty",
+    "Gakhalan",
+    "Jalandhar City",
+    "Lambapind",
+    "Maqsudan",
+  ],
+  Kapurthala: [
+    "Hussainpur- Lodhi Bhulana",
+    "Kapurthala",
+    "Kishangarh",
+    "Kartarpur",
+    "Mehatpur",
+    "Nakodar",
+    "Shahkot",
+    "Sultanpur Lodhi",
+  ],
+  Ludhiana: [
+    "BRS Nagar",
+    "Jagraon",
+    "Jalandhar Bypass, Ludhiana",
+    "Kidwai Nagar",
+    "Phillaur",
+    "Raekot",
+    "Sarabha Nagar",
+  ],
+  Moga: [
+    "Baghapurana",
+    "Buggipura, Moga (Station)",
+    "Buttar, Moga (Station)",
+    "Dharamkot, Moga",
+    "Kot-Ise-Khan, Moga (Station)",
+    "Makhu",
+    "Moga",
+    "Nihal Singh Wala, Moga (Station)",
+    "Singhanwala, Moga",
+    "Zira",
+  ],
+  Muktsar: [
+    "Abohar",
+    "Bhagsar",
+    "Danewala",
+    "Fazilka",
+    "Gidderbaha (Station)",
+    "Jaiton",
+    "Jalalabad",
+    "Kotkapura",
+    "Malout Pind",
+    "Malout",
+    "Muktsar, Bir Sarkar",
+    "Muktsar",
+    "Panjgaraian (Station)",
+    "Sikhwala",
+  ],
+  Sahnewal: [
+    "Bhammian Kalan (Station)",
+    "Jamalpur",
+    "Khanna",
+    "Khanpur-Jassar-Sangowal-Rania",
+    "Machhiwara",
+    "Machian Khurd",
+    "Sahnewal",
+    "Samrala",
+  ],
+  Tanda: [
+    "Bhogpur",
+    "Bholath",
+    "Dasuya",
+    "Mukerian",
+    "Tanda",
+    "Sri Hargobindpur",
+  ],
+  "Tarn Taran": [
+    "Akalgarh (Station)",
+    "Beas",
+    "Bhikhiwind",
+    "Bhojian",
+    "Chabhal (Station)",
+    "Fatehabad (Station)",
+    "Harike",
+    "Jandiala Guru",
+    "Khem Karan",
+    "Patti",
+    "Tarn Taran",
+  ],
+};
+
   const firstDeanery = "";
 
   const initialData = {
@@ -105,7 +292,7 @@ const FormDetails = ({ authToken, user, onLogout }) => {
   // States
   const [formData, setFormData] = useState(initialData);
   const [fileInput, setFileInput] = useState("");
-  const [imgSrc, setImgSrc] = useState("/images/avatars/1.png");
+  const [imgSrc, setImgSrc] = useState("");
   const [loading, setLoading] = useState(false);
   const [issueDateOpen, setIssueDateOpen] = useState(false);
   const [selectedDeanery, setSelectedDeanery] = useState("");
@@ -130,7 +317,7 @@ const FormDetails = ({ authToken, user, onLogout }) => {
   // Reset image
   const handleFileInputReset = () => {
     setFileInput("");
-    setImgSrc("/images/avatars/1.png");
+    setImgSrc("");
   };
 
   // UseForm
@@ -147,7 +334,7 @@ const FormDetails = ({ authToken, user, onLogout }) => {
   // Submit form
 const onSubmit = async (data) => {
 
-  console.log(data);
+  // console.log(data);
   
     if (!authToken) {
       toast.error('Please login first');
@@ -161,6 +348,8 @@ const onSubmit = async (data) => {
 
     const payload = { ...data, photo: fileInput };
     setLoading(true);
+    // console.log(payload,'payload');
+    
     
     try {
       const response = await axios.post(`${baseURL}/profiles`, {
@@ -175,7 +364,7 @@ const onSubmit = async (data) => {
         }
       });
       
-      console.log(response, 'response');
+      // console.log(response, 'response');
       
       if (response.data.success) {
         setFormData({
@@ -207,7 +396,7 @@ try {
     reset(initialData);
     setFormData(initialData);
     setFileInput("");
-    setImgSrc("/images/avatars/1.png");
+    setImgSrc("");
     setSelectedDeanery("");
   } catch (error) {
     console.error('Error resetting form:', error);
@@ -218,8 +407,8 @@ try {
     setOpenDialog(false);
   };
 
-  console.log('Form errors:', errors);
-console.log('Form is valid:', Object.keys(errors).length === 0);
+//   console.log('Form errors:', errors);
+// console.log('Form is valid:', Object.keys(errors).length === 0);
 
   return (
     <Box sx={{ p: 3 }}>
@@ -613,10 +802,10 @@ console.log('Form is valid:', Object.keys(errors).length === 0);
                     disabled={loading}
                     size="large"
                     sx={{ minWidth: 120 }}
-                    onClick={() => {
-                      console.log('Button clicked');
-                      console.log('Current errors:', errors);
-                    }}
+                    // onClick={() => {
+                    //   console.log('Button clicked');
+                    //   console.log('Current errors:', errors);
+                    // }}
                   >
                     {loading ? "Submitting..." : "Generate ID Card"}
                   </Button>
@@ -682,189 +871,3 @@ console.log('Form is valid:', Object.keys(errors).length === 0);
 
 export default FormDetails;
 
-const deaneries = {
-  Ajnala: [
-    "Ajnala ",
-    "Chamiyari",
-    "Chogawan",
-    "Chuchakwal",
-    "Karyal",
-    "Othian",
-    "Punga",
-    "Ramdas",
-  ],
-  Amritsar: [
-    "Amritsar Cantt.",
-    "Bharariwal",
-    "Gumtala",
-    "Khasa",
-    "Lahorigate",
-    "Majitha Road",
-    "Nai Abadi",
-    "Rajasansi",
-  ],
-  Dhariwal: [
-    "Batala",
-    "Dhariwal",
-    "Dialgarh",
-    "Kalanaur",
-    "Mastkot",
-    "Naushera Majja Singh",
-    "Qadian",
-  ],
-  "Fatehgarh Churian": [
-    "Fatehgarh Churian",
-    "Dera Baba Nanak",
-    "Dharamkot Randhawa",
-    "Ghanie Ke Banger",
-    "Kotli",
-    "Machi Nangal",
-    "Majitha",
-    "Pakharpura",
-  ],
-  Ferozpur: [
-    "Faridkot",
-    "Ferozepur Badhni Mahafariste Wala",
-    "Ferozpur Canal Colony",
-    "Ferozpur Cantt",
-    "Ferozpur City",
-    "Gulami Wala",
-    "Guru Har Sahai",
-    "Lohgarh-Sur Singh Wala (Station)",
-    "Mamdot",
-    "Mudki (Station)",
-    "Sadiq",
-    "Talwandi Bhai",
-    "Tehna, Faridkot",
-  ],
-  Gurdaspur: [
-    "Balun (Station)",
-    "Dalhousie",
-    "Dina Nagar",
-    "Dorangala",
-    "Gurdaspur",
-    "Jandwal, Pathankot",
-    "Kahnuwan",
-    "Narot Jaimal Singh (Station)",
-    "Pathankot City",
-    "Puranashalla",
-    "Sidhwan Jamita, Joura Chitra",
-    "Sujanpur, Pathankot",
-  ],
-  Hoshiarpur: [
-    "Kakkon",
-    "Baijnath",
-    "Balachaur",
-    "Bassi Bahian",
-    "Bhunga",
-    "Gaggal",
-    "Garshankar",
-    "Jindwari",
-    "Mehtiana, Khanaura",
-    "Nandachaur",
-    "Nangal",
-    "Palampur",
-    "Una",
-    "Yol Camp",
-  ],
-  "Jalandhar Cantt.": [
-    "Apra",
-    "Banga (Station)",
-    "Behram (Station)",
-    "Dhina-Chittewani",
-    "Jalandhar Cantt",
-    "Jandiala Manjki",
-    "Nawanshahar",
-    "Phagwara",
-    "Phulriwal",
-    "Rawalpindi",
-    "Sansarpur",
-  ],
-  "Jalandhar City": [
-    "Adampur",
-    "Bootan",
-    "Chogitty",
-    "Gakhalan",
-    "Jalandhar City",
-    "Lambapind",
-    "Maqsudan",
-  ],
-  Kapurthala: [
-    "Hussainpur- Lodhi Bhulana",
-    "Kapurthala",
-    "Kishangarh",
-    "Kartarpur",
-    "Mehatpur",
-    "Nakodar",
-    "Shahkot",
-    "Sultanpur Lodhi",
-  ],
-  Ludhiana: [
-    "BRS Nagar",
-    "Jagraon",
-    "Jalandhar Bypass, Ludhiana",
-    "Kidwai Nagar",
-    "Phillaur",
-    "Raekot",
-    "Sarabha Nagar",
-  ],
-  Moga: [
-    "Baghapurana",
-    "Buggipura, Moga (Station)",
-    "Buttar, Moga (Station)",
-    "Dharamkot, Moga",
-    "Kot-Ise-Khan, Moga (Station)",
-    "Makhu",
-    "Moga",
-    "Nihal Singh Wala, Moga (Station)",
-    "Singhanwala, Moga",
-    "Zira",
-  ],
-  Muktsar: [
-    "Abohar",
-    "Bhagsar",
-    "Danewala",
-    "Fazilka",
-    "Gidderbaha (Station)",
-    "Jaiton",
-    "Jalalabad",
-    "Kotkapura",
-    "Malout Pind",
-    "Malout",
-    "Muktsar, Bir Sarkar",
-    "Muktsar",
-    "Panjgaraian (Station)",
-    "Sikhwala",
-  ],
-  Sahnewal: [
-    "Bhammian Kalan (Station)",
-    "Jamalpur",
-    "Khanna",
-    "Khanpur-Jassar-Sangowal-Rania",
-    "Machhiwara",
-    "Machian Khurd",
-    "Sahnewal",
-    "Samrala",
-  ],
-  Tanda: [
-    "Bhogpur",
-    "Bholath",
-    "Dasuya",
-    "Mukerian",
-    "Tanda",
-    "Sri Hargobindpur",
-  ],
-  "Tarn Taran": [
-    "Akalgarh (Station)",
-    "Beas",
-    "Bhikhiwind",
-    "Bhojian",
-    "Chabhal (Station)",
-    "Fatehabad (Station)",
-    "Harike",
-    "Jandiala Guru",
-    "Khem Karan",
-    "Patti",
-    "Tarn Taran",
-  ],
-};

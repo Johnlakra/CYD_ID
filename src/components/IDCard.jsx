@@ -1,12 +1,10 @@
-import React, { useCallback, useRef } from "react";
-import { jsPDF } from "jspdf";
+import { useCallback, useRef } from "react";
 import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 import ParishIdPic from "../assets/images/Parish.jpg";
 import DeaneryIdPic from "../assets/images/Deanery.jpg";
 import DexcoIdPic from "../assets/images/Dexco.jpg";
 import dayjs from "dayjs";
 import { toPng } from "html-to-image";
-import { saveAs } from "file-saver";
 
 
 const IDCard = ({ data }) => {
@@ -30,66 +28,6 @@ const IDCard = ({ data }) => {
       break;
   }
 
-  const handlePrint = () => {
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: [56, 88], // ID card size in mm
-    });
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const centerX = pageWidth / 2;
-
-    pdf.addImage(IdPic, "JPEG", 0, 0, 56, 88);
-    pdf.addFont("Gafata-Regular.ttf", "Gafata", "normal");
-    pdf.addFont("TiroDevanagariHindi-Regular.ttf", "Devanagari", "normal");
-
-    // Adding text and photo
-    pdf.setFontSize(12);
-    pdf.setTextColor("#C01E2C");
-    pdf.setFont("Devanagari");
-    pdf.text(data.name, centerX, 39, { align: "center" });
-
-    pdf.setFont("Gafata");
-    pdf.setFontSize(8);
-    pdf.setTextColor(0, 0, 0); // Assuming black text color
-    pdf.text(`: ${data.father_name}`, 20, 65);
-    pdf.text(`: ${data.deanery}`, 20, 43.5);
-    pdf.text(`: ${data.parish}`, 20, 47.5);
-    pdf.text(`: ${dayjs(data.date_of_baptism).format("DD-MM-YYYY")}`, 20, 52);
-    pdf.text(`: ${dayjs(data.date_of_birth).format("DD-MM-YYYY")}`, 20, 56.5);
-    pdf.text(`: ${data.phone}`, 20, 61);
-
-    // Split address into multiple lines
-    const addressLines = pdf.splitTextToSize(`: ${data.postal_address}`, 35); // Adjust the max width as needed
-    let y = 69.5; // Initial y-coordinate for address
-
-    // Draw each line of the address
-    addressLines.forEach((line) => {
-      pdf.text(line, 20, y);
-      y += 3; // Adjust line spacing as needed
-    });
-
-    // Drawing a rounded rectangle for the photo
-    const imgX = 21;
-    const imgY = 17;
-    const imgWidth = 14;
-    const imgHeight = 18;
-    const radius = 0;
-
-    pdf.setDrawColor(0, 0, 0);
-    pdf.roundedRect(imgX, imgY, imgWidth, imgHeight, radius, radius, "S");
-    pdf.setFontSize(7);
-    pdf.setTextColor(255, 255, 255);
-    pdf.text(`Issued: ${dayjs(data.issue_date).format("DD/MM/YY")} • Expires: ${dayjs(data.issue_date).add(2, 'year').format("DD/MM/YY")}`, centerX, 83, { align: "center" });
-
-    if (data.photo) {
-      pdf.addImage(data.photo, "JPEG", imgX, imgY, imgWidth, imgHeight);
-    }
-
-    pdf.save("id-card.pdf");
-  };
-
   const handleDownloadImage = useCallback(() => {
     if (ref.current === null) {
       return;
@@ -105,7 +43,8 @@ const IDCard = ({ data }) => {
       .catch((err) => {
         console.error("Failed to convert to image:", err);
       });
-  }, [ref]);
+  }, [data.name, data.parish, data.phone]);
+
 
   return (
     <div>
