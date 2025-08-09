@@ -269,6 +269,8 @@ const ManageProfiles = ({ authToken, user, onLogout, onEditProfile }) => {
   const handleEditClick = (profileData) => {
     if (onEditProfile) {
       onEditProfile(profileData);
+      console.log(profileData,'profileData');
+      
     }
   };
 
@@ -299,16 +301,16 @@ const ManageProfiles = ({ authToken, user, onLogout, onEditProfile }) => {
   }, [filters]);
 
   // Table headers
-  const tableHeaders = [
-    { id: 'id', label: 'ID', width: 70 },
-    { id: 'name', label: 'Name', width: 200 },
-    { id: 'designation', label: 'Designation', width: 150 },
-    { id: 'deanery', label: 'Deanery', width: 150 },
-    { id: 'parish', label: 'Parish', width: 180 },
-    { id: 'level', label: 'Level', width: 100 },
-    { id: 'created_at', label: 'Created', width: 120 },
-    { id: 'actions', label: 'Actions', width: 150 },
-  ];
+const tableHeaders = [
+  { id: 'id', label: 'ID', width: 70 },
+  { id: 'name', label: 'Name', width: 200 },
+  { id: 'parent', label: 'Parent', width: 150 },
+  { id: 'deanery', label: 'Deanery', width: 150 },
+  { id: 'parish', label: 'Parish', width: 180 },
+  { id: 'level', label: 'Level', width: 100 },
+  { id: 'issue_date', label: 'Issue Date', width: 120 },
+  { id: 'actions', label: 'Actions', width: 150 },
+];
 
   // Effects
   useEffect(() => {
@@ -557,78 +559,83 @@ const ManageProfiles = ({ authToken, user, onLogout, onEditProfile }) => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  profiles.map((row) => (
-                    <TableRow key={row.id} hover>
-                      <TableCell>{row.id}</TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar
-                            src={row.photo_url || ''}
-                            sx={{ mr: 2, width: 32, height: 32 }}
-                          />
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {row.name}
-                            </Typography>
-                            <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center' }}>
-                              <PhoneIcon sx={{ fontSize: 12, mr: 0.5 }} />
-                              {row.phone}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={row.designation}
+              profiles.map((row) => (
+                <TableRow key={row.id} hover>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar
+                        src={row.photo_url || ''}
+                        sx={{ mr: 1.5, width: 43, height: 43 }}
+                      />
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {row.name}
+                        </Typography>
+                        {row.designation && (
+                          <Typography variant="caption" color="text.secondary">
+                            {row.designation}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {row.father || row.mother || '-'}
+                      </Typography>
+                      <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center' }}>
+                        <PhoneIcon sx={{ fontSize: 12, mr: 0.5 }} />
+                        {row.phone}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>{row.deanery}</TableCell>
+                  <TableCell>{row.parish}</TableCell>
+                  <TableCell>
+                    {row.level ? (
+                      <Chip
+                        label={row.level}
+                        size="small"
+                        color={row.level === 'parish' ? 'success' : row.level === 'deanery' ? 'warning' : 'info'}
+                      />
+                    ) : null}
+                  </TableCell>
+                  <TableCell>{row.issue_date ? dayjs(row.issue_date).format('DD/MM/YYYY') : '-'}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Tooltip title="Generate ID Card">
+                        <IconButton
                           size="small"
                           color="primary"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell>{row.deanery}</TableCell>
-                      <TableCell>{row.parish}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={row.level}
+                          onClick={() => setIdCardDialog({ open: true, profileData: row })}
+                        >
+                          <CardIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit Profile">
+                        <IconButton
                           size="small"
-                          color={row.level === 'parish' ? 'success' : row.level === 'deanery' ? 'warning' : 'info'}
-                        />
-                      </TableCell>
-                      <TableCell>{dayjs(row.created_at).format('DD/MM/YYYY')}</TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Tooltip title="Generate ID Card">
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => setIdCardDialog({ open: true, profileData: row })}
-                            >
-                              <CardIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Edit Profile">
-                            <IconButton
-                              size="small"
-                              color="info"
-                              onClick={() => handleEditClick(row)}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete Profile">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={() => setDeleteDialog({ open: true, profileId: row.id, loading: false })}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                          color="info"
+                          onClick={() => handleEditClick(row)}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Profile">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => setDeleteDialog({ open: true, profileId: row.id, loading: false })}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))                )}
               </TableBody>
             </Table>
           </TableContainer>

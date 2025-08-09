@@ -78,22 +78,20 @@ const Login = ({ onLoginSuccess }) => {
         type={showPassword ? 'text' : 'password'}
         value={credentials.password}
         onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-        slotProps={{
-          inputLabel: { shrink: true },
-          input: {
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton 
-                  onClick={() => setShowPassword(!showPassword)} 
-                  edge="end"
-                  aria-label="toggle password visibility"
-                >
-                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton 
+                onClick={() => setShowPassword(!showPassword)} 
+                edge="end"
+                aria-label="toggle password visibility"
+              >
+                {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+              </IconButton>
+            </InputAdornment>
+          ),
         }}
+        InputLabelProps={{ shrink: true }}
         sx={{ 
           mb: 3,
           '& .MuiOutlinedInput-root': {

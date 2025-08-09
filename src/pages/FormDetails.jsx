@@ -290,6 +290,23 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
     designation: "",
   };
 
+    const formatDateForInput = (dateValue) => {
+    if (!dateValue) return "";
+    
+    // If it's already in YYYY-MM-DD format, return as is
+    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      return dateValue;
+    }
+    
+    // Convert ISO date string to YYYY-MM-DD format
+    try {
+      return dayjs(dateValue).format("YYYY-MM-DD");
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return "";
+    }
+  };
+
   // States
   const [formData, setFormData] = useState(initialData);
   const [fileInput, setFileInput] = useState("");
@@ -341,9 +358,9 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
         name: editProfile.name || "",
         father_name: editProfile.father || "",
         mother_name: editProfile.mother || "",
-        date_of_birth: editProfile.dob || "",
-        date_of_baptism: editProfile.date_of_baptism || "",
-        issue_date: editProfile.issue_date || dayjs().format("YYYY-MM-DD"),
+        date_of_birth: formatDateForInput(editProfile.dob),
+        date_of_baptism: formatDateForInput(editProfile.date_of_baptism),
+        issue_date: formatDateForInput(editProfile.issue_date) || dayjs().format("YYYY-MM-DD"),
         postal_address: editProfile.postal_address || "",
         parish: editProfile.parish || "",
         deanery: editProfile.deanery || "",
