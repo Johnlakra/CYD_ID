@@ -40,6 +40,8 @@ import axios from 'axios';
 import { baseURL } from '../api/apiClient';
 import IDCardTabs from '../pages/IDCardTabs';
 import ProfileSettings from '../components/ProfileSettings';
+import ProfileHolderSettings from './ProfileHolderSettings';
+import ProfileHolderDashboard from './ProfileHolderDashboard';
 
 const drawerWidth = 280;
 
@@ -51,6 +53,45 @@ const Dashboard = ({ authToken, user, onLogout }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Restrict menu items based on user role
+  const getMenuItems = () => {
+    if (user?.role === 'profile_holder') {
+      return [
+        {
+          id: 'dashboard',
+          text: 'My Profile',
+          icon: <PersonIcon />,
+        },
+        {
+          id: 'profile',
+          text: 'Settings',
+          icon: <SettingsIcon />,
+        }
+      ];
+    }
+
+    // Default menu for admin/user
+    return [
+      {
+        id: 'dashboard',
+        text: 'Dashboard',
+        icon: <DashboardIcon />,
+      },
+      {
+        id: 'id-card',
+        text: 'ID Card Management',
+        icon: <CardIcon />,
+      },
+      {
+        id: 'profile',
+        text: 'Profile & Settings',
+        icon: <PersonIcon />,
+      },
+    ];
+  };
+
+  const menuItems = getMenuItems();
+
   const handleDrawerToggle = () => {
     setOpen(!open);
   };
@@ -61,24 +102,6 @@ const Dashboard = ({ authToken, user, onLogout }) => {
       setOpen(false);
     }
   };
-
-  const menuItems = [
-    {
-      id: 'dashboard',
-      text: 'Dashboard',
-      icon: <DashboardIcon />,
-    },
-    {
-      id: 'id-card',
-      text: 'ID Card Management',
-      icon: <CardIcon />,
-    },
-    {
-      id: 'profile',
-      text: 'Profile & Settings',
-      icon: <PersonIcon />,
-    },
-  ];
 
   // Fetch dashboard stats
   const fetchStats = async () => {
@@ -246,6 +269,16 @@ const Dashboard = ({ authToken, user, onLogout }) => {
   };
 
   const renderContent = () => {
+
+    if (user?.role === 'profile_holder') {
+      switch (selectedMenu) {
+        case 'profile':
+          return <ProfileHolderSettings authToken={authToken} user={user} onLogout={onLogout} />;
+        default:
+          return <ProfileHolderDashboard authToken={authToken} user={user} onLogout={onLogout} />;
+      }
+    }
+
     switch (selectedMenu) {
       case 'id-card':
         return <IDCardTabs authToken={authToken} user={user} onLogout={onLogout} />;

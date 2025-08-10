@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-undef */
 "use client";
 
 // React Imports
@@ -28,11 +29,12 @@ import {
   DialogContent,
   DialogTitle,
   Alert,
+  IconButton,
 } from "@mui/material";
 import EncodeBase64 from "../components/EncodeBase64";
 import dayjs from "dayjs";
 import IDCard from "../components/IDCard";
-import { CalendarMonth, ArrowBack } from "@mui/icons-material";
+import { CalendarMonth, ArrowBack, ContentCopy } from "@mui/icons-material";
 
 // Toast Notifications
 import { toast } from "react-toastify";
@@ -315,6 +317,7 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
   const [issueDateOpen, setIssueDateOpen] = useState(false);
   const [selectedDeanery, setSelectedDeanery] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
+  const [credentials, setCredentials] = useState(null);
 
   // Browse for image
   const handleFileInputChange = async (file) => {
@@ -436,6 +439,11 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
           date_of_birth: dayjs(payload.date_of_birth).format("YYYY-MM-DD"),
           issue_date: dayjs(payload.issue_date).format("YYYY-MM-DD"),
         });
+
+        // Store credentials if profile was created (not edited)
+        if (!editProfile && response.data.data.credentials) {
+          setCredentials(response.data.data.credentials);
+        }
         
         toast.success(editProfile ? "Profile updated successfully!" : "Profile created successfully!");
         setOpenDialog(true);
@@ -911,8 +919,67 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>{editProfile ? 'Profile Updated Successfully' : 'ID Card Generated Successfully'}</DialogTitle>
+        <DialogTitle>
+          {editProfile ? 'Profile Updated Successfully' : 'Profile Created Successfully'}
+        </DialogTitle>
         <DialogContent>
+          {/* Show credentials for new profiles */}
+          {!editProfile && credentials && (
+            <Alert severity="success" sx={{ mb: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Login Credentials Created
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                The following credentials have been generated for the profile holder:
+              </Typography>
+              <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        Username:
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                        {credentials.username}
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          navigator.clipboard.writeText(credentials.username);
+                          toast.success('Username copied to clipboard');
+                        }}
+                      >
+                        <ContentCopy fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        Password:
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                        {credentials.password}
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          navigator.clipboard.writeText(credentials.password);
+                          toast.success('Password copied to clipboard');
+                        }}
+                      >
+                        <ContentCopy fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Grid>
+                </Grid>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  Please share these credentials with the profile holder securely. They can use the same login page with these credentials.
+                </Typography>
+              </Box>
+            </Alert>
+          )}
+          
           <IDCard data={formData} />
         </DialogContent>
         <DialogActions>
