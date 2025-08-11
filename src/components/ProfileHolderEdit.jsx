@@ -120,7 +120,7 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="info">
-          No profile found. Please contact administration.
+          No profile found. Please contact CYD Office.
         </Alert>
       </Box>
     );
@@ -131,13 +131,13 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
       <Card sx={{ borderRadius: 3, maxWidth: 800, mx: 'auto' }}>
         <CardHeader
           title="Edit Profile"
-          subheader="You can only update your photo, qualification, and address"
+          subheader="You can only update your photo"
         />
         <CardContent>
           <Alert severity="info" sx={{ mb: 3 }}>
             <Typography variant="body2">
-              <strong>Limited Access:</strong> You can only edit your photo, qualification, and postal address. 
-              For other changes, please contact administration.
+              <strong>Limited Access:</strong> You can only edit your photo. 
+              For other changes, please contact CYD Office.
             </Typography>
           </Alert>
 
@@ -179,7 +179,7 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
                 label="Name"
                 value={profileData?.name || ''}
                 disabled
-                helperText="Contact administration to change"
+                helperText="Contact CYD Office to change"
               />
             </Grid>
 
@@ -189,7 +189,7 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
                 label="Phone"
                 value={profileData?.phone || ''}
                 disabled
-                helperText="Contact administration to change"
+                helperText="Contact CYD Office to change"
               />
             </Grid>
 
@@ -199,7 +199,7 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
                 label="Parish"
                 value={profileData?.parish || ''}
                 disabled
-                helperText="Contact administration to change"
+                helperText="Contact CYD Office to change"
               />
             </Grid>
 
@@ -209,7 +209,7 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
                 label="Deanery"
                 value={profileData?.deanery || ''}
                 disabled
-                helperText="Contact administration to change"
+                helperText="Contact CYD Office to change"
               />
             </Grid>
 
@@ -217,10 +217,11 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
+                disabled
                 label="Qualification"
                 value={editForm.qualification}
                 onChange={(e) => setEditForm(prev => ({ ...prev, qualification: e.target.value }))}
-                helperText="You can update your educational qualification"
+                helperText="Contact CYD Office to change"
               />
             </Grid>
 
@@ -229,10 +230,11 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
                 fullWidth
                 label="Postal Address"
                 multiline
+                disabled
                 rows={3}
                 value={editForm.postal_address}
                 onChange={(e) => setEditForm(prev => ({ ...prev, postal_address: e.target.value }))}
-                helperText="You can update your postal address"
+                helperText="Contact CYD Office to change"
               />
             </Grid>
 

@@ -26,6 +26,7 @@ import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import { baseURL } from '../api/apiClient';
 import IDCard from '../components/IDCard';
+import { capitalizeName } from '../utils/text-format';
 
 const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
   const [profileData, setProfileData] = useState(null);
@@ -94,7 +95,7 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="info">
-          No profile found. Please contact administration.
+          No profile found. Please contact CYD Office.
         </Alert>
       </Box>
     );
@@ -121,7 +122,7 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
                 />
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                    {profileData?.name}
+                    {capitalizeName(profileData?.name)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {profileData?.designation} • {profileData?.level}
@@ -166,7 +167,7 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
             <CardContent>
               <Typography variant="h6" gutterBottom>ID Card</Typography>
               
-              <Button
+              {/* <Button
                 fullWidth
                 variant="contained"
                 startIcon={<CardIcon />}
@@ -174,7 +175,7 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
                 sx={{ mb: 2 }}
               >
                 View My ID Card
-              </Button>
+              </Button> */}
 
               {validity && (
                 <Box>
@@ -214,12 +215,12 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
                 <Typography variant="h6" gutterBottom>Status</Typography>
                 {!validity.isValid && (
                   <Alert severity="error" sx={{ mb: 2 }}>
-                    Your ID card has expired. Please contact administration for renewal.
+                    Your ID card has expired. Please contact CYD Office for renewal.
                   </Alert>
                 )}
                 {validity.isValid && validity.daysUntilExpiry <= 60 && (
                   <Alert severity="warning" sx={{ mb: 2 }}>
-                    Your ID card will expire in {validity.daysUntilExpiry} days. Please contact administration for renewal.
+                    Your ID card will expire in {validity.daysUntilExpiry} days. Please contact CYD Office for renewal.
                   </Alert>
                 )}
                 {validity.isValid && validity.daysUntilExpiry > 60 && (

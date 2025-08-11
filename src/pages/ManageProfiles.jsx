@@ -49,6 +49,7 @@ import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { baseURL } from '../api/apiClient';
 import IDCard from '../components/IDCard';
+import { capitalizeName } from '../utils/text-format';
 
 // Debounce function
 const debounce = (func, delay) => {
@@ -570,7 +571,7 @@ const tableHeaders = [
                       />
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {row.name}
+                         {capitalizeName(row.name)}
                         </Typography>
                         {row.designation && (
                           <Typography variant="caption" color="text.secondary">

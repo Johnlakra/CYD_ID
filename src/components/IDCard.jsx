@@ -5,6 +5,7 @@ import DeaneryIdPic from "../assets/images/Deanery.jpg";
 import DexcoIdPic from "../assets/images/Dexco.jpg";
 import dayjs from "dayjs";
 import { toPng } from "html-to-image";
+import { capitalizeName } from "../utils/text-format";
 
 
 const IDCard = ({ data }) => {
@@ -104,7 +105,7 @@ const IDCard = ({ data }) => {
             width: "2190px",
           }}
         >
-          {data.name}
+          {capitalizeName(data.name)}
         </div>
         <div
           style={{

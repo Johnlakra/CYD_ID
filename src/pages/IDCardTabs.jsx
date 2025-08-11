@@ -45,6 +45,7 @@ const IDCardTabs = ({ authToken, user, onLogout }) => {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
+    setEditProfile(null);
   };
 
   const handleEditProfile = (profileData) => {
