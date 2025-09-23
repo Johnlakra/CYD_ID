@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const baseURL = 'https://cydidbe-production-47ba.up.railway.app';
+export const baseURL = 'https://cyd-id-be.onrender.com';
 // Create axios instance
 const apiClient = axios.create({
   baseURL: baseURL,
