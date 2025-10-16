@@ -228,6 +228,7 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
     "Abohar",
     "Bhagsar",
     "Danewala",
+    "Enakhera",
     "Fazilka",
     "Gidderbaha (Station)",
     "Jaiton",
