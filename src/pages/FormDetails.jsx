@@ -222,6 +222,7 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
     "Moga",
     "Nihal Singh Wala, Moga (Station)",
     "Singhanwala, Moga",
+    "Takhtupura",
     "Zira",
   ],
   Muktsar: [
