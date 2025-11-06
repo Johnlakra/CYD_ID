@@ -66,7 +66,7 @@ const fallbackDeaneries = {
   Amritsar: ["Amritsar Cantt.", "Bharariwal", "Gumtala", "Khasa", "Lahorigate", "Majitha Road", "Nai Abadi", "Rajasansi"],
   Dhariwal: ["Batala", "Dhariwal", "Dialgarh", "Kalanaur", "Mastkot", "Naushera Majja Singh", "Qadian"],
   "Fatehgarh Churian": ["Fatehgarh Churian", "Dera Baba Nanak", "Dharamkot Randhawa", "Ghanie Ke Banger", "Kotli", "Machi Nangal", "Majitha", "Pakharpura"],
-  Ferozpur: ["Faridkot", "Ferozepur Badhni Mahafariste Wala", "Ferozpur Canal Colony", "Ferozpur Cantt", "Ferozpur City", "Gulami Wala", "Guru Har Sahai", "Lohgarh-Sur Singh Wala (Station)", "Mamdot", "Mudki (Station)", "Sadiq", "Talwandi Bhai", "Tehna, Faridkot"],
+  Ferozpur: ["Faridkot", "Badhni Mahafariste Wala", "Ferozpur Canal Colony", "Ferozpur Cantt", "Ferozpur City", "Gulami Wala", "Guru Har Sahai", "Lohgarh-Sur Singh Wala (Station)", "Mamdot", "Mudki (Station)", "Sadiq", "Talwandi Bhai", "Tehna, Faridkot"],
   Gurdaspur: ["Balun (Station)", "Dalhousie", "Dina Nagar", "Dorangala", "Gurdaspur", "Jandwal, Pathankot", "Kahnuwan", "Narot Jaimal Singh (Station)", "Pathankot City", "Puranashalla", "Sidhwan Jamita, Joura Chitra", "Sujanpur, Pathankot"],
   Hoshiarpur: ["Kakkon", "Baijnath", "Balachaur", "Bassi Bahian", "Bhunga", "Gaggal", "Garshankar", "Jindwari", "Mehtiana, Khanaura", "Nandachaur", "Nangal", "Palampur", "Una", "Yol Camp"],
   "Jalandhar Cantt.": ["Apra", "Banga (Station)", "Behram (Station)", "Dhina-Chittewani", "Jalandhar Cantt", "Jandiala Manjki", "Nawanshahar", "Phagwara", "Phulriwal", "Rawalpindi", "Sansarpur"],

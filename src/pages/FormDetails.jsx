@@ -128,7 +128,7 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
   ],
   Ferozpur: [
     "Faridkot",
-    "Ferozepur Badhni Mahafariste Wala",
+    "Badhni Mahafariste Wala",
     "Ferozpur Canal Colony",
     "Ferozpur Cantt",
     "Ferozpur City",
