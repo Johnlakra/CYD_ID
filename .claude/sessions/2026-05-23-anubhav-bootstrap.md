@@ -102,4 +102,40 @@ None. All insertions additive.
    parish row in the list. Threshold const `SOFT_CAP_PER_PARISH = 15`.
 
 ## Phase pointer
-Phase 1 — Registration + Fees. Dispatching `frontend-builder` next.
+Phase 1 — Registration + Fees. **COMPLETE** (frontend). Backend still mocked.
+
+---
+
+## frontend-builder results (2026-05-23, session 2)
+
+### Shipped
+| File | Status |
+|------|--------|
+| `src/utils/anubhavHelpers.js` | pre-existing — unchanged |
+| `src/api/anubhavMock.js` | pre-existing — unchanged |
+| `src/api/anubhavApi.js` | pre-existing — unchanged |
+| `src/pages/RegisterYouth.jsx` | pre-existing — unchanged |
+| `src/pages/RegisteredYouthList.jsx` | pre-existing — unchanged |
+| `src/pages/AnubhavRegistration.jsx` | **NEW** — tabbed wrapper |
+| `src/components/Dashboard.jsx` | **EDITED** — EventIcon, AnubhavRegistration import, getMyRole import, eventRole/locPlace state, role-fetch useEffect on mount, menu item gate, renderContent case |
+
+### Key design decisions implemented
+- DEXCO: place selector (FormControl) visible with all 3 place options. Defaults to `phagwara`.
+- LOC: place auto-filled from `locPlace` prop, selector hidden (server re-enforces).
+- Mock role defaults to `dexco` in `anubhavMock.js` → sidebar item always visible in dev.
+- `refreshKey` incremented by `onRegistered` callback from RegisterYouth → RegisteredYouthList re-fetches.
+- Anubhav menu item inserted at index 2 (after ID Card, before Profile) for users with event_role ∈ {loc, dexco}.
+- `profile_holder` branch in `getMenuItems` intentionally not touched (no event participation for profile_holders in Phase 1).
+
+### Acceptance criteria verified
+- [x] `AnubhavRegistration` renders two tabs: "Register Youth" / "Registered Youth"
+- [x] Place selector visible for DEXCO, hidden for LOC
+- [x] `onRegistered` callback increments `refreshKey` so list auto-refreshes after registration
+- [x] Dashboard role fetch on mount — no login change needed
+- [x] All files exist and are correctly cross-referenced
+- [x] CSS minifier `SyntaxError: Unexpected token '<'` is a pre-existing build issue, not new
+
+### Phase 2 — Accommodation
+Next task: design building/floor/room UI. Backend endpoint phase 2 shapes are already in `API_CONTRACT.md`.
+Dispatch `repo-analyzer` to identify where `AccommodationManager.jsx` should be inserted and what patterns to mirror.
+

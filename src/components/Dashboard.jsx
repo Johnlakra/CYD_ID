@@ -35,13 +35,16 @@ import {
   TrendingUp as TrendingUpIcon,
   CalendarToday as CalendarIcon,
   PhotoCamera as PhotoIcon,
+  Event as EventIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
 import IDCardTabs from '../pages/IDCardTabs';
+import AnubhavRegistration from '../pages/AnubhavRegistration';
 import ProfileSettings from '../components/ProfileSettings';
 import ProfileHolderSettings from './ProfileHolderSettings';
 import ProfileHolderDashboard from './ProfileHolderDashboard';
+import { getMyRole } from '../api/anubhavApi';
 
 const drawerWidth = 280;
 
@@ -52,6 +55,17 @@ const Dashboard = ({ authToken, user, onLogout }) => {
   const [selectedMenu, setSelectedMenu] = useState('dashboard');
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [eventRole, setEventRole] = useState('none');
+  const [locPlace, setLocPlace] = useState(null);
+
+  useEffect(() => {
+    getMyRole().then((res) => {
+      if (res.success && res.data) {
+        setEventRole(res.data.event_role || 'none');
+        setLocPlace(res.data.loc_place || null);
+      }
+    });
+  }, []);
 
   // Restrict menu items based on user role
   const getMenuItems = () => {
@@ -71,7 +85,7 @@ const Dashboard = ({ authToken, user, onLogout }) => {
     }
 
     // Default menu for admin/user
-    return [
+    const base = [
       {
         id: 'dashboard',
         text: 'Dashboard',
@@ -88,6 +102,16 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         icon: <PersonIcon />,
       },
     ];
+
+    if (eventRole === 'loc' || eventRole === 'dexco') {
+      base.splice(2, 0, {
+        id: 'anubhav-registration',
+        text: 'Anubhav 2026',
+        icon: <EventIcon />,
+      });
+    }
+
+    return base;
   };
 
   const menuItems = getMenuItems();
@@ -282,6 +306,14 @@ const Dashboard = ({ authToken, user, onLogout }) => {
     switch (selectedMenu) {
       case 'id-card':
         return <IDCardTabs authToken={authToken} user={user} onLogout={onLogout} />;
+      case 'anubhav-registration':
+        return (
+          <AnubhavRegistration
+            eventRole={eventRole}
+            locPlace={locPlace}
+            onLogout={onLogout}
+          />
+        );
       case 'profile':
         return <ProfileSettings authToken={authToken} user={user} onLogout={onLogout} />;
       default:
