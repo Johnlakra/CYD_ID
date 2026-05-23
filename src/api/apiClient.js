@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const baseURL = 'https://cyd-id-be.onrender.com';
+export const baseURL = 'http://localhost:3000';
 // Create axios instance
 const apiClient = axios.create({
   baseURL: baseURL,
