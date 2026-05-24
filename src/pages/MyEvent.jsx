@@ -17,6 +17,7 @@ import {
   TableBody,
 } from '@mui/material';
 import { Celebration as CelebrationIcon } from '@mui/icons-material';
+import { toast } from 'react-toastify';
 import { getMyEvent, getTimetableLive } from '../api/anubhavApi';
 import { PLACE_META } from '../utils/anubhavHelpers';
 
@@ -36,15 +37,25 @@ const safeArray = (v) => (Array.isArray(v) ? v : []);
 const MyEvent = ({ user }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [liveData, setLiveData] = useState(null);
 
   useEffect(() => {
-    getMyEvent().then((res) => {
-      setLoading(false);
-      if (res.success && res.data) {
-        setData(res.data);
-      }
-    });
+    getMyEvent()
+      .then((res) => {
+        setLoading(false);
+        if (res.success && res.data) {
+          setData(res.data);
+        } else if (!res.success) {
+          setError(true);
+          toast.error(res.message || 'Failed to load your event details');
+        }
+      })
+      .catch(() => {
+        setLoading(false);
+        setError(true);
+        toast.error('Network error — please try again');
+      });
   }, []);
 
   const fetchLive = useCallback(async () => {
@@ -63,6 +74,16 @@ const MyEvent = ({ user }) => {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: { xs: 2, sm: 3 } }}>
+        <Alert severity="error">
+          Could not load your event details. Please refresh or try again later.
+        </Alert>
       </Box>
     );
   }
@@ -111,7 +132,7 @@ const MyEvent = ({ user }) => {
               gap: 2,
               px: 2,
               py: 1.5,
-              borderRadius: 2,
+              borderRadius: 3,
               flexWrap: 'wrap',
             }}
           >
@@ -240,7 +261,7 @@ const MyEvent = ({ user }) => {
                       p: 2,
                       border: '1px solid',
                       borderColor: 'divider',
-                      borderRadius: 2,
+                      borderRadius: 3,
                     }}
                   >
                     <Box

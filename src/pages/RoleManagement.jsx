@@ -204,7 +204,7 @@ const RoleManagement = ({ onLogout }) => {
                       p: 2,
                       border: '1px solid',
                       borderColor: 'divider',
-                      borderRadius: 2,
+                      borderRadius: 3,
                       opacity: noAccount ? 0.65 : 1,
                     }}
                   >
