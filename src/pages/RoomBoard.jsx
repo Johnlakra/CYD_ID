@@ -25,6 +25,9 @@ import {
   MenuItem,
   Alert,
   Tooltip,
+  Autocomplete,
+  TextField,
+  Avatar,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -32,7 +35,7 @@ import {
   GridView as GridViewIcon,
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getBuildings, getRegistrations, createAllotment, deleteAllotment } from '../api/anubhavApi';
+import { getBuildings, getRegistrations, createAllotmentBatch, deleteAllotment } from '../api/anubhavApi';
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -48,30 +51,28 @@ const handleAuthError = (envelope, onLogout) => {
 // ── Allot dialog ─────────────────────────────────────────────────────────────
 
 const AllotDialog = ({ open, room, unallottedYouth, onClose, onAllotted }) => {
-  const [selectedRegId, setSelectedRegId] = useState('');
+  const [selected, setSelected] = useState([]);
   const [saving, setSaving] = useState(false);
 
+  const vacant = room ? Math.max(0, room.capacity - room.occupancy) : 0;
+
   const handleClose = () => {
-    setSelectedRegId('');
+    setSelected([]);
     onClose();
   };
 
   const handleConfirm = async () => {
-    if (!selectedRegId) {
-      toast.warning('Select a youth to allot');
-      return;
-    }
+    if (!selected.length) { toast.warning('Select at least one youth'); return; }
     setSaving(true);
-    const res = await createAllotment({
+    const res = await createAllotmentBatch({
       room_id: room.id,
-      registration_id: Number(selectedRegId),
+      registration_ids: selected.map((y) => y.id),
     });
     setSaving(false);
-    if (!res.success) {
-      toast.error(res.message || 'Could not allot youth');
-      return;
-    }
-    toast.success('Youth allotted');
+    if (!res.success) { toast.error(res.message || 'Could not allot youth'); return; }
+    const { succeeded = [], failed = [] } = res.data || {};
+    if (succeeded.length) toast.success(`${succeeded.length} youth allotted`);
+    if (failed.length) toast.warning(`${failed.length} failed: ${failed.map((f) => f.reason).join(', ')}`);
     handleClose();
     onAllotted();
   };
@@ -79,7 +80,14 @@ const AllotDialog = ({ open, room, unallottedYouth, onClose, onAllotted }) => {
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        Allot to {room ? room.name : ''}
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+          Allot to {room?.name}
+          {room && (
+            <Typography variant="caption" color="text.secondary">
+              ({vacant} slot{vacant !== 1 ? 's' : ''} remaining)
+            </Typography>
+          )}
+        </Box>
       </DialogTitle>
       <DialogContent>
         {safeArray(unallottedYouth).length === 0 ? (
@@ -87,34 +95,78 @@ const AllotDialog = ({ open, room, unallottedYouth, onClose, onAllotted }) => {
             All registered youth for this venue are already allotted.
           </Alert>
         ) : (
-          <FormControl fullWidth size="small" sx={{ mt: 2 }}>
-            <InputLabel>Select Youth</InputLabel>
-            <Select
-              value={selectedRegId}
-              label="Select Youth"
-              onChange={(e) => setSelectedRegId(e.target.value)}
-            >
-              <MenuItem value="">Select a youth</MenuItem>
-              {safeArray(unallottedYouth).map((y) => (
-                <MenuItem key={y.id} value={y.id}>
-                  {y.name} — {y.parish} ({y.deanery})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box sx={{ mt: 2 }}>
+            <Autocomplete
+              multiple
+              disableCloseOnSelect
+              options={safeArray(unallottedYouth)}
+              getOptionLabel={(opt) => opt.name || ''}
+              isOptionEqualToValue={(opt, val) => opt.id === val.id}
+              getOptionDisabled={(opt) =>
+                selected.length >= vacant && !selected.find((s) => s.id === opt.id)
+              }
+              filterOptions={(options, { inputValue }) => {
+                const term = inputValue.trim().toLowerCase();
+                if (!term) return options;
+                return options.filter((opt) =>
+                  [opt.name, opt.parish, opt.deanery, opt.phone]
+                    .some((f) => f && String(f).toLowerCase().includes(term))
+                );
+              }}
+              renderOption={(props, option) => {
+                const { key, ...rest } = props;
+                return (
+                  <Box component="li" key={key} {...rest} sx={{ gap: 1.5, alignItems: 'flex-start !important' }}>
+                    <Avatar sx={{ width: 36, height: 36, flexShrink: 0, mt: 0.5 }}>
+                      {option.name?.charAt(0)}
+                    </Avatar>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>{option.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {option.parish} · {option.deanery}
+                      </Typography>
+                    </Box>
+                  </Box>
+                );
+              }}
+              renderTags={(tagValue, getTagProps) =>
+                tagValue.map((opt, index) => (
+                  <Chip
+                    key={opt.id}
+                    avatar={<Avatar>{opt.name?.charAt(0)}</Avatar>}
+                    label={opt.name}
+                    size="small"
+                    {...getTagProps({ index })}
+                  />
+                ))
+              }
+              value={selected}
+              onChange={(_, newVal) => setSelected(newVal)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select youth (name, parish, deanery, phone)"
+                  size="small"
+                />
+              )}
+            />
+            {selected.length > 0 && (
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                {selected.length} selected · {vacant - selected.length} slot{vacant - selected.length !== 1 ? 's' : ''} remaining
+              </Typography>
+            )}
+          </Box>
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={saving}>
-          Cancel
-        </Button>
+        <Button onClick={handleClose} disabled={saving}>Cancel</Button>
         <Button
           variant="contained"
           onClick={handleConfirm}
-          disabled={saving || !selectedRegId}
+          disabled={saving || !selected.length}
           startIcon={saving ? <CircularProgress size={18} /> : <PersonAddIcon />}
         >
-          {saving ? 'Allotting...' : 'Allot'}
+          {saving ? 'Allotting…' : selected.length > 1 ? `Allot ${selected.length} Youth` : 'Allot Youth'}
         </Button>
       </DialogActions>
     </Dialog>

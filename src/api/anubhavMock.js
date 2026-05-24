@@ -659,6 +659,54 @@ export const mockCreateAllotment = async (body) => {
   return ok(created, 'Allotment created');
 };
 
+export const mockCreateAllotmentBatch = async (body) => {
+  await delay();
+  const { room_id, registration_ids } = body || {};
+  if (!room_id || !Array.isArray(registration_ids) || !registration_ids.length) {
+    return fail('room_id and registration_ids[] are required');
+  }
+  const room = store.rooms.find((r) => r.id === Number(room_id));
+  if (!room) return fail('Room not found');
+
+  const currentOccupancy = store.allotments.filter((a) => a.room_id === Number(room_id)).length;
+  const vacant = room.capacity - currentOccupancy;
+  if (registration_ids.length > vacant) {
+    return fail(`Room only has ${vacant} vacant slot(s); ${registration_ids.length} requested`);
+  }
+
+  const floor = store.floors.find((f) => f.id === room.floor_id);
+  const building = floor ? store.buildings.find((b) => b.id === floor.building_id) : null;
+  const place = building ? building.place : null;
+  const placeRoomIds = place
+    ? new Set(
+        store.rooms
+          .filter((r) => {
+            const f = store.floors.find((fl) => fl.id === r.floor_id);
+            const b = f ? store.buildings.find((bl) => bl.id === f.building_id) : null;
+            return b && b.place === place;
+          })
+          .map((r) => r.id)
+      )
+    : null;
+
+  const succeeded = [], failed = [];
+  for (const registration_id of registration_ids) {
+    const registration = store.registrations.find((r) => r.id === Number(registration_id));
+    if (!registration) { failed.push({ registration_id, reason: 'Registration not found' }); continue; }
+    if (placeRoomIds) {
+      const alreadyAllotted = store.allotments.some(
+        (a) => a.registration_id === Number(registration_id) && placeRoomIds.has(a.room_id)
+      );
+      if (alreadyAllotted) { failed.push({ registration_id, reason: 'Already allotted to a room' }); continue; }
+    }
+    const created = { id: nextAllotmentId, room_id: Number(room_id), registration_id: Number(registration_id) };
+    nextAllotmentId += 1;
+    store = { ...store, allotments: [...store.allotments, created] };
+    succeeded.push(created);
+  }
+  return ok({ succeeded, failed }, `${succeeded.length} allotted, ${failed.length} failed`);
+};
+
 export const mockDeleteAllotment = async (id) => {
   await delay();
   const target = store.allotments.find((a) => a.id === Number(id));

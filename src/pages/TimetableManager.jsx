@@ -22,10 +22,11 @@ import {
   TableCell,
   TableBody,
 } from '@mui/material';
-import { Schedule as ScheduleIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Schedule as ScheduleIcon, Delete as DeleteIcon, PictureAsPdf as PdfIcon } from '@mui/icons-material';
+import { jsPDF } from 'jspdf';
 import { toast } from 'react-toastify';
 import { getTimetable, createTimetableItem, deleteTimetableItem } from '../api/anubhavApi';
-import { PLACES } from '../utils/anubhavHelpers';
+import { PLACES, PLACE_META } from '../utils/anubhavHelpers';
 
 const DAY_OPTIONS = [
   { value: 1, label: 'Day 1' },
@@ -42,6 +43,14 @@ const handleAuthError = (envelope, onLogout) => {
     return true;
   }
   return false;
+};
+
+const to12h = (t) => {
+  if (!t) return '';
+  const [hStr, mStr = '00'] = String(t).split(':');
+  const h = Number(hStr);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  return `${h % 12 || 12}:${mStr} ${ampm}`;
 };
 
 const EMPTY_FORM = {
@@ -121,6 +130,8 @@ const TimetableManager = ({ activePlace, eventRole, onLogout }) => {
     fetchItems();
   };
 
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+
   const grouped = DAY_OPTIONS.map(({ value, label }) => ({
     day: value,
     label,
@@ -128,6 +139,101 @@ const TimetableManager = ({ activePlace, eventRole, onLogout }) => {
       .filter((it) => it.day === value)
       .sort((a, b) => (a.start_time > b.start_time ? 1 : -1)),
   }));
+
+  const generateTimetablePdf = () => {
+    if (!items.length) { toast.info('No timetable items to export'); return; }
+    setPdfGenerating(true);
+    try {
+      const pm = PLACE_META[resolvedPlace] || { label: resolvedPlace, venue: '', dates: '' };
+      const gen = (() => {
+        const d = new Date(), z = (n) => String(n).padStart(2, '0');
+        return `${z(d.getDate())}/${z(d.getMonth()+1)}/${d.getFullYear()} ${z(d.getHours())}:${z(d.getMinutes())}`;
+      })();
+
+      const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const PW = 210, PH = 297, M = 15;
+      const CW = PW - M * 2;
+      // Time | Title | Location | Notes
+      const COLS = [38, 72, 35, 35];
+      const LABELS = ['Time', 'Title', 'Location', 'Notes'];
+      const ROW_H = 7, HEAD_H = 8;
+      const FOOTER_Y = PH - M - 10;
+      const GREY = [245, 245, 245], HGREY = [220, 220, 220];
+      const trunc = (t, n) => { const s = t ? String(t) : '—'; return s.length > n ? s.slice(0,n-1)+'…' : s; };
+
+      let curY = 0, pageNum = 1;
+
+      const drawPageHeader = () => {
+        doc.setFont('helvetica', 'bold').setFontSize(12);
+        doc.text(`Anubhav Retreat 2026 — ${pm.label}`, M, M);
+        doc.setFont('helvetica', 'normal').setFontSize(9);
+        doc.text(`${pm.venue}  |  ${pm.dates}`, M, M + 5);
+        doc.setFont('helvetica', 'bold').setFontSize(10);
+        doc.text('Timetable', M, M + 11);
+        doc.setDrawColor(180, 180, 180).line(M, M + 13, PW - M, M + 13);
+        curY = M + 18;
+      };
+      const drawFooter = () => {
+        doc.setFont('helvetica', 'italic').setFontSize(8);
+        doc.text(`Page ${pageNum}`, M, PH - M + 4);
+        doc.text(`Generated: ${gen}`, PW - M, PH - M + 4, { align: 'right' });
+      };
+      const drawTableHeader = () => {
+        doc.setFillColor(...HGREY).rect(M, curY, CW, HEAD_H, 'F');
+        doc.setFont('helvetica', 'bold').setFontSize(8);
+        let x = M + 1;
+        LABELS.forEach((l, i) => { doc.text(l, x, curY + 5.5); x += COLS[i]; });
+        curY += HEAD_H;
+      };
+      const ensureSpace = (needed) => {
+        if (curY + needed > FOOTER_Y) {
+          drawFooter(); doc.addPage(); pageNum++; drawPageHeader();
+        }
+      };
+
+      drawPageHeader();
+
+      grouped.forEach(({ label, rows }) => {
+        if (!rows.length) return;
+        ensureSpace(10 + HEAD_H + rows.length * ROW_H);
+
+        doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60, 60, 60);
+        doc.text(label, M, curY + 5);
+        doc.setTextColor(0, 0, 0);
+        curY += 7;
+
+        drawTableHeader();
+
+        rows.forEach((item, idx) => {
+          ensureSpace(ROW_H);
+          if (idx % 2 === 1) doc.setFillColor(...GREY).rect(M, curY, CW, ROW_H, 'F');
+          doc.setFont('helvetica', 'normal').setFontSize(8);
+          const timeStr = `${to12h(item.start_time)} – ${to12h(item.end_time)}`;
+          const vals = [trunc(timeStr, 18), trunc(item.title, 34), trunc(item.location, 17), trunc(item.notes || '', 17)];
+          let x = M + 1;
+          vals.forEach((v, i) => { doc.text(v, x, curY + 5); x += COLS[i]; });
+          curY += ROW_H;
+        });
+        curY += 5;
+      });
+
+      const total = doc.getNumberOfPages();
+      for (let p = 1; p <= total; p++) {
+        doc.setPage(p);
+        doc.setFont('helvetica', 'italic').setFontSize(8);
+        doc.text(`Page ${p} of ${total}`, M, PH - M + 4);
+        doc.text(`Generated: ${gen}`, PW - M, PH - M + 4, { align: 'right' });
+      }
+
+      doc.save(`anubhav-timetable-${resolvedPlace}.pdf`);
+      toast.success('Timetable PDF downloaded');
+    } catch (err) {
+      console.error(err);
+      toast.error('PDF generation failed');
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -142,9 +248,20 @@ const TimetableManager = ({ activePlace, eventRole, onLogout }) => {
       <Card sx={{ borderRadius: 3 }}>
         <CardHeader
           title={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ScheduleIcon color="primary" />
-              <Typography variant="h6">Timetable</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ScheduleIcon color="primary" />
+                <Typography variant="h6">Timetable</Typography>
+              </Box>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={pdfGenerating ? <CircularProgress size={16} /> : <PdfIcon />}
+                onClick={generateTimetablePdf}
+                disabled={pdfGenerating || loading}
+              >
+                {pdfGenerating ? 'Generating…' : 'Download PDF'}
+              </Button>
             </Box>
           }
           subheader={`Venue: ${resolvedPlace}`}
@@ -252,7 +369,7 @@ const TimetableManager = ({ activePlace, eventRole, onLogout }) => {
                     {rows.map((item) => (
                       <TableRow key={item.id} hover>
                         <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                          {item.start_time} – {item.end_time}
+                          {to12h(item.start_time)} – {to12h(item.end_time)}
                         </TableCell>
                         <TableCell>{item.title}</TableCell>
                         <TableCell>{item.location}</TableCell>

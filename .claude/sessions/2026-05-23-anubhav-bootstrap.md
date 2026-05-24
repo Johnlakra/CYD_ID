@@ -103,6 +103,94 @@ None. All insertions additive.
 
 ## Phase pointer
 Phase 1 — Registration + Fees. **COMPLETE** (frontend). Backend still mocked.
+Phase 2 — Accommodation. **COMPLETE** (frontend). Backend still mocked.
+Phase 3 — Timetable + Announcements + Live view. **COMPLETE** (frontend). Backend still mocked.
+
+**All three phases complete (frontend, mock-backed). Next: backend implementation in `cyd_Id_BE`.**
+
+---
+
+## Phase 2 results (2026-05-24, session 3)
+
+### Shipped
+| File | Commit | Status |
+|------|--------|--------|
+| `src/pages/AccommodationManager.jsx` | `a5c420f` | **NEW** — 3-tab wrapper (Building Setup / Room Board / Generate PDFs) |
+| `src/pages/BuildingSetup.jsx` | `a5c420f` | **NEW** — Accordion building→floor→room tree with Add dialogs |
+| `src/pages/RoomBoard.jsx` | `a5c420f` | **NEW** — Room grid cards with occupancy bar, allot/un-allot |
+| `src/api/anubhavMock.js` | `a5c420f` | **EDITED** — Phase 2 seed data: 6 buildings, 12 floors, 36 rooms, 4 allotments |
+| `src/api/anubhavApi.js` | `a5c420f` | **EDITED** — Phase 2 API facade: getBuildings, createBuilding/Floor/Room, createAllotment, deleteAllotment, getRooming |
+| `src/components/Dashboard.jsx` | `a5c420f` | **EDITED** — ApartmentIcon, AccommodationManager import, menu item, renderContent case |
+| `src/pages/RoomingPdfGenerator.jsx` | `ea3dc7f` | **NEW** — jsPDF client-side PDF generator, 4 scopes (room/floor/building/place) |
+| `src/pages/AccommodationManager.jsx` | `ea3dc7f` | **EDITED** — Replaced PDF placeholder with `<RoomingPdfGenerator />` |
+
+### Phase 2 acceptance criteria
+- [x] Building → Floor → Room hierarchy create UI with Add dialogs
+- [x] Live occupancy/capacity chips per room and building
+- [x] Room board showing allotment grid with allot/un-allot per youth
+- [x] Place-partitioned: Building Setup and Room Board both scope by `activePlace`
+- [x] PDF: Room Sheet, Floor Sheet, Building Sheet, Full Place Rooming List
+- [x] PDF: mobile-safe `doc.save()` download, no `window.open()`
+- [x] PDF: A4, place/venue/dates header on every page, alternating-grey rows, Page N of M footer
+- [x] LOC sees only their assigned place; DEXCO sees place selector
+- [x] No new npm deps (jsPDF was already in package.json)
+
+### Phase 3 — Timetable + Announcements + Live view — COMPLETE
+
+Commit: `888c2cf`
+
+| File | Status |
+|------|--------|
+| `src/pages/TimetableManager.jsx` | **NEW** — inline add form + grouped-by-day table with delete |
+| `src/pages/AnnouncementManager.jsx` | **NEW** — post form (DEXCO gets diocese-wide scope) + list with delete |
+| `src/pages/AnubhavLiveBanner.jsx` | **NEW** — NOW/NEXT chip banner, polls every 2 min, loc/dexco only |
+| `src/api/anubhavMock.js` | **EDITED** — 27 timetable seed items (3 places), 3 announcements, 8 new mock fns |
+| `src/api/anubhavApi.js` | **EDITED** — 8 new exports incl. getTimetableLive, updateTimetableItem |
+| `src/components/Dashboard.jsx` | **EDITED** — ScheduleIcon, CampaignIcon, 2 sidebar items, 2 renderContent cases, live banner |
+
+### What's next — Backend implementation
+All frontend phases are complete and mock-backed (REACT_APP_ANUBHAV_MOCK=true).
+Switch to the `cyd_Id_BE` repo (branch `feature/anubhav-2026-event-module`) and:
+1. Run `schema-architect` to generate the migration (`backend/migrations/001_anubhav_event_module.sql`)
+2. Run `api-builder` for each phase of endpoints per `shared/API_CONTRACT.md`
+3. Once backend is live, set `REACT_APP_ANUBHAV_MOCK=false` to connect frontend to real data
+
+---
+
+## Session 4 enhancements (2026-05-24) — UX polish, PDF upgrades, batch allotment
+
+### Files changed (no new commits yet — all uncommitted working-tree changes)
+
+| File | Repo | Changes |
+|------|------|---------|
+| `src/pages/RegisterYouth.jsx` | frontend | Per-youth remove button in confirmation dialog; `IconButton` + `Tooltip` + `PersonRemoveIcon`; auto-close when list empties |
+| `src/pages/AnubhavRegistration.jsx` | frontend | **Full Diocese Report** PDF button (DEXCO only): fetches all 3 places, generates combined landscape A4 with per-place sections + summary page (grand total); imports `jsPDF`, `getRegistrations`, `FEE_PER_YOUTH` |
+| `src/pages/RegisteredYouthList.jsx` | frontend | (1) `registered_at` grid column: 12hr format (`h:mm A`). (2) PDF report passes active `deanery`/`parish` filter to API; subtitle + filename reflect scope (`All Participants` / `Deanery` / `Parish · Deanery`). (3) Chaperone column: `Name Phone#` instead of `Name (Type)`. (4) Fee: just the number, no `Rs.` prefix. (5) Deanery column removed from PDF (32mm freed → Chaperone 40→72mm, Parish 40→45mm). |
+| `src/pages/RoomBoard.jsx` | frontend | `AllotDialog` rewritten: multiselect `Autocomplete` (`disableCloseOnSelect`), Avatar renderOption, Chip renderTags, `getOptionDisabled` caps at vacant slots, live "N selected · M slots remaining" counter; calls `createAllotmentBatch` |
+| `src/api/anubhavApi.js` | frontend | Added `ROUTES.allotmentsBatch`, `createAllotmentBatch` export; imported `mockCreateAllotmentBatch` |
+| `src/api/anubhavMock.js` | frontend | Added `mockCreateAllotmentBatch`: capacity pre-check, per-registration-id loop, `{ succeeded, failed }` response |
+| `src/pages/TimetableManager.jsx` | frontend | `to12h` helper (24h→12h); table time column uses `to12h`; **Download PDF** button → portrait A4, grouped by day, 4 cols (Time/Title/Location/Notes), Page N of M |
+| `controllers/anubhavAllotmentController.js` | backend | Added `createAllotmentBatch`: validates room/place/vacancy upfront, loops registration_ids, partial-success reporting |
+| `controllers/anubhavRegistrationController.js` | backend | Added `c.phone AS chaperone_phone` to `listRegistrations` SELECT |
+| `routes/anubhav.js` | backend | `POST /anubhav/allotments/batch` registered before `/:id` to avoid param collision |
+
+### Key decisions
+- **Confirmation dialog remove**: `setSelectedProfiles(next)` on each remove; `setConfirmOpen(false)` when `next.length === 0` — dialog auto-dismisses if all youth removed
+- **Full Diocese Report** (DEXCO only): 3 place sections + summary table page at end; grand total line; single `doc.save('anubhav-full-diocese-report-2026.pdf')`
+- **PDF filter-awareness**: `generateParticipantReport` reads component-state `deanery`/`parish` — no extra props needed; filename slug derived from `(parish || deanery || activePlace).replace(/[^a-zA-Z0-9]/g, '-')`
+- **Batch allotment route order**: Express matches `/allotments/batch` before `/allotments/:id` — route must be declared first in `anubhav.js`
+- **12hr format scope**: only `RegisteredYouthList.jsx` used `HH:mm` — all other dayjs calls are date-only; no other files needed changes
+
+### Acceptance criteria
+- [x] Confirmation dialog: per-youth remove button, auto-close on empty
+- [x] Full Diocese PDF: all 3 places + summary, DEXCO-only button
+- [x] Per-place PDF: respects deanery/parish filter, filename matches scope
+- [x] Chaperone column in all PDFs: name + phone
+- [x] Fee in all PDFs: compact number-only
+- [x] Deanery column removed from participant PDF; Chaperone column widened
+- [x] Room Board: multiselect autocomplete allot, capacity enforced in UI and backend batch endpoint
+- [x] Timetable: 12hr display, PDF download
+- [x] RegisteredYouthList grid: 12hr registered_at
 
 ---
 

@@ -198,16 +198,28 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
         const d = new Date(), p = (n) => String(n).padStart(2, '0');
         return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
       })();
-      const res = await getRegistrations({ place: activePlace });
+      const res = await getRegistrations({
+        place: activePlace,
+        deanery: deanery || undefined,
+        parish: parish || undefined,
+      });
       if (!res.success) { toast.error('Failed to load data for PDF'); return; }
       const allRegs = Array.isArray(res.data?.registrations) ? res.data.registrations : [];
       if (!allRegs.length) { toast.info('No registrations to export'); return; }
 
+      const scopeLabel = parish
+        ? `${parish} · ${deanery}`
+        : deanery
+        ? deanery
+        : 'All Participants';
+      const fileSlug = (parish || deanery || activePlace)
+        .replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
       const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
       const PW = 297, PH = 210, M = 15;
       const CW = PW - M * 2;
-      const COLS = [8, 52, 40, 40, 32, 30, 40, 20];
-      const LABELS = ['#', 'Name', "Father's Name", 'Parish', 'Deanery', 'Phone', 'Chaperone', 'Fee'];
+      const COLS = [8, 52, 40, 45, 30, 72, 20];
+      const LABELS = ['#', 'Name', "Father's Name", 'Parish', 'Phone', 'Chaperone', 'Fee'];
       const ROW_H = 7, HEAD_H = 8;
       const FOOTER_Y = PH - M - 10;
       const GREY = [245, 245, 245], HGREY = [220, 220, 220];
@@ -226,7 +238,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
         doc.setFont('helvetica','bold').setFontSize(11);
         doc.text(`Anubhav Retreat 2026 — ${pm.label} | ${pm.venue} | ${pm.dates}`, M, M);
         doc.setFont('helvetica','normal').setFontSize(9);
-        doc.text(`Participant List  ·  ${allRegs.length} registrations`, M, M+5);
+        doc.text(`${scopeLabel}  ·  ${allRegs.length} registrations`, M, M+5);
         doc.setDrawColor(180,180,180).line(M, M+8, PW-M, M+8);
         curY = M + 13;
         doc.setFillColor(...HGREY).rect(M, curY, CW, HEAD_H, 'F');
@@ -257,16 +269,17 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
           if (curY + ROW_H > FOOTER_Y) { drawFooter(); doc.addPage(); pageNum++; drawHeader(); }
           if (idx % 2 === 1) doc.setFillColor(...GREY).rect(M, curY, CW, ROW_H, 'F');
           doc.setFont('helvetica','normal').setFontSize(8);
-          const chapStr = row.chaperone_name ? `${row.chaperone_name} (${row.chaperone_type})` : '—';
+          const chapStr = row.chaperone_name
+            ? `${row.chaperone_name}${row.chaperone_phone ? ' ' + row.chaperone_phone : ''}`
+            : '—';
           const vals = [
             String(serial++),
             trunc(row.name, 24),
             trunc(row.father_name, 20),
-            trunc(row.parish, 18),
-            trunc(row.deanery, 15),
+            trunc(row.parish, 20),
             trunc(row.phone, 13),
-            trunc(chapStr, 20),
-            `Rs.${row.fee_amount || 50}`,
+            trunc(chapStr, 28),
+            String(row.fee_amount || 50),
           ];
           let x = M + 1;
           vals.forEach((v, i) => { doc.text(v, x, curY+5); x += COLS[i]; });
@@ -283,7 +296,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
         doc.text(`Generated: ${gen}`, PW-M, PH-M+4, { align: 'right' });
       }
 
-      doc.save(`anubhav-participants-${activePlace}.pdf`);
+      doc.save(`anubhav-participants-${fileSlug}.pdf`);
       toast.success('Participant report downloaded');
     } catch {
       toast.error('PDF generation failed');
@@ -584,7 +597,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                         <TableCell>
                           {row.registered_at
                             ? dayjs(row.registered_at).format(
-                                'DD/MM/YYYY HH:mm'
+                                'DD/MM/YYYY h:mm A'
                               )
                             : '-'}
                         </TableCell>

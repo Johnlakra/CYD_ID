@@ -26,10 +26,13 @@ import {
   Alert,
   Autocomplete,
   Avatar,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
   GroupAdd as GroupAddIcon,
+  PersonRemove as PersonRemoveIcon,
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import {
@@ -537,6 +540,19 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
                 <Typography variant="body2" sx={{ color: 'success.main', fontWeight: 600, flexShrink: 0 }}>
                   ₹{FEE_PER_YOUTH}
                 </Typography>
+                <Tooltip title="Remove">
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => {
+                      const next = selectedProfiles.filter((p) => p.id !== profile.id);
+                      setSelectedProfiles(next);
+                      if (next.length === 0) setConfirmOpen(false);
+                    }}
+                  >
+                    <PersonRemoveIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Box>
             ))}
           </Box>

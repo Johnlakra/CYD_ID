@@ -18,6 +18,7 @@ import {
   mockCreateFloor,
   mockCreateRoom,
   mockCreateAllotment,
+  mockCreateAllotmentBatch,
   mockDeleteAllotment,
   mockGetRooming,
   mockGetTimetable,
@@ -43,6 +44,7 @@ const ROUTES = {
   floors: '/anubhav/floors',
   rooms: '/anubhav/rooms',
   allotments: '/anubhav/allotments',
+  allotmentsBatch: '/anubhav/allotments/batch',
   allotmentById: (id) => `/anubhav/allotments/${id}`,
   rooming: '/anubhav/rooming',
   timetable: '/anubhav/timetable',
@@ -189,6 +191,15 @@ export const createAllotment = async (body) => {
   if (USE_MOCK) return mockCreateAllotment(body);
   try {
     return unwrap(await apiClient.post(ROUTES.allotments, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createAllotmentBatch = async (body) => {
+  if (USE_MOCK) return mockCreateAllotmentBatch(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.allotmentsBatch, body));
   } catch (error) {
     return errorEnvelope(error);
   }
