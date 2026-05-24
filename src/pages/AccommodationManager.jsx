@@ -20,6 +20,7 @@ import {
 import { PLACES, PLACE_META, placeChipProps } from '../utils/anubhavHelpers';
 import BuildingSetup from './BuildingSetup';
 import RoomBoard from './RoomBoard';
+import RoomingPdfGenerator from './RoomingPdfGenerator';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -161,12 +162,7 @@ const AccommodationManager = ({ eventRole, locPlace, onLogout }) => {
         </TabPanel>
 
         <TabPanel value={activeTab} index={2}>
-          <Box sx={{ py: 6, textAlign: 'center' }}>
-            <PdfIcon sx={{ fontSize: 56, color: 'text.disabled', mb: 2 }} />
-            <Typography variant="body1" color="text.secondary">
-              PDF generation — coming in the pdf-specialist pass
-            </Typography>
-          </Box>
+          <RoomingPdfGenerator activePlace={activePlace} onLogout={onLogout} />
         </TabPanel>
       </Paper>
     </Box>
