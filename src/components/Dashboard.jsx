@@ -39,6 +39,8 @@ import {
   Apartment as ApartmentIcon,
   Schedule as ScheduleIcon,
   Campaign as CampaignIcon,
+  Celebration as CelebrationIcon,
+  ManageAccounts as ManageAccountsIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
@@ -48,6 +50,8 @@ import AccommodationManager from '../pages/AccommodationManager';
 import TimetableManager from '../pages/TimetableManager';
 import AnnouncementManager from '../pages/AnnouncementManager';
 import AnubhavLiveBanner from '../pages/AnubhavLiveBanner';
+import MyEvent from '../pages/MyEvent';
+import RoleManagement from '../pages/RoleManagement';
 import { PLACES } from '../utils/anubhavHelpers';
 import ProfileSettings from '../components/ProfileSettings';
 import ProfileHolderSettings from './ProfileHolderSettings';
@@ -85,10 +89,15 @@ const Dashboard = ({ authToken, user, onLogout }) => {
           icon: <PersonIcon />,
         },
         {
+          id: 'anubhav-my-event',
+          text: 'Anubhav 2026',
+          icon: <CelebrationIcon />,
+        },
+        {
           id: 'profile',
           text: 'Settings',
           icon: <SettingsIcon />,
-        }
+        },
       ];
     }
 
@@ -131,6 +140,14 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         id: 'anubhav-announcements',
         text: 'Announcements',
         icon: <CampaignIcon />,
+      });
+    }
+
+    if (user?.role === 'admin') {
+      base.push({
+        id: 'role-management',
+        text: 'Role Management',
+        icon: <ManageAccountsIcon />,
       });
     }
 
@@ -319,6 +336,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
 
     if (user?.role === 'profile_holder') {
       switch (selectedMenu) {
+        case 'anubhav-my-event':
+          return <MyEvent user={user} />;
         case 'profile':
           return <ProfileHolderSettings authToken={authToken} user={user} onLogout={onLogout} />;
         default:
@@ -363,6 +382,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
             onLogout={onLogout}
           />
         );
+      case 'role-management':
+        return <RoleManagement onLogout={onLogout} />;
       case 'profile':
         return <ProfileSettings authToken={authToken} user={user} onLogout={onLogout} />;
       default:

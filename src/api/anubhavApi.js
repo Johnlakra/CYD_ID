@@ -29,12 +29,17 @@ import {
   mockGetAnnouncements,
   mockCreateAnnouncement,
   mockDeleteAnnouncement,
+  mockGetMyEvent,
+  mockSearchUsers,
+  mockGrantRole,
+  mockListRoles,
 } from './anubhavMock';
 
 const USE_MOCK = process.env.REACT_APP_ANUBHAV_MOCK !== 'false';
 
 const ROUTES = {
   role: '/anubhav/me/role',
+  myEvent: '/anubhav/my/event',
   eligible: '/anubhav/eligible',
   registrations: '/anubhav/registrations',
   registrationById: (id) => `/anubhav/registrations/${id}`,
@@ -52,6 +57,9 @@ const ROUTES = {
   timetableLive: '/anubhav/timetable/live',
   announcements: '/anubhav/announcements',
   announcementById: (id) => `/anubhav/announcements/${id}`,
+  usersSearch: '/anubhav/users/search',
+  roles: '/anubhav/roles',
+  rolesGrant: '/anubhav/roles/grant',
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -298,6 +306,50 @@ export const deleteAnnouncement = async (id) => {
   if (USE_MOCK) return mockDeleteAnnouncement(id);
   try {
     return unwrap(await apiClient.delete(ROUTES.announcementById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Participant self-view
+// ---------------------------------------------------------------------------
+
+export const getMyEvent = async () => {
+  if (USE_MOCK) return mockGetMyEvent();
+  try {
+    return unwrap(await apiClient.get(ROUTES.myEvent));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Role management (admin)
+// ---------------------------------------------------------------------------
+
+export const searchUsers = async (q) => {
+  if (USE_MOCK) return mockSearchUsers(q);
+  try {
+    return unwrap(await apiClient.get(ROUTES.usersSearch, { params: { q } }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const grantRole = async (body) => {
+  if (USE_MOCK) return mockGrantRole(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.rolesGrant, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const listRoles = async () => {
+  if (USE_MOCK) return mockListRoles();
+  try {
+    return unwrap(await apiClient.get(ROUTES.roles));
   } catch (error) {
     return errorEnvelope(error);
   }

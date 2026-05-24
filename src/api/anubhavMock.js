@@ -921,3 +921,160 @@ export const mockDeleteAnnouncement = async (id) => {
   };
   return ok({ id: Number(id) }, 'Announcement deleted');
 };
+
+// ---------------------------------------------------------------------------
+// Participant self-view + Role management seed data
+// ---------------------------------------------------------------------------
+
+// Seed users for admin role-management search. These represent profile_holders
+// who have CYD login accounts (user_id set) or don't (user_id null).
+const seedUserList = [
+  {
+    profile_id: 1, profile_name: 'Aaron Masih', phone: '9870000001',
+    deanery: 'Hoshiarpur', parish: 'Hoshiarpur', photo_url: null,
+    user_id: 101, username: 'aaron', email: 'aaron@cyd.org',
+    system_role: 'profile_holder', event_role: 'none', loc_place: null,
+  },
+  {
+    profile_id: 4, profile_name: 'Diana Daniel', phone: '9870000004',
+    deanery: 'Jalandhar City', parish: 'Jalandhar City', photo_url: null,
+    user_id: 102, username: 'diana', email: 'diana@cyd.org',
+    system_role: 'profile_holder', event_role: 'loc', loc_place: 'phagwara',
+  },
+  {
+    profile_id: 7, profile_name: 'Gabriel Lall', phone: '9870000007',
+    deanery: 'Kapurthala', parish: 'Kapurthala', photo_url: null,
+    user_id: 103, username: 'gabriel', email: 'gabriel@cyd.org',
+    system_role: 'profile_holder', event_role: 'dexco', loc_place: null,
+  },
+  {
+    profile_id: 10, profile_name: 'Joanna Peter', phone: '9870000010',
+    deanery: 'Moga', parish: 'Moga', photo_url: null,
+    user_id: 104, username: 'joanna', email: 'joanna@cyd.org',
+    system_role: 'profile_holder', event_role: 'loc', loc_place: 'abohar',
+  },
+  {
+    profile_id: 13, profile_name: 'Mark Paul', phone: '9870000013',
+    deanery: 'Tarn Taran', parish: 'Tarn Taran', photo_url: null,
+    user_id: 105, username: 'mark', email: 'mark@cyd.org',
+    system_role: 'profile_holder', event_role: 'loc', loc_place: 'amritsar',
+  },
+  {
+    profile_id: 16, profile_name: 'Oliver Lall', phone: '9870000016',
+    deanery: 'Amritsar', parish: 'Amritsar Cantt.', photo_url: null,
+    user_id: null, username: null, email: null,
+    system_role: null, event_role: 'none', loc_place: null,
+  },
+  {
+    profile_id: 19, profile_name: 'Samuel Thomas', phone: '9870000019',
+    deanery: 'Gurdaspur', parish: 'Gurdaspur', photo_url: null,
+    user_id: 106, username: 'samuel', email: 'samuel@cyd.org',
+    system_role: 'profile_holder', event_role: 'none', loc_place: null,
+  },
+];
+
+store = { ...store, userList: seedUserList };
+
+// ---------------------------------------------------------------------------
+// Participant self-view mock (simulates the logged-in youth: registration 1)
+// ---------------------------------------------------------------------------
+
+export const mockGetMyEvent = async () => {
+  await delay();
+  // In mock, the logged-in youth is registration id=1 (Aaron Masih, Hoshiarpur → phagwara)
+  const userReg = store.registrations.find((r) => r.id === 1);
+  if (!userReg) {
+    return ok({ registered: false }, 'Not registered');
+  }
+
+  // Find allotment
+  const allotment = store.allotments.find((a) => a.registration_id === userReg.id);
+  let room = null;
+  if (allotment) {
+    const r = store.rooms.find((rm) => rm.id === allotment.room_id);
+    const f = r ? store.floors.find((fl) => fl.id === r.floor_id) : null;
+    const b = f ? store.buildings.find((bld) => bld.id === f.building_id) : null;
+    const roommateAllotments = store.allotments.filter(
+      (a) => a.room_id === allotment.room_id && a.registration_id !== userReg.id
+    );
+    const roommates = roommateAllotments.map((a) => {
+      const reg = store.registrations.find((reg2) => reg2.id === a.registration_id);
+      const profile = reg ? store.eligibleProfiles.find((p) => p.id === reg.profile_id) : null;
+      return {
+        name: profile ? profile.name : 'Unknown',
+        parish: profile ? profile.parish : '-',
+      };
+    });
+    room = {
+      building: b ? b.name : '-',
+      floor: f ? f.name : '-',
+      room: r ? r.name : '-',
+      roommates,
+    };
+  }
+
+  const timetable = store.timetable
+    .filter((it) => it.place === userReg.place)
+    .sort((a, b) => (a.day !== b.day ? a.day - b.day : a.start_time > b.start_time ? 1 : -1));
+
+  const announcements = store.announcements
+    .filter((ann) => ann.place === userReg.place || ann.place === null)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  return ok(
+    {
+      registered: true,
+      place: userReg.place,
+      registration: enrichRegistration(userReg),
+      room,
+      timetable,
+      announcements,
+    },
+    'My event data'
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Role management mock functions
+// ---------------------------------------------------------------------------
+
+export const mockSearchUsers = async (q) => {
+  await delay();
+  if (!q || !q.trim()) return ok([], 'No query');
+  const needle = q.trim().toLowerCase();
+  const results = store.userList.filter(
+    (u) =>
+      u.profile_name.toLowerCase().includes(needle) ||
+      u.phone.includes(needle)
+  );
+  return ok(results, 'Search results');
+};
+
+export const mockGrantRole = async (body) => {
+  await delay();
+  const { event_role, loc_place, user_id, profile_id } = body || {};
+  if (!event_role) return fail('event_role is required');
+  if (event_role === 'loc' && !loc_place) return fail('loc_place is required for loc role');
+
+  const idx = store.userList.findIndex((u) =>
+    user_id ? u.user_id === Number(user_id) : u.profile_id === Number(profile_id)
+  );
+  if (idx === -1) return fail('User not found');
+  if (!store.userList[idx].user_id) return fail('Cannot promote: no login account');
+
+  const updated = {
+    ...store.userList[idx],
+    event_role,
+    loc_place: event_role === 'loc' ? loc_place : null,
+  };
+  const newList = [...store.userList];
+  newList[idx] = updated;
+  store = { ...store, userList: newList };
+  return ok(updated, 'Role updated');
+};
+
+export const mockListRoles = async () => {
+  await delay();
+  const granted = store.userList.filter((u) => u.event_role && u.event_role !== 'none');
+  return ok(granted, 'Roles listed');
+};
