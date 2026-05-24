@@ -88,9 +88,9 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
       })();
 
       const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
-      const PW = 297, PH = 210, M = 15;
+      const PW = 297, PH = 210, M = 8;
       const CW = PW - M * 2;
-      const COLS = [8, 52, 40, 40, 32, 30, 40, 20];
+      const COLS = [8, 60, 48, 46, 36, 28, 44, 11];
       const LABELS = ['#', 'Name', "Father's Name", 'Parish', 'Deanery', 'Phone', 'Chaperone', 'Fee'];
       const ROW_H = 7, HEAD_H = 8;
       const FOOTER_Y = PH - M - 10;
@@ -145,7 +145,7 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
             const chap = row.chaperone_name
               ? `${row.chaperone_name}${row.chaperone_phone ? ' ' + row.chaperone_phone : ''}`
               : '—';
-            const vals = [String(serial++), trunc(row.name,24), trunc(row.father_name,20), trunc(row.parish,18), trunc(row.deanery,15), trunc(row.phone,13), trunc(chap,22), String(row.fee_amount||FEE_PER_YOUTH)];
+            const vals = [String(serial++), trunc(row.name,36), trunc(row.father_name,28), trunc(row.parish,28), trunc(row.deanery,22), trunc(row.phone,16), trunc(chap,26), String(row.fee_amount||FEE_PER_YOUTH)];
             let x = M + 1;
             vals.forEach((v, i) => { doc.text(v, x, curY+5); x += COLS[i]; });
             curY += ROW_H;
@@ -163,7 +163,7 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
       doc.setDrawColor(180,180,180).line(M, M+9, PW-M, M+9);
       curY = M + 16;
 
-      const SCOLS = [80, 40, 40, 40];
+      const SCOLS = [110, 70, 50, 51];
       const SLABELS = ['Venue', 'Dates', 'Youth', 'Fees Collected'];
       doc.setFillColor(...HGREY).rect(M, curY, CW, HEAD_H, 'F');
       doc.setFont('helvetica','bold').setFontSize(9);
