@@ -13,6 +13,13 @@ import {
   mockGetChaperones,
   mockCreateChaperone,
   mockGetFees,
+  mockGetBuildings,
+  mockCreateBuilding,
+  mockCreateFloor,
+  mockCreateRoom,
+  mockCreateAllotment,
+  mockDeleteAllotment,
+  mockGetRooming,
 } from './anubhavMock';
 
 const USE_MOCK = process.env.REACT_APP_ANUBHAV_MOCK !== 'false';
@@ -24,6 +31,12 @@ const ROUTES = {
   registrationById: (id) => `/anubhav/registrations/${id}`,
   chaperones: '/anubhav/chaperones',
   fees: '/anubhav/fees',
+  buildings: '/anubhav/buildings',
+  floors: '/anubhav/floors',
+  rooms: '/anubhav/rooms',
+  allotments: '/anubhav/allotments',
+  allotmentById: (id) => `/anubhav/allotments/${id}`,
+  rooming: '/anubhav/rooming',
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -118,3 +131,70 @@ export const getFees = async (params) => {
 };
 
 export const isUsingMock = () => USE_MOCK;
+
+// ---------------------------------------------------------------------------
+// Phase 2 — Accommodation
+// ---------------------------------------------------------------------------
+
+export const getBuildings = async (params) => {
+  if (USE_MOCK) return mockGetBuildings(params);
+  try {
+    return unwrap(await apiClient.get(ROUTES.buildings, { params }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createBuilding = async (body) => {
+  if (USE_MOCK) return mockCreateBuilding(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.buildings, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createFloor = async (body) => {
+  if (USE_MOCK) return mockCreateFloor(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.floors, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createRoom = async (body) => {
+  if (USE_MOCK) return mockCreateRoom(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.rooms, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createAllotment = async (body) => {
+  if (USE_MOCK) return mockCreateAllotment(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.allotments, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteAllotment = async (id) => {
+  if (USE_MOCK) return mockDeleteAllotment(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.allotmentById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getRooming = async (params) => {
+  if (USE_MOCK) return mockGetRooming(params);
+  try {
+    return unwrap(await apiClient.get(ROUTES.rooming, { params }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};

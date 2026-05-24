@@ -36,11 +36,13 @@ import {
   CalendarToday as CalendarIcon,
   PhotoCamera as PhotoIcon,
   Event as EventIcon,
+  Apartment as ApartmentIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
 import IDCardTabs from '../pages/IDCardTabs';
 import AnubhavRegistration from '../pages/AnubhavRegistration';
+import AccommodationManager from '../pages/AccommodationManager';
 import ProfileSettings from '../components/ProfileSettings';
 import ProfileHolderSettings from './ProfileHolderSettings';
 import ProfileHolderDashboard from './ProfileHolderDashboard';
@@ -108,6 +110,11 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         id: 'anubhav-registration',
         text: 'Anubhav 2026',
         icon: <EventIcon />,
+      });
+      base.splice(3, 0, {
+        id: 'anubhav-accommodation',
+        text: 'Accommodation',
+        icon: <ApartmentIcon />,
       });
     }
 
@@ -309,6 +316,14 @@ const Dashboard = ({ authToken, user, onLogout }) => {
       case 'anubhav-registration':
         return (
           <AnubhavRegistration
+            eventRole={eventRole}
+            locPlace={locPlace}
+            onLogout={onLogout}
+          />
+        );
+      case 'anubhav-accommodation':
+        return (
+          <AccommodationManager
             eventRole={eventRole}
             locPlace={locPlace}
             onLogout={onLogout}

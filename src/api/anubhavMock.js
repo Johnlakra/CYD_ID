@@ -371,3 +371,323 @@ export const mockGetFees = async (params) => {
     'Fees calculated'
   );
 };
+
+// ---------------------------------------------------------------------------
+// Phase 2 — Accommodation seed data
+// ---------------------------------------------------------------------------
+
+const seedBuildings = [
+  { id: 1, place: 'phagwara',  name: 'Stella Maris Hall' },
+  { id: 2, place: 'phagwara',  name: "St. Joseph's Block" },
+  { id: 3, place: 'abohar',   name: 'Don Bosco Block' },
+  { id: 4, place: 'abohar',   name: 'Holy Cross Block' },
+  { id: 5, place: 'amritsar', name: 'Assisi Hall' },
+  { id: 6, place: 'amritsar', name: 'Providence Block' },
+];
+
+// 2 floors per building (level 0 = Ground Floor, level 1 = First Floor)
+// Building IDs 1-6, each gets 2 floors → floor IDs 1-12
+const seedFloors = (() => {
+  const floors = [];
+  let id = 1;
+  seedBuildings.forEach((b) => {
+    floors.push({ id, building_id: b.id, level: 0, name: 'Ground Floor' });
+    id += 1;
+    floors.push({ id, building_id: b.id, level: 1, name: 'First Floor' });
+    id += 1;
+  });
+  return floors;
+})();
+
+// 3 rooms per floor (capacity 6), named Room A / B / C → room IDs 1-36
+const ROOM_NAMES = ['Room A', 'Room B', 'Room C'];
+const seedRooms = (() => {
+  const rooms = [];
+  let id = 1;
+  seedFloors.forEach((f) => {
+    ROOM_NAMES.forEach((name) => {
+      rooms.push({ id, floor_id: f.id, name, capacity: 6 });
+      id += 1;
+    });
+  });
+  return rooms;
+})();
+
+// Helper: find room by building+floor_level+room_name
+const findSeedRoom = (buildingId, level, roomName) => {
+  const floor = seedFloors.find(
+    (f) => f.building_id === buildingId && f.level === level
+  );
+  if (!floor) return null;
+  return seedRooms.find((r) => r.floor_id === floor.id && r.name === roomName);
+};
+
+// Pre-allot seed data as specified in the plan
+const seedAllotments = (() => {
+  const allotments = [];
+  let id = 1;
+
+  const specs = [
+    { buildingId: 1, level: 0, roomName: 'Room A', regIds: [1, 2] },
+    { buildingId: 1, level: 0, roomName: 'Room B', regIds: [3, 4] },
+    { buildingId: 3, level: 0, roomName: 'Room A', regIds: [15, 16] },
+    { buildingId: 5, level: 0, roomName: 'Room A', regIds: [21, 22] },
+  ];
+
+  specs.forEach(({ buildingId, level, roomName, regIds }) => {
+    const room = findSeedRoom(buildingId, level, roomName);
+    if (!room) return;
+    regIds.forEach((regId) => {
+      allotments.push({ id, room_id: room.id, registration_id: regId });
+      id += 1;
+    });
+  });
+
+  return allotments;
+})();
+
+// Extend store with Phase 2 data
+store = {
+  ...store,
+  buildings: seedBuildings,
+  floors: seedFloors,
+  rooms: seedRooms,
+  allotments: seedAllotments,
+};
+
+let nextBuildingId  = 7;  // 6 seeded
+let nextFloorId     = 13; // 12 seeded
+let nextRoomId      = 37; // 36 seeded
+let nextAllotmentId = 5;  // 4 seeded
+
+// ---------------------------------------------------------------------------
+// Phase 2 — Mock helper: enrich occupants for a room
+// ---------------------------------------------------------------------------
+
+const enrichOccupants = (roomId) => {
+  return store.allotments
+    .filter((a) => a.room_id === roomId)
+    .map((a) => {
+      const reg = store.registrations.find((r) => r.id === a.registration_id);
+      const profile = reg
+        ? store.eligibleProfiles.find((p) => p.id === reg.profile_id)
+        : null;
+      return {
+        allotment_id: a.id,
+        registration_id: a.registration_id,
+        name: profile ? profile.name : 'Unknown',
+        parish: profile ? profile.parish : '-',
+        deanery: profile ? profile.deanery : '-',
+        phone: profile ? profile.phone : '-',
+      };
+    });
+};
+
+// Build the full nested structure for a set of buildings
+const buildNestedStructure = (buildings) => {
+  return buildings.map((building) => {
+    const floors = store.floors
+      .filter((f) => f.building_id === building.id)
+      .sort((a, b) => a.level - b.level)
+      .map((floor) => {
+        const rooms = store.rooms
+          .filter((r) => r.floor_id === floor.id)
+          .map((room) => {
+            const occupants = enrichOccupants(room.id);
+            return {
+              id: room.id,
+              floor_id: room.floor_id,
+              name: room.name,
+              capacity: room.capacity,
+              occupancy: occupants.length,
+              occupants,
+            };
+          });
+        const floorCapacity = rooms.reduce((s, r) => s + r.capacity, 0);
+        const floorOccupancy = rooms.reduce((s, r) => s + r.occupancy, 0);
+        return {
+          id: floor.id,
+          building_id: floor.building_id,
+          level: floor.level,
+          name: floor.name,
+          capacity: floorCapacity,
+          occupancy: floorOccupancy,
+          rooms,
+        };
+      });
+    const totalCapacity = floors.reduce((s, f) => s + f.capacity, 0);
+    const totalOccupancy = floors.reduce((s, f) => s + f.occupancy, 0);
+    return {
+      id: building.id,
+      place: building.place,
+      name: building.name,
+      capacity: totalCapacity,
+      occupancy: totalOccupancy,
+      floors,
+    };
+  });
+};
+
+// ---------------------------------------------------------------------------
+// Phase 2 — Exported mock functions
+// ---------------------------------------------------------------------------
+
+export const mockGetBuildings = async (params) => {
+  await delay();
+  const { place } = params || {};
+  const filtered = place
+    ? store.buildings.filter((b) => b.place === place)
+    : store.buildings;
+  return ok(buildNestedStructure(filtered), 'Buildings fetched');
+};
+
+export const mockCreateBuilding = async (body) => {
+  await delay();
+  const { place, name } = body || {};
+  if (!place || !name || !name.trim()) {
+    return fail('place and name are required');
+  }
+  const created = { id: nextBuildingId, place, name: name.trim() };
+  nextBuildingId += 1;
+  store = { ...store, buildings: [...store.buildings, created] };
+  return ok(created, 'Building created');
+};
+
+export const mockCreateFloor = async (body) => {
+  await delay();
+  const { building_id, name, level } = body || {};
+  if (!building_id || !name || !name.trim() || level === undefined || level === null) {
+    return fail('building_id, name, and level are required');
+  }
+  const buildingExists = store.buildings.some((b) => b.id === Number(building_id));
+  if (!buildingExists) {
+    return fail('Building not found');
+  }
+  const created = {
+    id: nextFloorId,
+    building_id: Number(building_id),
+    level: Number(level),
+    name: name.trim(),
+  };
+  nextFloorId += 1;
+  store = { ...store, floors: [...store.floors, created] };
+  return ok(created, 'Floor created');
+};
+
+export const mockCreateRoom = async (body) => {
+  await delay();
+  const { floor_id, name, capacity } = body || {};
+  if (!floor_id || !name || !name.trim()) {
+    return fail('floor_id and name are required');
+  }
+  const floorExists = store.floors.some((f) => f.id === Number(floor_id));
+  if (!floorExists) {
+    return fail('Floor not found');
+  }
+  const created = {
+    id: nextRoomId,
+    floor_id: Number(floor_id),
+    name: name.trim(),
+    capacity: Number(capacity) || 6,
+  };
+  nextRoomId += 1;
+  store = { ...store, rooms: [...store.rooms, created] };
+  return ok(created, 'Room created');
+};
+
+export const mockCreateAllotment = async (body) => {
+  await delay();
+  const { room_id, registration_id } = body || {};
+  if (!room_id || !registration_id) {
+    return fail('room_id and registration_id are required');
+  }
+  const room = store.rooms.find((r) => r.id === Number(room_id));
+  if (!room) {
+    return fail('Room not found');
+  }
+  const registration = store.registrations.find(
+    (r) => r.id === Number(registration_id)
+  );
+  if (!registration) {
+    return fail('Registration not found');
+  }
+
+  // Check not already allotted in any room for this place
+  const floor = store.floors.find((f) => f.id === room.floor_id);
+  const building = floor ? store.buildings.find((b) => b.id === floor.building_id) : null;
+  const place = building ? building.place : null;
+
+  if (place) {
+    const placeRoomIds = new Set(
+      store.rooms
+        .filter((r) => {
+          const f = store.floors.find((fl) => fl.id === r.floor_id);
+          const b = f ? store.buildings.find((bl) => bl.id === f.building_id) : null;
+          return b && b.place === place;
+        })
+        .map((r) => r.id)
+    );
+    const alreadyAllotted = store.allotments.some(
+      (a) =>
+        a.registration_id === Number(registration_id) &&
+        placeRoomIds.has(a.room_id)
+    );
+    if (alreadyAllotted) {
+      return fail('Youth is already allotted to a room at this venue');
+    }
+  }
+
+  // Check room capacity
+  const currentOccupancy = store.allotments.filter(
+    (a) => a.room_id === Number(room_id)
+  ).length;
+  if (currentOccupancy >= room.capacity) {
+    return fail('Room is at full capacity');
+  }
+
+  const created = {
+    id: nextAllotmentId,
+    room_id: Number(room_id),
+    registration_id: Number(registration_id),
+  };
+  nextAllotmentId += 1;
+  store = { ...store, allotments: [...store.allotments, created] };
+  return ok(created, 'Allotment created');
+};
+
+export const mockDeleteAllotment = async (id) => {
+  await delay();
+  const target = store.allotments.find((a) => a.id === Number(id));
+  if (!target) {
+    return fail('Allotment not found');
+  }
+  store = {
+    ...store,
+    allotments: store.allotments.filter((a) => a.id !== Number(id)),
+  };
+  return ok({ id: Number(id) }, 'Allotment removed');
+};
+
+export const mockGetRooming = async (params) => {
+  await delay();
+  const { place, building_id, floor_id, room_id } = params || {};
+  let buildings = place
+    ? store.buildings.filter((b) => b.place === place)
+    : store.buildings;
+
+  if (building_id) {
+    buildings = buildings.filter((b) => b.id === Number(building_id));
+  }
+
+  const nested = buildNestedStructure(buildings).map((b) => ({
+    ...b,
+    floors: b.floors
+      .filter((f) => !floor_id || f.id === Number(floor_id))
+      .map((f) => ({
+        ...f,
+        rooms: f.rooms.filter((r) => !room_id || r.id === Number(room_id)),
+      })),
+  }));
+
+  return ok(nested, 'Rooming data fetched');
+};
