@@ -34,6 +34,7 @@ import {
 import { toast } from 'react-toastify';
 import {
   deaneriesForPlace,
+  FEE_PER_YOUTH,
   SOFT_CAP_PER_PARISH,
   PLACE_META,
 } from '../utils/anubhavHelpers';
@@ -78,6 +79,7 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
 
   const [submitting, setSubmitting] = useState(false);
   const [softCap, setSoftCap] = useState({ open: false, count: 0 });
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const deaneriesForCurrentPlace = useMemo(
     () => deaneriesForPlace(activePlace),
@@ -188,21 +190,21 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
     }
   }, [activePlace, chaperoneId, onLogout, onRegistered]);
 
-  const handleRegisterClick = async () => {
+  const handleRegisterClick = () => {
     if (!selectedProfiles.length) {
       toast.warning('Select at least one youth');
       return;
     }
-    if (!activePlace) {
-      toast.warning('Place is required');
-      return;
-    }
-    // Soft cap check: for each unique parish in selection, get current count
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmRegister = async () => {
+    setConfirmOpen(false);
     if (parish) {
       const countResponse = await getRegistrations({ place: activePlace, parish });
       if (handleAuthError(countResponse, onLogout)) return;
       const count = (countResponse.success && countResponse.data && countResponse.data.total) || 0;
-      if (count + selectedProfiles.filter(p => p.parish === parish).length > SOFT_CAP_PER_PARISH) {
+      if (count + selectedProfiles.filter((p) => p.parish === parish).length > SOFT_CAP_PER_PARISH) {
         setSoftCap({ open: true, count });
         return;
       }
@@ -305,6 +307,7 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
             <Grid item xs={12}>
               <Autocomplete
                 multiple
+                disableCloseOnSelect
                 options={eligible}
                 loading={eligibleLoading}
                 getOptionLabel={(opt) => opt.name || ''}
@@ -378,6 +381,29 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
                 )}
               />
             </Grid>
+
+            {deanery && parish && eligible.length > 0 && (
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => setSelectedProfiles(eligible)}
+                    disabled={eligibleLoading || selectedProfiles.length === eligible.length}
+                  >
+                    Select All ({eligible.length} youth)
+                  </Button>
+                  {selectedProfiles.length > 0 && (
+                    <Button
+                      size="small"
+                      onClick={() => setSelectedProfiles([])}
+                    >
+                      Clear ({selectedProfiles.length} selected)
+                    </Button>
+                  )}
+                </Box>
+              </Grid>
+            )}
           </Grid>
 
           <Divider sx={{ my: 3 }} />
@@ -457,6 +483,97 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
           </Box>
         </CardContent>
       </Card>
+
+      {/* Registration confirmation — shows list + fee total before submitting */}
+      <Dialog
+        open={confirmOpen}
+        onClose={() => !submitting && setConfirmOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Confirm Registration — {selectedProfiles.length} youth
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 0 }}>
+          <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
+            {selectedProfiles.map((profile, idx) => (
+              <Box
+                key={profile.id}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  px: 2,
+                  py: 1,
+                  bgcolor: idx % 2 === 1 ? 'grey.50' : 'transparent',
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  color="text.disabled"
+                  sx={{ width: 20, textAlign: 'right', flexShrink: 0 }}
+                >
+                  {idx + 1}
+                </Typography>
+                <Avatar
+                  src={profile.photo_url || undefined}
+                  sx={{ width: 36, height: 36, flexShrink: 0 }}
+                >
+                  {profile.name?.charAt(0)}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {profile.name}
+                  </Typography>
+                  {profile.father_name && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      s/o {profile.father_name}
+                    </Typography>
+                  )}
+                  <Typography variant="caption" color="text.secondary">
+                    {profile.parish} · {profile.deanery}
+                  </Typography>
+                </Box>
+                <Typography variant="body2" sx={{ color: 'success.main', fontWeight: 600, flexShrink: 0 }}>
+                  ₹{FEE_PER_YOUTH}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              px: 2,
+              py: 1.5,
+              borderTop: 1,
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+            }}
+          >
+            <Typography variant="subtitle2" color="text.secondary">
+              {selectedProfiles.length} youth × ₹{FEE_PER_YOUTH} each
+            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+              Total: ₹{selectedProfiles.length * FEE_PER_YOUTH}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} disabled={submitting}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleConfirmRegister}
+            disabled={submitting}
+            startIcon={submitting ? <CircularProgress size={18} /> : <PersonAddIcon />}
+          >
+            {submitting ? 'Registering...' : 'Confirm & Register'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Soft cap confirmation */}
       <Dialog
