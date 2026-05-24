@@ -76,6 +76,8 @@ const buildSeedEligibleProfiles = () => {
         deanery,
         phone: `98${String(700000000 + nextProfileId).slice(-9)}`,
         dob: '2008-04-15',
+        father_name: `${FIRST_NAMES[(nextProfileId * 7) % FIRST_NAMES.length]} ${LAST_NAMES[(nextProfileId * 11) % LAST_NAMES.length]}`,
+        photo_url: null,
       });
       nextProfileId += 1;
     }
@@ -202,6 +204,7 @@ const enrichRegistration = (registration) => {
     parish: profile ? profile.parish : '-',
     deanery: profile ? profile.deanery : '-',
     phone: profile ? profile.phone : '-',
+    father_name: profile ? profile.father_name : null,
     chaperone_name: chaperone ? chaperone.name : null,
     chaperone_phone: chaperone ? chaperone.phone : null,
     chaperone_type: chaperone ? chaperone.type : null,
@@ -479,6 +482,7 @@ const enrichOccupants = (roomId) => {
         parish: profile ? profile.parish : '-',
         deanery: profile ? profile.deanery : '-',
         phone: profile ? profile.phone : '-',
+        father_name: profile ? profile.father_name : null,
       };
     });
 };

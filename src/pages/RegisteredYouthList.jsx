@@ -32,6 +32,7 @@ import {
   InputAdornment,
   alpha,
   useTheme,
+  Stack,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -41,7 +42,9 @@ import {
   People as PeopleIcon,
   PaidOutlined as PaidIcon,
   AccountBalanceWallet as WalletIcon,
+  PictureAsPdf as PdfIcon,
 } from '@mui/icons-material';
+import { jsPDF } from 'jspdf';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import {
@@ -67,7 +70,7 @@ const handleAuthError = (envelope, onLogout) => {
 };
 
 const ROW_SKELETON_COUNT = 5;
-const TABLE_COLUMN_COUNT = 8;
+const TABLE_COLUMN_COUNT = 9;
 
 const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
   const theme = useTheme();
@@ -159,6 +162,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
     return registrations.filter((row) => {
       return (
         (row.name && row.name.toLowerCase().includes(term)) ||
+        (row.father_name && row.father_name.toLowerCase().includes(term)) ||
         (row.phone && row.phone.toLowerCase().includes(term)) ||
         (row.chaperone_name &&
           row.chaperone_name.toLowerCase().includes(term))
@@ -184,6 +188,109 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
     if (!fees || !Array.isArray(fees.byParish)) return [];
     return fees.byParish.filter((row) => row.count > SOFT_CAP_PER_PARISH);
   }, [fees]);
+
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+
+  const generateParticipantReport = async () => {
+    setPdfGenerating(true);
+    try {
+      const gen = (() => {
+        const d = new Date(), p = (n) => String(n).padStart(2, '0');
+        return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+      })();
+      const res = await getRegistrations({ place: activePlace });
+      if (!res.success) { toast.error('Failed to load data for PDF'); return; }
+      const allRegs = Array.isArray(res.data?.registrations) ? res.data.registrations : [];
+      if (!allRegs.length) { toast.info('No registrations to export'); return; }
+
+      const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+      const PW = 297, PH = 210, M = 15;
+      const CW = PW - M * 2;
+      const COLS = [8, 52, 40, 40, 32, 30, 40, 20];
+      const LABELS = ['#', 'Name', "Father's Name", 'Parish', 'Deanery', 'Phone', 'Chaperone', 'Fee'];
+      const ROW_H = 7, HEAD_H = 8;
+      const FOOTER_Y = PH - M - 10;
+      const GREY = [245, 245, 245], HGREY = [220, 220, 220];
+
+      const trunc = (t, n) => { const s = t ? String(t) : '—'; return s.length > n ? s.slice(0,n-1)+'…' : s; };
+
+      let pageNum = 1, curY = 0;
+      const placeMeta = {
+        phagwara: { label: 'Phagwara', venue: "St. Joseph's Catholic Church, Phagwara", dates: '02-04 Jun 2026' },
+        abohar: { label: 'Abohar', venue: "St. Joseph's Catholic Church, Abohar", dates: '04-06 Jun 2026' },
+        amritsar: { label: 'Amritsar', venue: 'St. Francis Church, Amritsar', dates: '06-08 Jun 2026' },
+      };
+      const pm = placeMeta[activePlace] || { label: activePlace, venue: '', dates: '' };
+
+      const drawHeader = () => {
+        doc.setFont('helvetica','bold').setFontSize(11);
+        doc.text(`Anubhav Retreat 2026 — ${pm.label} | ${pm.venue} | ${pm.dates}`, M, M);
+        doc.setFont('helvetica','normal').setFontSize(9);
+        doc.text(`Participant List  ·  ${allRegs.length} registrations`, M, M+5);
+        doc.setDrawColor(180,180,180).line(M, M+8, PW-M, M+8);
+        curY = M + 13;
+        doc.setFillColor(...HGREY).rect(M, curY, CW, HEAD_H, 'F');
+        doc.setFont('helvetica','bold').setFontSize(8);
+        let x = M + 1;
+        LABELS.forEach((l, i) => { doc.text(l, x, curY+5.5); x += COLS[i]; });
+        curY += HEAD_H;
+      };
+      const drawFooter = () => {
+        doc.setFont('helvetica','italic').setFontSize(8);
+        doc.text(`Page ${pageNum}`, M, PH-M+4);
+        doc.text(`Generated: ${gen}`, PW-M, PH-M+4, { align: 'right' });
+      };
+
+      drawHeader();
+
+      const grouped = {};
+      allRegs.forEach(r => { (grouped[r.deanery] = grouped[r.deanery] || []).push(r); });
+      let serial = 1;
+      Object.keys(grouped).sort().forEach(deanery => {
+        if (curY + 6 > FOOTER_Y) { drawFooter(); doc.addPage(); pageNum++; drawHeader(); }
+        doc.setFont('helvetica','bold').setFontSize(8).setTextColor(80,80,80);
+        doc.text(deanery, M+1, curY+5);
+        doc.setTextColor(0,0,0);
+        curY += 6;
+
+        grouped[deanery].forEach((row, idx) => {
+          if (curY + ROW_H > FOOTER_Y) { drawFooter(); doc.addPage(); pageNum++; drawHeader(); }
+          if (idx % 2 === 1) doc.setFillColor(...GREY).rect(M, curY, CW, ROW_H, 'F');
+          doc.setFont('helvetica','normal').setFontSize(8);
+          const chapStr = row.chaperone_name ? `${row.chaperone_name} (${row.chaperone_type})` : '—';
+          const vals = [
+            String(serial++),
+            trunc(row.name, 24),
+            trunc(row.father_name, 20),
+            trunc(row.parish, 18),
+            trunc(row.deanery, 15),
+            trunc(row.phone, 13),
+            trunc(chapStr, 20),
+            `Rs.${row.fee_amount || 50}`,
+          ];
+          let x = M + 1;
+          vals.forEach((v, i) => { doc.text(v, x, curY+5); x += COLS[i]; });
+          curY += ROW_H;
+        });
+        curY += 2;
+      });
+
+      const total = doc.getNumberOfPages();
+      for (let p = 1; p <= total; p++) {
+        doc.setPage(p);
+        doc.setFont('helvetica','italic').setFontSize(8);
+        doc.text(`Page ${p} of ${total}`, M, PH-M+4);
+        doc.text(`Generated: ${gen}`, PW-M, PH-M+4, { align: 'right' });
+      }
+
+      doc.save(`anubhav-participants-${activePlace}.pdf`);
+      toast.success('Participant report downloaded');
+    } catch {
+      toast.error('PDF generation failed');
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
 
   const meta = PLACE_META[activePlace];
 
@@ -279,20 +386,31 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                 <PaidIcon color="primary" />
                 <Typography variant="h6">Registered Youth</Typography>
               </Box>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => {
-                  fetchRegistrations();
-                  fetchFees();
-                }}
-                startIcon={
-                  loading ? <CircularProgress size={16} /> : <RefreshIcon />
-                }
-                disabled={loading}
-              >
-                Refresh
-              </Button>
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => {
+                    fetchRegistrations();
+                    fetchFees();
+                  }}
+                  startIcon={
+                    loading ? <CircularProgress size={16} /> : <RefreshIcon />
+                  }
+                  disabled={loading}
+                >
+                  Refresh
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={pdfGenerating ? <CircularProgress size={16} /> : <PdfIcon />}
+                  onClick={generateParticipantReport}
+                  disabled={loading || pdfGenerating}
+                >
+                  PDF Report
+                </Button>
+              </Stack>
             </Box>
           }
           subheader={
@@ -369,6 +487,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Father's Name</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Parish</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Deanery</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Chaperone</TableCell>
@@ -412,6 +531,11 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {row.name}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {row.father_name || '—'}
                           </Typography>
                         </TableCell>
                         <TableCell>

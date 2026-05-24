@@ -24,6 +24,8 @@ import {
   FormControlLabel,
   Stack,
   Alert,
+  Autocomplete,
+  Avatar,
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
@@ -57,10 +59,10 @@ const handleAuthError = (envelope, onLogout) => {
 const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
   const [deanery, setDeanery] = useState('');
   const [parish, setParish] = useState('');
-  const [search, setSearch] = useState('');
   const [eligible, setEligible] = useState([]);
   const [eligibleLoading, setEligibleLoading] = useState(false);
-  const [selectedProfileId, setSelectedProfileId] = useState('');
+  const [selectedProfiles, setSelectedProfiles] = useState([]);
+  const [batchResult, setBatchResult] = useState(null); // { succeeded: [], failed: [] }
 
   const [chaperones, setChaperones] = useState([]);
   const [chaperonesLoading, setChaperonesLoading] = useState(false);
@@ -94,20 +96,19 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
   useEffect(() => {
     setDeanery('');
     setParish('');
-    setSearch('');
-    setSelectedProfileId('');
+    setSelectedProfiles([]);
     setChaperoneId('');
   }, [activePlace]);
 
   // Reset parish + selection when deanery changes.
   useEffect(() => {
     setParish('');
-    setSelectedProfileId('');
+    setSelectedProfiles([]);
   }, [deanery]);
 
   // Reset selected youth when parish changes.
   useEffect(() => {
-    setSelectedProfileId('');
+    setSelectedProfiles([]);
     setChaperoneId('');
   }, [parish]);
 
@@ -118,7 +119,6 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
       place: activePlace,
       deanery: deanery || undefined,
       parish: parish || undefined,
-      search: search || undefined,
     });
     setEligibleLoading(false);
     if (handleAuthError(response, onLogout)) return;
@@ -128,7 +128,7 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
       return;
     }
     setEligible(safeArray(response.data));
-  }, [activePlace, deanery, parish, search, onLogout]);
+  }, [activePlace, deanery, parish, onLogout]);
 
   useEffect(() => {
     fetchEligible();
@@ -156,66 +156,63 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
   }, [fetchChaperones]);
 
   const resetForm = () => {
-    setSelectedProfileId('');
+    setSelectedProfiles([]);
     setChaperoneId('');
-    setSearch('');
     setParish('');
     setDeanery('');
   };
 
-  const submitRegistration = useCallback(async () => {
+  const submitBatch = useCallback(async (profiles) => {
     setSubmitting(true);
-    const payload = {
-      place: activePlace,
-      profile_id: Number(selectedProfileId),
-    };
-    if (chaperoneId) {
-      payload.chaperone_id = Number(chaperoneId);
+    const succeeded = [];
+    const failed = [];
+    for (const profile of profiles) {
+      const payload = { place: activePlace, profile_id: Number(profile.id) };
+      if (chaperoneId) payload.chaperone_id = Number(chaperoneId);
+      const response = await createRegistration(payload);
+      if (handleAuthError(response, onLogout)) { setSubmitting(false); return; }
+      if (response.success) {
+        succeeded.push(profile.name);
+      } else {
+        failed.push({ name: profile.name, reason: response.message || 'Failed' });
+      }
     }
-    const response = await createRegistration(payload);
     setSubmitting(false);
-    if (handleAuthError(response, onLogout)) return;
-    if (!response.success) {
-      toast.error(response.message || 'Registration failed');
-      return;
+    if (succeeded.length > 0) {
+      toast.success(`${succeeded.length} youth registered`);
+      resetForm();
+      if (typeof onRegistered === 'function') onRegistered();
     }
-    toast.success('Youth registered successfully');
-    resetForm();
-    if (typeof onRegistered === 'function') {
-      onRegistered();
+    if (failed.length > 0) {
+      setBatchResult({ succeeded, failed });
     }
-  }, [activePlace, selectedProfileId, chaperoneId, onLogout, onRegistered]);
+  }, [activePlace, chaperoneId, onLogout, onRegistered]);
 
   const handleRegisterClick = async () => {
-    if (!selectedProfileId) {
-      toast.warning('Select a youth to register');
+    if (!selectedProfiles.length) {
+      toast.warning('Select at least one youth');
       return;
     }
     if (!activePlace) {
       toast.warning('Place is required');
       return;
     }
-    // Soft cap check: count existing registrations for this parish.
+    // Soft cap check: for each unique parish in selection, get current count
     if (parish) {
-      const countResponse = await getRegistrations({
-        place: activePlace,
-        parish,
-      });
+      const countResponse = await getRegistrations({ place: activePlace, parish });
       if (handleAuthError(countResponse, onLogout)) return;
-      const count =
-        (countResponse.success && countResponse.data && countResponse.data.total) ||
-        0;
-      if (count >= SOFT_CAP_PER_PARISH) {
+      const count = (countResponse.success && countResponse.data && countResponse.data.total) || 0;
+      if (count + selectedProfiles.filter(p => p.parish === parish).length > SOFT_CAP_PER_PARISH) {
         setSoftCap({ open: true, count });
         return;
       }
     }
-    submitRegistration();
+    submitBatch(selectedProfiles);
   };
 
   const handleConfirmSoftCap = () => {
     setSoftCap({ open: false, count: 0 });
-    submitRegistration();
+    submitBatch(selectedProfiles);
   };
 
   const handleAddChaperone = async () => {
@@ -305,40 +302,81 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={12} md={4}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Search youth"
-                placeholder="Name or phone"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </Grid>
-
             <Grid item xs={12}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Youth</InputLabel>
-                <Select
-                  value={selectedProfileId}
-                  label="Youth"
-                  onChange={(e) => setSelectedProfileId(e.target.value)}
-                  disabled={eligibleLoading}
-                >
-                  <MenuItem value="">
-                    {eligibleLoading
-                      ? 'Loading eligible youth...'
-                      : eligible.length === 0
-                      ? 'No eligible youth match your filters'
-                      : 'Select a youth'}
-                  </MenuItem>
-                  {eligible.map((profile) => (
-                    <MenuItem key={profile.id} value={profile.id}>
-                      {profile.name} - {profile.parish} ({profile.deanery})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                multiple
+                options={eligible}
+                loading={eligibleLoading}
+                getOptionLabel={(opt) => opt.name || ''}
+                isOptionEqualToValue={(opt, val) => opt.id === val.id}
+                filterOptions={(options, { inputValue }) => {
+                  const term = inputValue.trim().toLowerCase();
+                  if (!term) return options;
+                  return options.filter((opt) =>
+                    [opt.name, opt.father_name, opt.parish, opt.deanery, opt.phone]
+                      .some((f) => f && String(f).toLowerCase().includes(term))
+                  );
+                }}
+                renderOption={(props, option) => {
+                  const { key, ...rest } = props;
+                  return (
+                    <Box component="li" key={key} {...rest} sx={{ gap: 1.5, alignItems: 'flex-start !important' }}>
+                      <Avatar
+                        src={option.photo_url || undefined}
+                        sx={{ width: 40, height: 40, flexShrink: 0, mt: 0.5 }}
+                      >
+                        {option.name?.charAt(0)}
+                      </Avatar>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {option.name}
+                        </Typography>
+                        {option.father_name && (
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            s/o {option.father_name}
+                          </Typography>
+                        )}
+                        <Typography variant="caption" color="text.secondary">
+                          {option.parish} · {option.deanery}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  );
+                }}
+                renderTags={(selected, getTagProps) =>
+                  selected.map((opt, index) => (
+                    <Chip
+                      key={opt.id}
+                      avatar={
+                        <Avatar src={opt.photo_url || undefined}>
+                          {opt.name?.charAt(0)}
+                        </Avatar>
+                      }
+                      label={opt.name}
+                      size="small"
+                      {...getTagProps({ index })}
+                    />
+                  ))
+                }
+                value={selectedProfiles}
+                onChange={(_, newVal) => setSelectedProfiles(newVal)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Select youth (search by name, father, parish, deanery, phone)"
+                    size="small"
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {eligibleLoading ? <CircularProgress size={18} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
             </Grid>
           </Grid>
 
@@ -409,12 +447,12 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
               variant="contained"
               color="primary"
               onClick={handleRegisterClick}
-              disabled={submitting || !selectedProfileId}
+              disabled={submitting || !selectedProfiles.length}
               startIcon={
                 submitting ? <CircularProgress size={18} /> : <PersonAddIcon />
               }
             >
-              {submitting ? 'Registering...' : 'Register'}
+              {submitting ? 'Registering...' : selectedProfiles.length > 1 ? `Register ${selectedProfiles.length} Youth` : 'Register'}
             </Button>
           </Box>
         </CardContent>
@@ -445,6 +483,21 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
           >
             Register anyway
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Batch result dialog */}
+      <Dialog open={!!batchResult} onClose={() => setBatchResult(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>Registration Results</DialogTitle>
+        <DialogContent>
+          {batchResult?.failed?.map((f) => (
+            <Alert key={f.name} severity="error" sx={{ mb: 1 }}>
+              {f.name}: {f.reason}
+            </Alert>
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBatchResult(null)}>Close</Button>
         </DialogActions>
       </Dialog>
 

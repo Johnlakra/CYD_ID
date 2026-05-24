@@ -11,10 +11,10 @@ import { getRooming } from '../api/anubhavApi';
 import { PLACE_META } from '../utils/anubhavHelpers';
 
 // ── constants ─────────────────────────────────────────────────────────────────
-const PAGE_W = 210, PAGE_H = 297, MARGIN = 20;
+const PAGE_W = 297, PAGE_H = 210, MARGIN = 20;
 const CONTENT_W = PAGE_W - MARGIN * 2;
-const COL_WIDTHS = [60, 50, 45, 35];
-const COL_LABELS = ['Name', 'Parish', 'Deanery', 'Phone'];
+const COL_WIDTHS = [55, 45, 38, 38, 30];
+const COL_LABELS = ['Name', "Father's Name", 'Parish', 'Deanery', 'Phone'];
 const ROW_H = 7, HEADER_H = 8;
 const GREY_FILL = [245, 245, 245], HEADER_FILL = [220, 220, 220];
 
@@ -57,7 +57,7 @@ const tableHeader = (doc, y) => {
 const occupantRow = (doc, occ, idx, y) => {
   if (idx % 2 === 1) { doc.setFillColor(...GREY_FILL).rect(MARGIN, y, CONTENT_W, ROW_H, 'F'); }
   doc.setFont('helvetica', 'normal').setFontSize(8);
-  const vals = [trunc(occ.name, 28), trunc(occ.parish, 22), trunc(occ.deanery, 20), trunc(occ.phone, 14)];
+  const vals = [trunc(occ.name, 24), trunc(occ.father_name, 20), trunc(occ.parish, 18), trunc(occ.deanery, 17), trunc(occ.phone, 12)];
   let x = MARGIN + 1;
   vals.forEach((v, i) => { doc.text(v, x, y + 5); x += COL_WIDTHS[i]; });
   return y + ROW_H;
@@ -94,7 +94,7 @@ const finalize = (doc, gen) => {
   const total = doc.getNumberOfPages();
   for (let p = 1; p <= total; p++) { doc.setPage(p); pageFooter(doc, p, total, gen); }
 };
-const mkDoc = () => new jsPDF({ unit: 'mm', format: 'a4' });
+const mkDoc = () => new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
 
 // ── PDF generators ────────────────────────────────────────────────────────────
 const buildRoomPdf = (buildings, roomId, meta, gen) => {
