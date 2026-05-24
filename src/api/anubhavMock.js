@@ -691,3 +691,181 @@ export const mockGetRooming = async (params) => {
 
   return ok(nested, 'Rooming data fetched');
 };
+
+// ---------------------------------------------------------------------------
+// Phase 3 — Timetable & Announcements seed data
+// ---------------------------------------------------------------------------
+
+const buildTimetableSeed = (place, items) =>
+  items.map((it, idx) => ({ id: idx + 1 + (place === 'phagwara' ? 0 : place === 'abohar' ? 100 : 200), place, ...it }));
+
+const phagwaraSeed = buildTimetableSeed('phagwara', [
+  { day: 1, start_time: '16:00', end_time: '17:00', title: 'Arrival & Registration', location: 'Hall', notes: null },
+  { day: 1, start_time: '18:00', end_time: '19:00', title: 'Welcome Mass',           location: 'Chapel', notes: null },
+  { day: 2, start_time: '07:00', end_time: '08:00', title: 'Morning Prayer',          location: 'Chapel', notes: null },
+  { day: 2, start_time: '09:00', end_time: '11:00', title: 'Talk: Identity in Christ',location: 'Hall',   notes: null },
+  { day: 2, start_time: '14:00', end_time: '16:00', title: 'Group Activities',        location: 'Grounds',notes: null },
+  { day: 2, start_time: '19:00', end_time: '21:00', title: 'Evening Praise & Worship',location: 'Chapel', notes: null },
+  { day: 3, start_time: '07:00', end_time: '08:00', title: 'Morning Prayer',          location: 'Chapel', notes: null },
+  { day: 3, start_time: '09:30', end_time: '10:30', title: 'Closing Mass',            location: 'Chapel', notes: null },
+  { day: 3, start_time: '11:00', end_time: '11:30', title: 'Send-off',                location: 'Gate',   notes: null },
+]);
+
+const aboharSeed = buildTimetableSeed('abohar', [
+  { day: 1, start_time: '16:00', end_time: '17:00', title: 'Arrival & Registration', location: 'Hall', notes: null },
+  { day: 1, start_time: '18:00', end_time: '19:00', title: 'Welcome Mass',           location: 'Chapel', notes: null },
+  { day: 2, start_time: '07:00', end_time: '08:00', title: 'Morning Prayer',          location: 'Chapel', notes: null },
+  { day: 2, start_time: '09:00', end_time: '11:00', title: 'Talk: Identity in Christ',location: 'Hall',   notes: null },
+  { day: 2, start_time: '14:00', end_time: '16:00', title: 'Group Activities',        location: 'Grounds',notes: null },
+  { day: 2, start_time: '19:00', end_time: '21:00', title: 'Evening Praise & Worship',location: 'Chapel', notes: null },
+  { day: 3, start_time: '07:00', end_time: '08:00', title: 'Morning Prayer',          location: 'Chapel', notes: null },
+  { day: 3, start_time: '09:30', end_time: '10:30', title: 'Closing Mass',            location: 'Chapel', notes: null },
+  { day: 3, start_time: '11:00', end_time: '11:30', title: 'Send-off',                location: 'Gate',   notes: null },
+]);
+
+const amritsarSeed = buildTimetableSeed('amritsar', [
+  { day: 1, start_time: '16:00', end_time: '17:00', title: 'Arrival & Registration', location: 'Hall', notes: null },
+  { day: 1, start_time: '18:00', end_time: '19:00', title: 'Welcome Mass',           location: 'Chapel', notes: null },
+  { day: 2, start_time: '07:00', end_time: '08:00', title: 'Morning Prayer',          location: 'Chapel', notes: null },
+  { day: 2, start_time: '09:00', end_time: '11:00', title: 'Talk: Identity in Christ',location: 'Hall',   notes: null },
+  { day: 2, start_time: '14:00', end_time: '16:00', title: 'Group Activities',        location: 'Grounds',notes: null },
+  { day: 2, start_time: '19:00', end_time: '21:00', title: 'Evening Praise & Worship',location: 'Chapel', notes: null },
+  { day: 3, start_time: '07:00', end_time: '08:00', title: 'Morning Prayer',          location: 'Chapel', notes: null },
+  { day: 3, start_time: '09:30', end_time: '10:30', title: 'Closing Mass',            location: 'Chapel', notes: null },
+  { day: 3, start_time: '11:00', end_time: '11:30', title: 'Send-off',                location: 'Gate',   notes: null },
+]);
+
+const seedTimetable = [...phagwaraSeed, ...aboharSeed, ...amritsarSeed];
+
+const ISO_NOW = new Date().toISOString();
+const seedAnnouncements = [
+  { id: 1, place: 'phagwara', title: 'Bus timings confirmed',    body: 'Bus from Hoshiarpur at 14:00 sharp.', created_at: ISO_NOW },
+  { id: 2, place: 'abohar',   title: 'Registration deadline',    body: 'Please register by 30 May.',          created_at: ISO_NOW },
+  { id: 3, place: null,       title: 'Diocese-wide notice',       body: 'All coordinators please check WhatsApp group.', created_at: ISO_NOW },
+];
+
+store = {
+  ...store,
+  timetable: seedTimetable,
+  announcements: seedAnnouncements,
+};
+
+let nextTimetableId = seedTimetable.length + 1;
+let nextAnnouncementId = seedAnnouncements.length + 1;
+
+// ---------------------------------------------------------------------------
+// Phase 3 — Timetable mock functions
+// ---------------------------------------------------------------------------
+
+export const mockGetTimetable = async (params) => {
+  await delay();
+  const { place } = params || {};
+  const filtered = place
+    ? store.timetable.filter((it) => it.place === place)
+    : store.timetable;
+  const sorted = [...filtered].sort((a, b) => {
+    if (a.day !== b.day) return a.day - b.day;
+    return a.start_time > b.start_time ? 1 : -1;
+  });
+  return ok(sorted, 'Timetable fetched');
+};
+
+export const mockCreateTimetableItem = async (body) => {
+  await delay();
+  const { place, day, start_time, end_time, title } = body || {};
+  if (!place || !day || !start_time || !end_time || !title) {
+    return fail('place, day, start_time, end_time, and title are required');
+  }
+  const created = { id: nextTimetableId, ...body };
+  nextTimetableId += 1;
+  store = { ...store, timetable: [...store.timetable, created] };
+  return ok(created, 'Timetable item created');
+};
+
+export const mockUpdateTimetableItem = async (id, body) => {
+  await delay();
+  const target = store.timetable.find((it) => it.id === Number(id));
+  if (!target) return fail('Timetable item not found');
+  const updated = { ...target, ...body, id: target.id };
+  store = {
+    ...store,
+    timetable: store.timetable.map((it) => (it.id === Number(id) ? updated : it)),
+  };
+  return ok(updated, 'Timetable item updated');
+};
+
+export const mockDeleteTimetableItem = async (id) => {
+  await delay();
+  const target = store.timetable.find((it) => it.id === Number(id));
+  if (!target) return fail('Timetable item not found');
+  store = {
+    ...store,
+    timetable: store.timetable.filter((it) => it.id !== Number(id)),
+  };
+  return ok({ id: Number(id) }, 'Timetable item deleted');
+};
+
+export const mockGetTimetableLive = async (params) => {
+  await delay();
+  const { place } = params || {};
+  const items = place
+    ? store.timetable.filter((it) => it.place === place)
+    : store.timetable;
+
+  // Use Day 1 in mock since it's hard to simulate real event days
+  const dayItems = items.filter((it) => it.day === 1);
+
+  const now = new Date();
+  const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  const sorted = [...dayItems].sort((a, b) => (a.start_time > b.start_time ? 1 : -1));
+
+  const current = sorted.find((it) => it.start_time <= hhmm && hhmm < it.end_time) || null;
+  const upcoming = sorted.find((it) => it.start_time > hhmm) || null;
+
+  return ok({ now: current, next: upcoming }, 'Live data fetched');
+};
+
+// ---------------------------------------------------------------------------
+// Phase 3 — Announcements mock functions
+// ---------------------------------------------------------------------------
+
+export const mockGetAnnouncements = async (params) => {
+  await delay();
+  const { place } = params || {};
+  const filtered = store.announcements.filter(
+    (ann) => ann.place === place || ann.place === null
+  );
+  const sorted = [...filtered].sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+  );
+  return ok(sorted, 'Announcements fetched');
+};
+
+export const mockCreateAnnouncement = async (body) => {
+  await delay();
+  const { title, body: bodyText } = body || {};
+  if (!title || !title.trim()) return fail('title is required');
+  if (!bodyText || !bodyText.trim()) return fail('body is required');
+  const created = {
+    id: nextAnnouncementId,
+    place: body.place !== undefined ? body.place : null,
+    title: title.trim(),
+    body: bodyText.trim(),
+    created_at: new Date().toISOString(),
+  };
+  nextAnnouncementId += 1;
+  store = { ...store, announcements: [...store.announcements, created] };
+  return ok(created, 'Announcement created');
+};
+
+export const mockDeleteAnnouncement = async (id) => {
+  await delay();
+  const target = store.announcements.find((ann) => ann.id === Number(id));
+  if (!target) return fail('Announcement not found');
+  store = {
+    ...store,
+    announcements: store.announcements.filter((ann) => ann.id !== Number(id)),
+  };
+  return ok({ id: Number(id) }, 'Announcement deleted');
+};

@@ -37,12 +37,18 @@ import {
   PhotoCamera as PhotoIcon,
   Event as EventIcon,
   Apartment as ApartmentIcon,
+  Schedule as ScheduleIcon,
+  Campaign as CampaignIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
 import IDCardTabs from '../pages/IDCardTabs';
 import AnubhavRegistration from '../pages/AnubhavRegistration';
 import AccommodationManager from '../pages/AccommodationManager';
+import TimetableManager from '../pages/TimetableManager';
+import AnnouncementManager from '../pages/AnnouncementManager';
+import AnubhavLiveBanner from '../pages/AnubhavLiveBanner';
+import { PLACES } from '../utils/anubhavHelpers';
 import ProfileSettings from '../components/ProfileSettings';
 import ProfileHolderSettings from './ProfileHolderSettings';
 import ProfileHolderDashboard from './ProfileHolderDashboard';
@@ -115,6 +121,16 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         id: 'anubhav-accommodation',
         text: 'Accommodation',
         icon: <ApartmentIcon />,
+      });
+      base.splice(4, 0, {
+        id: 'anubhav-timetable',
+        text: 'Timetable',
+        icon: <ScheduleIcon />,
+      });
+      base.splice(5, 0, {
+        id: 'anubhav-announcements',
+        text: 'Announcements',
+        icon: <CampaignIcon />,
       });
     }
 
@@ -329,6 +345,24 @@ const Dashboard = ({ authToken, user, onLogout }) => {
             onLogout={onLogout}
           />
         );
+      case 'anubhav-timetable':
+        return (
+          <TimetableManager
+            eventRole={eventRole}
+            locPlace={locPlace}
+            activePlace={locPlace || PLACES[0]}
+            onLogout={onLogout}
+          />
+        );
+      case 'anubhav-announcements':
+        return (
+          <AnnouncementManager
+            eventRole={eventRole}
+            locPlace={locPlace}
+            activePlace={locPlace || PLACES[0]}
+            onLogout={onLogout}
+          />
+        );
       case 'profile':
         return <ProfileSettings authToken={authToken} user={user} onLogout={onLogout} />;
       default:
@@ -342,6 +376,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
                 Here's an overview of your ID card management system
               </Typography>
             </Box>
+
+            <AnubhavLiveBanner activePlace={locPlace || PLACES[0]} eventRole={eventRole} />
 
             {/* Stats Cards */}
             <Box sx={{ mb: 4 }}>

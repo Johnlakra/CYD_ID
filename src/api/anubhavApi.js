@@ -20,6 +20,14 @@ import {
   mockCreateAllotment,
   mockDeleteAllotment,
   mockGetRooming,
+  mockGetTimetable,
+  mockCreateTimetableItem,
+  mockUpdateTimetableItem,
+  mockDeleteTimetableItem,
+  mockGetTimetableLive,
+  mockGetAnnouncements,
+  mockCreateAnnouncement,
+  mockDeleteAnnouncement,
 } from './anubhavMock';
 
 const USE_MOCK = process.env.REACT_APP_ANUBHAV_MOCK !== 'false';
@@ -37,6 +45,11 @@ const ROUTES = {
   allotments: '/anubhav/allotments',
   allotmentById: (id) => `/anubhav/allotments/${id}`,
   rooming: '/anubhav/rooming',
+  timetable: '/anubhav/timetable',
+  timetableById: (id) => `/anubhav/timetable/${id}`,
+  timetableLive: '/anubhav/timetable/live',
+  announcements: '/anubhav/announcements',
+  announcementById: (id) => `/anubhav/announcements/${id}`,
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -194,6 +207,86 @@ export const getRooming = async (params) => {
   if (USE_MOCK) return mockGetRooming(params);
   try {
     return unwrap(await apiClient.get(ROUTES.rooming, { params }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Phase 3 — Timetable
+// ---------------------------------------------------------------------------
+
+export const getTimetable = async (params) => {
+  if (USE_MOCK) return mockGetTimetable(params);
+  try {
+    return unwrap(await apiClient.get(ROUTES.timetable, { params }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createTimetableItem = async (body) => {
+  if (USE_MOCK) return mockCreateTimetableItem(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.timetable, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const updateTimetableItem = async (id, body) => {
+  if (USE_MOCK) return mockUpdateTimetableItem(id, body);
+  try {
+    return unwrap(await apiClient.put(ROUTES.timetableById(id), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteTimetableItem = async (id) => {
+  if (USE_MOCK) return mockDeleteTimetableItem(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.timetableById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getTimetableLive = async (params) => {
+  if (USE_MOCK) return mockGetTimetableLive(params);
+  try {
+    return unwrap(await apiClient.get(ROUTES.timetableLive, { params }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Phase 3 — Announcements
+// ---------------------------------------------------------------------------
+
+export const getAnnouncements = async (params) => {
+  if (USE_MOCK) return mockGetAnnouncements(params);
+  try {
+    return unwrap(await apiClient.get(ROUTES.announcements, { params }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createAnnouncement = async (body) => {
+  if (USE_MOCK) return mockCreateAnnouncement(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.announcements, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteAnnouncement = async (id) => {
+  if (USE_MOCK) return mockDeleteAnnouncement(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.announcementById(id)));
   } catch (error) {
     return errorEnvelope(error);
   }
