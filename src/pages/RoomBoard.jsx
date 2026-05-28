@@ -66,7 +66,7 @@ const AllotDialog = ({ open, room, unallottedYouth, onClose, onAllotted }) => {
     setSaving(true);
     const res = await createAllotmentBatch({
       room_id: room.id,
-      registration_ids: selected.map((y) => y.id),
+      registration_ids: selected.map((y) => y.registration_id),
     });
     setSaving(false);
     if (!res.success) { toast.error(res.message || 'Could not allot youth'); return; }
@@ -101,9 +101,9 @@ const AllotDialog = ({ open, room, unallottedYouth, onClose, onAllotted }) => {
               disableCloseOnSelect
               options={safeArray(unallottedYouth)}
               getOptionLabel={(opt) => opt.name || ''}
-              isOptionEqualToValue={(opt, val) => opt.id === val.id}
+              isOptionEqualToValue={(opt, val) => opt.registration_id === val.registration_id}
               getOptionDisabled={(opt) =>
-                selected.length >= vacant && !selected.find((s) => s.id === opt.id)
+                selected.length >= vacant && !selected.find((s) => s.registration_id === opt.registration_id)
               }
               filterOptions={(options, { inputValue }) => {
                 const term = inputValue.trim().toLowerCase();
@@ -132,7 +132,7 @@ const AllotDialog = ({ open, room, unallottedYouth, onClose, onAllotted }) => {
               renderTags={(tagValue, getTagProps) =>
                 tagValue.map((opt, index) => (
                   <Chip
-                    key={opt.id}
+                    key={opt.registration_id}
                     avatar={<Avatar>{opt.name?.charAt(0)}</Avatar>}
                     label={opt.name}
                     size="small"
@@ -294,7 +294,7 @@ const RoomBoard = ({ activePlace, onLogout, refreshKey }) => {
       toast.error(buildingsRes.message || 'Failed to load buildings');
       setBuildings([]);
     } else {
-      setBuildings(safeArray(buildingsRes.data));
+      setBuildings(safeArray(buildingsRes.data?.buildings ?? buildingsRes.data));
     }
 
     if (!regsRes.success) {
@@ -340,7 +340,7 @@ const RoomBoard = ({ activePlace, onLogout, refreshKey }) => {
   }, [buildings]);
 
   const unallottedYouth = useMemo(() => {
-    return registrations.filter((r) => !allottedRegIds.has(r.id));
+    return registrations.filter((r) => !allottedRegIds.has(r.registration_id));
   }, [registrations, allottedRegIds]);
 
   // Flatten rooms according to filters

@@ -68,7 +68,7 @@ const AnnouncementManager = ({ activePlace, eventRole, onLogout }) => {
       setAnnouncements([]);
       return;
     }
-    setAnnouncements(safeArray(res.data));
+    setAnnouncements(safeArray(res.data?.announcements ?? res.data));
   }, [resolvedPlace, onLogout]);
 
   useEffect(() => {

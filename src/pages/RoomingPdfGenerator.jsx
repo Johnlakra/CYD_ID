@@ -172,7 +172,7 @@ const RoomingPdfGenerator = ({ activePlace, onLogout }) => {
     setLoading(false);
     if (handleAuthError(res, onLogout)) return;
     if (!res.success) { toast.error(res.message || 'Failed to load rooming data'); setBuildings([]); return; }
-    setBuildings(safeArray(res.data));
+    setBuildings(safeArray(res.data?.buildings ?? res.data));
     setSelBuildingId(''); setSelFloorId(''); setSelRoomId('');
   }, [activePlace, onLogout]);
 

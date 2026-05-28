@@ -7,6 +7,7 @@ import apiClient from './apiClient';
 import {
   mockGetMyRole,
   mockGetEligible,
+  mockGetDeaneryParishMap,
   mockGetRegistrations,
   mockCreateRegistration,
   mockDeleteRegistration,
@@ -41,6 +42,7 @@ const ROUTES = {
   role: '/anubhav/me/role',
   myEvent: '/anubhav/my/event',
   eligible: '/anubhav/eligible',
+  deaneryParishMap: '/anubhav/deanery-parish-map',
   registrations: '/anubhav/registrations',
   registrationById: (id) => `/anubhav/registrations/${id}`,
   chaperones: '/anubhav/chaperones',
@@ -85,6 +87,15 @@ export const getMyRole = async () => {
   if (USE_MOCK) return mockGetMyRole();
   try {
     return unwrap(await apiClient.get(ROUTES.role));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getDeaneryParishMap = async () => {
+  if (USE_MOCK) return mockGetDeaneryParishMap();
+  try {
+    return unwrap(await apiClient.get(ROUTES.deaneryParishMap));
   } catch (error) {
     return errorEnvelope(error);
   }

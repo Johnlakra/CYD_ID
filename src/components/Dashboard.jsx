@@ -81,7 +81,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
 
   // Restrict menu items based on user role
   const getMenuItems = () => {
-    if (user?.role === 'profile_holder') {
+    const isEventManager = eventRole === 'loc' || eventRole === 'dexco';
+    if (user?.role === 'profile_holder' && !isEventManager) {
       return [
         {
           id: 'dashboard',
@@ -120,7 +121,7 @@ const Dashboard = ({ authToken, user, onLogout }) => {
       },
     ];
 
-    if (eventRole === 'loc' || eventRole === 'dexco') {
+    if (eventRole === 'loc' || eventRole === 'dexco' || user?.role === 'admin') {
       base.splice(2, 0, {
         id: 'anubhav-registration',
         text: 'Anubhav 2026',
@@ -334,7 +335,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
 
   const renderContent = () => {
 
-    if (user?.role === 'profile_holder') {
+    const isEventManager = eventRole === 'loc' || eventRole === 'dexco';
+    if (user?.role === 'profile_holder' && !isEventManager) {
       switch (selectedMenu) {
         case 'anubhav-my-event':
           return <MyEvent user={user} />;

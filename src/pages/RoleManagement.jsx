@@ -67,7 +67,7 @@ const RoleManagement = ({ onLogout }) => {
       toast.error(res.message || 'Failed to load roles');
       return;
     }
-    setRoles(Array.isArray(res.data) ? res.data : []);
+    setRoles(Array.isArray(res.data?.roles) ? res.data.roles : Array.isArray(res.data) ? res.data : []);
   }, [onLogout]);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const RoleManagement = ({ onLogout }) => {
       toast.error(res.message || 'Search failed');
       return;
     }
-    setSearchResults(Array.isArray(res.data) ? res.data : []);
+    setSearchResults(Array.isArray(res.data?.results) ? res.data.results : Array.isArray(res.data) ? res.data : []);
     setSelectedRole({});
     setSelectedPlace({});
   };

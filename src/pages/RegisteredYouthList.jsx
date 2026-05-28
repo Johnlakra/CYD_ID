@@ -310,13 +310,13 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
   const summaryCards = [
     {
       title: 'Place total',
-      value: feesLoading ? null : formatRupees(fees ? fees.placeTotal : 0),
+      value: feesLoading ? null : formatRupees(fees?.placeTotal ?? 0),
       icon: <WalletIcon sx={{ fontSize: 36 }} />,
       color: theme.palette.primary.main,
     },
     {
       title: 'Youth registered',
-      value: feesLoading ? null : (fees ? fees.placeCount : 0).toString(),
+      value: feesLoading ? null : String(fees?.placeCount ?? 0),
       icon: <PeopleIcon sx={{ fontSize: 36 }} />,
       color: theme.palette.success.main,
     },
@@ -540,7 +540,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                     const parishCount = countsByParish[row.parish] || 0;
                     const overCap = parishCount > SOFT_CAP_PER_PARISH;
                     return (
-                      <TableRow key={row.id} hover>
+                      <TableRow key={row.registration_id} hover>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {row.name}
@@ -595,14 +595,14 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                         </TableCell>
                         <TableCell>{row.phone}</TableCell>
                         <TableCell>
-                          {row.registered_at
-                            ? dayjs(row.registered_at).format(
+                          {row.created_at
+                            ? dayjs(row.created_at).format(
                                 'DD/MM/YYYY h:mm A'
                               )
                             : '-'}
                         </TableCell>
                         <TableCell>
-                          {formatRupees(row.fee || FEE_PER_YOUTH)}
+                          {formatRupees(row.fee_amount || FEE_PER_YOUTH)}
                         </TableCell>
                         <TableCell align="right">
                           <Tooltip title="Un-register">
@@ -612,7 +612,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                               onClick={() =>
                                 setDeleteDialog({
                                   open: true,
-                                  registrationId: row.id,
+                                  registrationId: row.registration_id,
                                   saving: false,
                                 })
                               }

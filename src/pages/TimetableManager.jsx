@@ -80,7 +80,7 @@ const TimetableManager = ({ activePlace, eventRole, onLogout }) => {
       setItems([]);
       return;
     }
-    setItems(safeArray(res.data));
+    setItems(safeArray(res.data?.items ?? res.data));
   }, [resolvedPlace, onLogout]);
 
   useEffect(() => {

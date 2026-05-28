@@ -29,7 +29,7 @@ GET   /anubhav/registrations?place=&deanery=&parish=      -> registered youth + 
 DELETE/anubhav/registrations/:id
 GET   /anubhav/chaperones?place=&parish=                  -> chaperones for a parish group
 POST  /anubhav/chaperones            { place, parish, name, phone, type }  // Sister | Catechist
-GET   /anubhav/fees?place=           -> { perYouth:50, byParish:[], byDeanery:[], placeTotal, overall }
+GET   /anubhav/fees?place=           -> { perYouth:50, byParish:[{deanery,parish,count,total}], byDeanery:[{deanery,count,total}], placeTotal:number, placeCount:number, overall:number, overallCount:number }
 ```
 
 ## Accommodation (Phase 2)

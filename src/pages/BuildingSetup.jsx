@@ -284,7 +284,7 @@ const BuildingSetup = ({ activePlace, onLogout }) => {
       setBuildings([]);
       return;
     }
-    setBuildings(safeArray(res.data));
+    setBuildings(safeArray(res.data?.buildings ?? res.data));
   }, [activePlace, onLogout]);
 
   useEffect(() => {

@@ -36,12 +36,12 @@ import {
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import {
-  deaneriesForPlace,
   FEE_PER_YOUTH,
   SOFT_CAP_PER_PARISH,
   PLACE_META,
 } from '../utils/anubhavHelpers';
 import {
+  getDeaneryParishMap,
   getEligible,
   getRegistrations,
   getChaperones,
@@ -61,6 +61,7 @@ const handleAuthError = (envelope, onLogout) => {
 };
 
 const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
+  const [deaneryParishMap, setDeaneryParishMap] = useState({});
   const [deanery, setDeanery] = useState('');
   const [parish, setParish] = useState('');
   const [eligible, setEligible] = useState([]);
@@ -85,17 +86,23 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const deaneriesForCurrentPlace = useMemo(
-    () => deaneriesForPlace(activePlace),
-    [activePlace]
+    () => Object.keys(deaneryParishMap).sort((a, b) => a.localeCompare(b)),
+    [deaneryParishMap]
   );
 
   const parishOptions = useMemo(() => {
     if (!deanery) return [];
-    const unique = new Set(
-      eligible.filter((p) => p.deanery === deanery).map((p) => p.parish)
-    );
-    return Array.from(unique).sort((a, b) => a.localeCompare(b));
-  }, [eligible, deanery]);
+    return (deaneryParishMap[deanery] || []).slice().sort((a, b) => a.localeCompare(b));
+  }, [deaneryParishMap, deanery]);
+
+  // Fetch diocese-wide deanery→parish map once on mount.
+  useEffect(() => {
+    getDeaneryParishMap().then((res) => {
+      if (res.success && res.data && typeof res.data === 'object') {
+        setDeaneryParishMap(res.data);
+      }
+    });
+  }, []);
 
   // Reset child fields when active place changes from above.
   useEffect(() => {
@@ -118,13 +125,12 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
   }, [parish]);
 
   const fetchEligible = useCallback(async () => {
-    if (!activePlace) return;
+    if (!activePlace || !deanery || !parish) {
+      setEligible([]);
+      return;
+    }
     setEligibleLoading(true);
-    const response = await getEligible({
-      place: activePlace,
-      deanery: deanery || undefined,
-      parish: parish || undefined,
-    });
+    const response = await getEligible({ place: activePlace, deanery, parish });
     setEligibleLoading(false);
     if (handleAuthError(response, onLogout)) return;
     if (!response.success) {
@@ -153,7 +159,7 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
       setChaperones([]);
       return;
     }
-    setChaperones(safeArray(response.data));
+    setChaperones(safeArray(response.data?.chaperones));
   }, [activePlace, parish, onLogout]);
 
   useEffect(() => {
@@ -247,8 +253,8 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
     setAddChaperoneOpen(false);
     setNewChaperone({ name: '', phone: '', type: 'Sister' });
     await fetchChaperones();
-    if (response.data && response.data.id) {
-      setChaperoneId(String(response.data.id));
+    if (response.data?.chaperone?.id) {
+      setChaperoneId(String(response.data.chaperone.id));
     }
   };
 
@@ -278,7 +284,7 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
                   label="Deanery"
                   onChange={(e) => setDeanery(e.target.value)}
                 >
-                  <MenuItem value="">All Deaneries</MenuItem>
+                  <MenuItem value="" disabled>— Select Deanery —</MenuItem>
                   {deaneriesForCurrentPlace.map((d) => (
                     <MenuItem key={d} value={d}>
                       {d}
@@ -297,7 +303,7 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
                   onChange={(e) => setParish(e.target.value)}
                   disabled={!deanery}
                 >
-                  <MenuItem value="">All Parishes</MenuItem>
+                  <MenuItem value="" disabled>— Select Parish —</MenuItem>
                   {parishOptions.map((p) => (
                     <MenuItem key={p} value={p}>
                       {p}
@@ -306,6 +312,22 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
                 </Select>
               </FormControl>
             </Grid>
+
+            {!parish && (
+              <Grid item xs={12}>
+                <Alert severity="info">
+                  {deanery
+                    ? 'Select a parish to load eligible youth.'
+                    : 'Select a deanery, then a parish to load eligible youth.'}
+                </Alert>
+              </Grid>
+            )}
+
+            {parish && !eligibleLoading && eligible.length === 0 && (
+              <Grid item xs={12}>
+                <Alert severity="info">No eligible youth found for the selected parish.</Alert>
+              </Grid>
+            )}
 
             <Grid item xs={12}>
               <Autocomplete
