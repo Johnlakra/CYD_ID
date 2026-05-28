@@ -178,6 +178,31 @@ export const mockGetMyRole = async () => {
   return ok(store.currentUser, 'Role fetched');
 };
 
+// Diocese-wide deanery→parishes map (mirrors DB deanery/parish tables).
+const MOCK_DEANERY_PARISH_MAP = {
+  'Hoshiarpur':        ['Hoshiarpur', 'Garhshankar', 'Mukerian'],
+  'Tanda':             ['Tanda', 'Una'],
+  'Jalandhar Cantt.':  ['Jalandhar Cantt', 'Nakodar'],
+  'Jalandhar City':    ['Jalandhar City', 'Phagwara'],
+  'Kapurthala':        ['Kapurthala', 'Sultanpur Lodhi'],
+  'Sahnewal':          ['Sahnewal', 'Doraha'],
+  'Ludhiana':          ['BRS Nagar', 'Ludhiana City', 'Noorpur Bedi'],
+  'Moga':              ['Moga', 'Baghapurana'],
+  'Muktsar':           ['Muktsar', 'Gidderbaha'],
+  'Ferozpur':          ['Ferozpur City', 'Zira', 'Abohar'],
+  'Tarn Taran':        ['Tarn Taran', 'Patti'],
+  'Amritsar':          ['Amritsar Cantt.', 'Amritsar City'],
+  'Ajnala':            ['Ajnala', 'Rajasansi'],
+  'Fatehgarh Churian': ['Fatehgarh Churian', 'Dera Baba Nanak'],
+  'Dhariwal':          ['Batala', 'Qadian'],
+  'Gurdaspur':         ['Gurdaspur', 'Dinanagar'],
+};
+
+export const mockGetDeaneryParishMap = async () => {
+  await delay();
+  return ok(MOCK_DEANERY_PARISH_MAP, 'Deanery-parish map');
+};
+
 export const mockGetEligible = async (params) => {
   await delay();
   const registeredIds = new Set(store.registrations.map((r) => r.profile_id));
@@ -195,11 +220,11 @@ const enrichRegistration = (registration) => {
     (c) => c.id === registration.chaperone_id
   );
   return {
-    id: registration.id,
+    registration_id: registration.id,
     place: registration.place,
     profile_id: registration.profile_id,
     chaperone_id: registration.chaperone_id,
-    registered_at: registration.registered_at,
+    created_at: registration.registered_at,
     name: profile ? profile.name : 'Unknown',
     parish: profile ? profile.parish : '-',
     deanery: profile ? profile.deanery : '-',
@@ -208,7 +233,7 @@ const enrichRegistration = (registration) => {
     chaperone_name: chaperone ? chaperone.name : null,
     chaperone_phone: chaperone ? chaperone.phone : null,
     chaperone_type: chaperone ? chaperone.type : null,
-    fee: FEE_PER_YOUTH,
+    fee_amount: FEE_PER_YOUTH,
   };
 };
 
@@ -287,7 +312,10 @@ export const mockGetChaperones = async (params) => {
     if (parish && c.parish !== parish) return false;
     return true;
   });
-  return ok(filtered, 'Chaperones fetched');
+  // Return shape matches real backend: { chaperones: [...], count: N }
+  // RegisterYouth.jsx reads response.data?.chaperones — plain-array data would return
+  // undefined there, causing a silent safeArray([]) empty-chaperone bug (BUG-001).
+  return ok({ chaperones: filtered, count: filtered.length }, 'Chaperones fetched');
 };
 
 export const mockCreateChaperone = async (body) => {
@@ -542,7 +570,8 @@ export const mockGetBuildings = async (params) => {
   const filtered = place
     ? store.buildings.filter((b) => b.place === place)
     : store.buildings;
-  return ok(buildNestedStructure(filtered), 'Buildings fetched');
+  // Return shape matches real backend: { place, buildings: [...nested...] }
+  return ok({ place: place || null, buildings: buildNestedStructure(filtered) }, 'Buildings fetched');
 };
 
 export const mockCreateBuilding = async (body) => {
@@ -819,7 +848,8 @@ export const mockGetTimetable = async (params) => {
     if (a.day !== b.day) return a.day - b.day;
     return a.start_time > b.start_time ? 1 : -1;
   });
-  return ok(sorted, 'Timetable fetched');
+  // Return shape matches real backend: { place, items: [...], count }
+  return ok({ place: place || null, items: sorted, count: sorted.length }, 'Timetable fetched');
 };
 
 export const mockCreateTimetableItem = async (body) => {
@@ -891,7 +921,8 @@ export const mockGetAnnouncements = async (params) => {
   const sorted = [...filtered].sort(
     (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
-  return ok(sorted, 'Announcements fetched');
+  // Return shape matches real backend: { place, announcements: [...], count }
+  return ok({ place: place || null, announcements: sorted, count: sorted.length }, 'Announcements fetched');
 };
 
 export const mockCreateAnnouncement = async (body) => {
@@ -1040,14 +1071,14 @@ export const mockGetMyEvent = async () => {
 
 export const mockSearchUsers = async (q) => {
   await delay();
-  if (!q || !q.trim()) return ok([], 'No query');
+  if (!q || !q.trim()) return ok({ results: [], count: 0 }, 'No query');
   const needle = q.trim().toLowerCase();
   const results = store.userList.filter(
     (u) =>
       u.profile_name.toLowerCase().includes(needle) ||
       u.phone.includes(needle)
   );
-  return ok(results, 'Search results');
+  return ok({ results, count: results.length }, 'Search results');
 };
 
 export const mockGrantRole = async (body) => {
@@ -1076,5 +1107,6 @@ export const mockGrantRole = async (body) => {
 export const mockListRoles = async () => {
   await delay();
   const granted = store.userList.filter((u) => u.event_role && u.event_role !== 'none');
-  return ok(granted, 'Roles listed');
+  return ok({ roles: granted }, 'Roles listed');
 };
+
