@@ -12,6 +12,9 @@ import {
   Typography,
   Button,
   CircularProgress,
+  Switch,
+  FormControlLabel,
+  Tooltip,
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
@@ -59,6 +62,7 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
 
   const activePlace = isLoc ? locPlace : selectedPlace;
   const [reportGenerating, setReportGenerating] = useState(false);
+  const [includePhones, setIncludePhones] = useState(false);
 
   const handleRegistered = useCallback(() => {
     setRefreshKey((k) => k + 1);
@@ -90,8 +94,12 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
       const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
       const PW = 297, PH = 210, M = 8;
       const CW = PW - M * 2;
-      const COLS = [8, 60, 48, 46, 36, 28, 44, 11];
-      const LABELS = ['#', 'Name', "Father's Name", 'Parish', 'Deanery', 'Phone', 'Chaperone', 'Fee'];
+      const COLS = includePhones
+        ? [8, 64, 54, 52, 40, 30, 33]
+        : [8, 78, 60, 58, 44, 33];
+      const LABELS = includePhones
+        ? ['#', 'Name', "Father's Name", 'Parish', 'Deanery', 'Phone', 'Chaperone']
+        : ['#', 'Name', "Father's Name", 'Parish', 'Deanery', 'Chaperone'];
       const ROW_H = 7, HEAD_H = 8;
       const FOOTER_Y = PH - M - 10;
       const GREY = [245, 245, 245], HGREY = [220, 220, 220];
@@ -143,9 +151,11 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
             if (idx % 2 === 1) doc.setFillColor(...GREY).rect(M, curY, CW, ROW_H, 'F');
             doc.setFont('helvetica','normal').setFontSize(8);
             const chap = row.chaperone_name
-              ? `${row.chaperone_name}${row.chaperone_phone ? ' ' + row.chaperone_phone : ''}`
+              ? `${row.chaperone_name}${includePhones && row.chaperone_phone ? ' ' + row.chaperone_phone : ''}`
               : '—';
-            const vals = [String(serial++), trunc(row.name,36), trunc(row.father_name,28), trunc(row.parish,28), trunc(row.deanery,22), trunc(row.phone,16), trunc(chap,26), String(row.fee_amount||FEE_PER_YOUTH)];
+            const vals = includePhones
+              ? [String(serial++), trunc(row.name,38), trunc(row.father_name,32), trunc(row.parish,30), trunc(row.deanery,24), trunc(row.phone,16), trunc(chap,20)]
+              : [String(serial++), trunc(row.name,46), trunc(row.father_name,36), trunc(row.parish,34), trunc(row.deanery,26), trunc(chap,20)];
             let x = M + 1;
             vals.forEach((v, i) => { doc.text(v, x, curY+5); x += COLS[i]; });
             curY += ROW_H;
@@ -191,6 +201,12 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
         doc.setFont('helvetica','italic').setFontSize(8);
         doc.text(`Page ${p} of ${total}`, M, PH-M+4);
         doc.text(`Generated: ${gen}`, PW-M, PH-M+4, { align: 'right' });
+        doc.setFont('helvetica','normal').setFontSize(7).setTextColor(140,140,140);
+        doc.text(
+          'Powered by — Softech Smart Solutions · In collaboration with Youth Commission, Diocese of Jalandhar',
+          PW / 2, PH - M + 8, { align: 'center' }
+        );
+        doc.setTextColor(0,0,0);
       }
 
       doc.save('anubhav-full-diocese-report-2026.pdf');
@@ -222,15 +238,30 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
           )}
         </Box>
         {!isLoc && (
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={reportGenerating ? <CircularProgress size={16} /> : <PdfIcon />}
-            onClick={generateFullDioceseReport}
-            disabled={reportGenerating}
-          >
-            {reportGenerating ? 'Generating…' : 'Full Diocese Report'}
-          </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Tooltip title="Off by default — youth contact numbers stay private.">
+              <FormControlLabel
+                control={
+                  <Switch
+                    size="small"
+                    checked={includePhones}
+                    onChange={(e) => setIncludePhones(e.target.checked)}
+                  />
+                }
+                label="Include phone numbers"
+                sx={{ mr: 0, '& .MuiFormControlLabel-label': { fontSize: '0.8125rem' } }}
+              />
+            </Tooltip>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={reportGenerating ? <CircularProgress size={16} /> : <PdfIcon />}
+              onClick={generateFullDioceseReport}
+              disabled={reportGenerating}
+            >
+              {reportGenerating ? 'Generating…' : 'Full Diocese Report'}
+            </Button>
+          </Box>
         )}
       </Box>
 

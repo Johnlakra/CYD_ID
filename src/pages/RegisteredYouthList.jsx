@@ -33,6 +33,8 @@ import {
   alpha,
   useTheme,
   Stack,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -70,7 +72,7 @@ const handleAuthError = (envelope, onLogout) => {
 };
 
 const ROW_SKELETON_COUNT = 5;
-const TABLE_COLUMN_COUNT = 9;
+const BASE_COLUMN_COUNT = 7;
 
 const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
   const theme = useTheme();
@@ -83,6 +85,8 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
   const [loading, setLoading] = useState(false);
   const [fees, setFees] = useState(null);
   const [feesLoading, setFeesLoading] = useState(false);
+  const [includePhones, setIncludePhones] = useState(false);
+  const tableColumnCount = BASE_COLUMN_COUNT + (includePhones ? 1 : 0);
 
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
@@ -218,8 +222,12 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
       const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
       const PW = 297, PH = 210, M = 15;
       const CW = PW - M * 2;
-      const COLS = [8, 52, 40, 45, 30, 72, 20];
-      const LABELS = ['#', 'Name', "Father's Name", 'Parish', 'Phone', 'Chaperone', 'Fee'];
+      const COLS = includePhones
+        ? [8, 60, 48, 55, 30, 66]
+        : [8, 68, 55, 60, 76];
+      const LABELS = includePhones
+        ? ['#', 'Name', "Father's Name", 'Parish', 'Phone', 'Chaperone']
+        : ['#', 'Name', "Father's Name", 'Parish', 'Chaperone'];
       const ROW_H = 7, HEAD_H = 8;
       const FOOTER_Y = PH - M - 10;
       const GREY = [245, 245, 245], HGREY = [220, 220, 220];
@@ -270,17 +278,24 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
           if (idx % 2 === 1) doc.setFillColor(...GREY).rect(M, curY, CW, ROW_H, 'F');
           doc.setFont('helvetica','normal').setFontSize(8);
           const chapStr = row.chaperone_name
-            ? `${row.chaperone_name}${row.chaperone_phone ? ' ' + row.chaperone_phone : ''}`
+            ? `${row.chaperone_name}${includePhones && row.chaperone_phone ? ' ' + row.chaperone_phone : ''}`
             : '—';
-          const vals = [
-            String(serial++),
-            trunc(row.name, 24),
-            trunc(row.father_name, 20),
-            trunc(row.parish, 20),
-            trunc(row.phone, 13),
-            trunc(chapStr, 28),
-            String(row.fee_amount || 50),
-          ];
+          const vals = includePhones
+            ? [
+                String(serial++),
+                trunc(row.name, 28),
+                trunc(row.father_name, 24),
+                trunc(row.parish, 26),
+                trunc(row.phone, 13),
+                trunc(chapStr, 30),
+              ]
+            : [
+                String(serial++),
+                trunc(row.name, 32),
+                trunc(row.father_name, 26),
+                trunc(row.parish, 28),
+                trunc(chapStr, 36),
+              ];
           let x = M + 1;
           vals.forEach((v, i) => { doc.text(v, x, curY+5); x += COLS[i]; });
           curY += ROW_H;
@@ -294,6 +309,12 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
         doc.setFont('helvetica','italic').setFontSize(8);
         doc.text(`Page ${p} of ${total}`, M, PH-M+4);
         doc.text(`Generated: ${gen}`, PW-M, PH-M+4, { align: 'right' });
+        doc.setFont('helvetica','normal').setFontSize(7).setTextColor(140,140,140);
+        doc.text(
+          'Powered by — Softech Smart Solutions · In collaboration with Youth Commission, Diocese of Jalandhar',
+          PW / 2, PH - M + 8, { align: 'center' }
+        );
+        doc.setTextColor(0,0,0);
       }
 
       doc.save(`anubhav-participants-${fileSlug}.pdf`);
@@ -399,7 +420,20 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                 <PaidIcon color="primary" />
                 <Typography variant="h6">Registered Youth</Typography>
               </Box>
-              <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Tooltip title="Off by default — youth contact numbers stay private.">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        size="small"
+                        checked={includePhones}
+                        onChange={(e) => setIncludePhones(e.target.checked)}
+                      />
+                    }
+                    label="Include phone numbers"
+                    sx={{ mr: 0, '& .MuiFormControlLabel-label': { fontSize: '0.8125rem' } }}
+                  />
+                </Tooltip>
                 <Button
                   variant="outlined"
                   size="small"
@@ -504,9 +538,10 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                   <TableCell sx={{ fontWeight: 600 }}>Parish</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Deanery</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Chaperone</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
+                  {includePhones && (
+                    <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
+                  )}
                   <TableCell sx={{ fontWeight: 600 }}>Registered</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Fee</TableCell>
                   <TableCell sx={{ fontWeight: 600 }} align="right">
                     Actions
                   </TableCell>
@@ -516,7 +551,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                 {loading ? (
                   Array.from({ length: ROW_SKELETON_COUNT }).map((_, index) => (
                     <TableRow key={index}>
-                      {Array.from({ length: TABLE_COLUMN_COUNT }).map(
+                      {Array.from({ length: tableColumnCount }).map(
                         (__, cellIndex) => (
                           <TableCell key={cellIndex}>
                             <Skeleton />
@@ -527,7 +562,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                   ))
                 ) : filteredRows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={TABLE_COLUMN_COUNT} align="center">
+                    <TableCell colSpan={tableColumnCount} align="center">
                       <Box sx={{ py: 3 }}>
                         <Typography variant="body2" color="text.secondary">
                           No registrations found
@@ -593,16 +628,13 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                             </Typography>
                           )}
                         </TableCell>
-                        <TableCell>{row.phone}</TableCell>
+                        {includePhones && <TableCell>{row.phone}</TableCell>}
                         <TableCell>
                           {row.created_at
                             ? dayjs(row.created_at).format(
                                 'DD/MM/YYYY h:mm A'
                               )
                             : '-'}
-                        </TableCell>
-                        <TableCell>
-                          {formatRupees(row.fee_amount || FEE_PER_YOUTH)}
                         </TableCell>
                         <TableCell align="right">
                           <Tooltip title="Un-register">

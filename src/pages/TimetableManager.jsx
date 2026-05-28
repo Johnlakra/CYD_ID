@@ -223,6 +223,12 @@ const TimetableManager = ({ activePlace, eventRole, onLogout }) => {
         doc.setFont('helvetica', 'italic').setFontSize(8);
         doc.text(`Page ${p} of ${total}`, M, PH - M + 4);
         doc.text(`Generated: ${gen}`, PW - M, PH - M + 4, { align: 'right' });
+        doc.setFont('helvetica', 'normal').setFontSize(7).setTextColor(140, 140, 140);
+        doc.text(
+          'Powered by — Softech Smart Solutions · In collaboration with Youth Commission, Diocese of Jalandhar',
+          PW / 2, PH - M + 8, { align: 'center' }
+        );
+        doc.setTextColor(0, 0, 0);
       }
 
       doc.save(`anubhav-timetable-${resolvedPlace}.pdf`);

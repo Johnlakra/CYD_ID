@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Card, CardHeader, CardContent, Typography, Button,
   CircularProgress, FormControl, InputLabel, Select, MenuItem,
-  Stack, Alert,
+  Stack, Alert, Switch, FormControlLabel, Tooltip,
 } from '@mui/material';
 import { PictureAsPdf as PdfIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
@@ -13,8 +13,13 @@ import { PLACE_META } from '../utils/anubhavHelpers';
 // ── constants ─────────────────────────────────────────────────────────────────
 const PAGE_W = 297, PAGE_H = 210, MARGIN = 20;
 const CONTENT_W = PAGE_W - MARGIN * 2;
-const COL_WIDTHS = [55, 45, 38, 38, 30];
-const COL_LABELS = ['Name', "Father's Name", 'Parish', 'Deanery', 'Phone'];
+const COL_WIDTHS_WITH_PHONE = [55, 45, 38, 38, 30];
+const COL_LABELS_WITH_PHONE = ['Name', "Father's Name", 'Parish', 'Deanery', 'Phone'];
+const COL_WIDTHS_NO_PHONE = [70, 55, 48, 48];
+const COL_LABELS_NO_PHONE = ['Name', "Father's Name", 'Parish', 'Deanery'];
+const colsFor = (includePhones) => includePhones
+  ? { widths: COL_WIDTHS_WITH_PHONE, labels: COL_LABELS_WITH_PHONE }
+  : { widths: COL_WIDTHS_NO_PHONE, labels: COL_LABELS_NO_PHONE };
 const ROW_H = 7, HEADER_H = 8;
 const GREY_FILL = [245, 245, 245], HEADER_FILL = [220, 220, 220];
 
@@ -47,19 +52,22 @@ const pageFooter = (doc, num, total, gen) => {
   doc.text(`Page ${num} of ${total}`, MARGIN, y);
   doc.text(`Generated: ${gen}`, PAGE_W - MARGIN, y, { align: 'right' });
 };
-const tableHeader = (doc, y) => {
+const tableHeader = (doc, y, cols) => {
   doc.setFillColor(...HEADER_FILL).rect(MARGIN, y, CONTENT_W, HEADER_H, 'F');
   doc.setFont('helvetica', 'bold').setFontSize(8);
   let x = MARGIN + 1;
-  COL_LABELS.forEach((l, i) => { doc.text(l, x, y + 5.5); x += COL_WIDTHS[i]; });
+  cols.labels.forEach((l, i) => { doc.text(l, x, y + 5.5); x += cols.widths[i]; });
   return y + HEADER_H;
 };
-const occupantRow = (doc, occ, idx, y) => {
+const occupantRow = (doc, occ, idx, y, cols) => {
   if (idx % 2 === 1) { doc.setFillColor(...GREY_FILL).rect(MARGIN, y, CONTENT_W, ROW_H, 'F'); }
   doc.setFont('helvetica', 'normal').setFontSize(8);
-  const vals = [trunc(occ.name, 24), trunc(occ.father_name, 20), trunc(occ.parish, 18), trunc(occ.deanery, 17), trunc(occ.phone, 12)];
+  const includesPhone = cols.labels.length === 5;
+  const vals = includesPhone
+    ? [trunc(occ.name, 24), trunc(occ.father_name, 20), trunc(occ.parish, 18), trunc(occ.deanery, 17), trunc(occ.phone, 12)]
+    : [trunc(occ.name, 30), trunc(occ.father_name, 24), trunc(occ.parish, 22), trunc(occ.deanery, 22)];
   let x = MARGIN + 1;
-  vals.forEach((v, i) => { doc.text(v, x, y + 5); x += COL_WIDTHS[i]; });
+  vals.forEach((v, i) => { doc.text(v, x, y + 5); x += cols.widths[i]; });
   return y + ROW_H;
 };
 const FOOTER_Y = PAGE_H - MARGIN - 14;
@@ -69,7 +77,7 @@ const ensureSpace = (doc, ref, meta, sub, pages, gen, needed) => {
   }
 };
 
-const roomBlock = (doc, room, bName, fName, ref, meta, gen, pages) => {
+const roomBlock = (doc, room, bName, fName, ref, meta, gen, pages, cols) => {
   const occs = safeArray(room.occupants);
   ensureSpace(doc, ref, meta, `${bName} → ${fName}`, pages, gen, 14 + HEADER_H + occs.length * ROW_H + 4);
   doc.setFont('helvetica', 'bold').setFontSize(9);
@@ -79,61 +87,77 @@ const roomBlock = (doc, room, bName, fName, ref, meta, gen, pages) => {
     doc.setFont('helvetica', 'italic').setFontSize(8).text('No occupants assigned.', MARGIN + 2, ref.y);
     ref.y += 6; return;
   }
-  ref.y = tableHeader(doc, ref.y);
+  ref.y = tableHeader(doc, ref.y, cols);
   occs.forEach((occ, idx) => {
     if (ref.y + ROW_H > FOOTER_Y) {
       pageFooter(doc, pages.length, '?', gen); doc.addPage(); pages.push(1);
       pageHeader(doc, meta, `${bName} → ${fName} → ${room.name} (cont.)`, ref);
-      ref.y = tableHeader(doc, ref.y);
+      ref.y = tableHeader(doc, ref.y, cols);
     }
-    ref.y = occupantRow(doc, occ, idx, ref.y);
+    ref.y = occupantRow(doc, occ, idx, ref.y, cols);
   });
   ref.y += 4;
 };
+const brandingFooter = (doc) => {
+  doc.setFont('helvetica', 'normal').setFontSize(7).setTextColor(140, 140, 140);
+  doc.text(
+    'Powered by — Softech Smart Solutions · In collaboration with Youth Commission, Diocese of Jalandhar',
+    PAGE_W / 2, PAGE_H - MARGIN + 8, { align: 'center' }
+  );
+  doc.setTextColor(0, 0, 0);
+};
 const finalize = (doc, gen) => {
   const total = doc.getNumberOfPages();
-  for (let p = 1; p <= total; p++) { doc.setPage(p); pageFooter(doc, p, total, gen); }
+  for (let p = 1; p <= total; p++) {
+    doc.setPage(p);
+    pageFooter(doc, p, total, gen);
+    brandingFooter(doc);
+  }
 };
 const mkDoc = () => new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
 
 // ── PDF generators ────────────────────────────────────────────────────────────
-const buildRoomPdf = (buildings, roomId, meta, gen) => {
+const buildRoomPdf = (buildings, roomId, meta, gen, includePhones) => {
   let room, b, f;
   for (const bd of buildings) for (const fl of safeArray(bd.floors)) for (const r of safeArray(fl.rooms)) {
     if (r.id === roomId) { room = r; b = bd; f = fl; }
   }
   if (!room) return null;
+  const cols = colsFor(includePhones);
   const doc = mkDoc(), ref = { y: 0 }, pages = [1];
   pageHeader(doc, meta, `${b.name} → ${f.name} → ${room.name}`, ref);
-  roomBlock(doc, room, b.name, f.name, ref, meta, gen, pages);
+  roomBlock(doc, room, b.name, f.name, ref, meta, gen, pages, cols);
   finalize(doc, gen); return doc;
 };
 
-const buildFloorPdf = (buildings, floorId, meta, gen) => {
+const buildFloorPdf = (buildings, floorId, meta, gen, includePhones) => {
   let fl, bd;
   for (const b of buildings) for (const f of safeArray(b.floors)) { if (f.id === floorId) { fl = f; bd = b; } }
   if (!fl) return null;
+  const cols = colsFor(includePhones);
   const doc = mkDoc(), ref = { y: 0 }, pages = [1];
   pageHeader(doc, meta, `${bd.name} → ${fl.name}`, ref);
-  for (const room of safeArray(fl.rooms)) roomBlock(doc, room, bd.name, fl.name, ref, meta, gen, pages);
+  for (const room of safeArray(fl.rooms)) roomBlock(doc, room, bd.name, fl.name, ref, meta, gen, pages, cols);
   finalize(doc, gen); return doc;
 };
 
-const buildBuildingPdf = (buildings, buildingId, meta, gen) => {
+const buildBuildingPdf = (buildings, buildingId, meta, gen, includePhones) => {
   const bd = buildings.find((b) => b.id === buildingId);
   if (!bd) return null;
+  const cols = colsFor(includePhones);
   const doc = mkDoc(), ref = { y: 0 }, pages = [1];
   pageHeader(doc, meta, bd.name, ref);
   for (const fl of safeArray(bd.floors)) {
     ensureSpace(doc, ref, meta, bd.name, pages, gen, 10);
     doc.setFont('helvetica', 'bold').setFontSize(10).text(`Floor: ${fl.name}`, MARGIN, ref.y);
     ref.y += 6;
-    for (const room of safeArray(fl.rooms)) roomBlock(doc, room, bd.name, fl.name, ref, meta, gen, pages);
+    for (const room of safeArray(fl.rooms)) roomBlock(doc, room, bd.name, fl.name, ref, meta, gen, pages, cols);
   }
   finalize(doc, gen); return doc;
 };
 
-const buildFullPlacePdf = (buildings, meta, gen) => {
+const buildFullPlacePdf = (buildings, meta, gen, includePhones) => {
+  const cols = colsFor(includePhones);
   const doc = mkDoc(), ref = { y: 0 }, pages = [1];
   pageHeader(doc, meta, 'Full Rooming List', ref);
   for (const bd of buildings) {
@@ -144,7 +168,7 @@ const buildFullPlacePdf = (buildings, meta, gen) => {
       ensureSpace(doc, ref, meta, `${bd.name} (cont.)`, pages, gen, 10);
       doc.setFont('helvetica', 'bold').setFontSize(9).text(`  Floor: ${fl.name}`, MARGIN, ref.y);
       ref.y += 5;
-      for (const room of safeArray(fl.rooms)) roomBlock(doc, room, bd.name, fl.name, ref, meta, gen, pages);
+      for (const room of safeArray(fl.rooms)) roomBlock(doc, room, bd.name, fl.name, ref, meta, gen, pages, cols);
     }
   }
   finalize(doc, gen); return doc;
@@ -158,6 +182,7 @@ const RoomingPdfGenerator = ({ activePlace, onLogout }) => {
   const [selBuildingId, setSelBuildingId] = useState('');
   const [selFloorId, setSelFloorId] = useState('');
   const [selRoomId, setSelRoomId] = useState('');
+  const [includePhones, setIncludePhones] = useState(false);
 
   const meta = PLACE_META[activePlace] || {};
   const selBuilding = buildings.find((b) => b.id === selBuildingId) || null;
@@ -241,18 +266,34 @@ const RoomingPdfGenerator = ({ activePlace, onLogout }) => {
               </Stack>
 
               <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>Download</Typography>
+              <Box sx={{ mb: 2 }}>
+                <Tooltip title="Off by default — occupant contact numbers stay private.">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        size="small"
+                        checked={includePhones}
+                        onChange={(e) => setIncludePhones(e.target.checked)}
+                        disabled={busy}
+                      />
+                    }
+                    label="Include phone numbers"
+                    sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.8125rem' } }}
+                  />
+                </Tooltip>
+              </Box>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap" useFlexGap>
                 <Button variant="contained" size="small" startIcon={<BtnIcon gen={generating} />}
-                  onClick={() => run((gen) => buildRoomPdf(buildings, selRoomId, meta, gen), `rooming-room-${selRoomId}-${activePlace}.pdf`)}
+                  onClick={() => run((gen) => buildRoomPdf(buildings, selRoomId, meta, gen, includePhones), `rooming-room-${selRoomId}-${activePlace}.pdf`)}
                   disabled={busy || !selRoomId}>Room Sheet</Button>
                 <Button variant="contained" size="small" startIcon={<BtnIcon gen={generating} />}
-                  onClick={() => run((gen) => buildFloorPdf(buildings, selFloorId, meta, gen), `rooming-floor-${selFloorId}-${activePlace}.pdf`)}
+                  onClick={() => run((gen) => buildFloorPdf(buildings, selFloorId, meta, gen, includePhones), `rooming-floor-${selFloorId}-${activePlace}.pdf`)}
                   disabled={busy || !selFloorId}>Floor Sheet</Button>
                 <Button variant="outlined" size="small" startIcon={<BtnIcon gen={generating} />}
-                  onClick={() => run((gen) => buildBuildingPdf(buildings, selBuildingId, meta, gen), `rooming-building-${selBuildingId}-${activePlace}.pdf`)}
+                  onClick={() => run((gen) => buildBuildingPdf(buildings, selBuildingId, meta, gen, includePhones), `rooming-building-${selBuildingId}-${activePlace}.pdf`)}
                   disabled={busy || !selBuildingId}>Building Sheet</Button>
                 <Button variant="outlined" size="small" startIcon={<BtnIcon gen={generating} />}
-                  onClick={() => run((gen) => buildFullPlacePdf(buildings, meta, gen), `rooming-full-${activePlace}.pdf`)}
+                  onClick={() => run((gen) => buildFullPlacePdf(buildings, meta, gen, includePhones), `rooming-full-${activePlace}.pdf`)}
                   disabled={busy}>Full Place Rooming List</Button>
               </Stack>
 

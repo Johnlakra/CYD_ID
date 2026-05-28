@@ -686,9 +686,11 @@ const Dashboard = ({ authToken, user, onLogout }) => {
           mt: '64px',
           bgcolor: 'grey.50',
           minHeight: 'calc(100vh - 64px)',
-          ml: { 
-            xs: 0, 
-            lg: open ? `${drawerWidth/4}px` : '64px' 
+          display: 'flex',
+          flexDirection: 'column',
+          ml: {
+            xs: 0,
+            lg: open ? `${drawerWidth/4}px` : '64px'
           },
           width: {
             xs: '100%',
@@ -696,7 +698,23 @@ const Dashboard = ({ authToken, user, onLogout }) => {
           }
         }}
       >
-        {renderContent()}
+        <Box sx={{ flexGrow: 1 }}>
+          {renderContent()}
+        </Box>
+        <Box
+          component="footer"
+          sx={{
+            py: 1.5,
+            px: 3,
+            textAlign: 'center',
+            borderTop: `1px solid ${theme.palette.divider}`,
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.75rem' }}>
+            Powered by — Softech Smart Solutions · In collaboration with Youth Commission, Diocese of Jalandhar
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
