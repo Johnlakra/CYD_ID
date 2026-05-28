@@ -36,8 +36,12 @@ GET   /anubhav/fees?place=           -> { perYouth:50, byParish:[{deanery,parish
 ```
 POST  /anubhav/buildings             { place, name }
 GET   /anubhav/buildings?place=      -> buildings -> floors -> rooms (nested, with capacity & occupancy)
+                                        Each room.occupants[i] now MUST include photo_url (nullable).
+DELETE/anubhav/buildings/:id         // admin/dexco only — cascades floors, rooms, allotments
 POST  /anubhav/floors                { building_id, name, level }
+DELETE/anubhav/floors/:id            // admin/dexco only — cascades rooms, allotments
 POST  /anubhav/rooms                 { floor_id, name, capacity }
+DELETE/anubhav/rooms/:id             // admin/dexco only — cascades allotments
 POST  /anubhav/allotments            { room_id, registration_id }
 DELETE/anubhav/allotments/:id
 GET   /anubhav/rooming?place=&building_id?&floor_id?&room_id?  -> data shaped for PDF generation

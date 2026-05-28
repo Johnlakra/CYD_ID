@@ -21,6 +21,9 @@ import {
   mockCreateAllotment,
   mockCreateAllotmentBatch,
   mockDeleteAllotment,
+  mockDeleteBuilding,
+  mockDeleteFloor,
+  mockDeleteRoom,
   mockGetRooming,
   mockGetTimetable,
   mockCreateTimetableItem,
@@ -48,8 +51,11 @@ const ROUTES = {
   chaperones: '/anubhav/chaperones',
   fees: '/anubhav/fees',
   buildings: '/anubhav/buildings',
+  buildingById: (id) => `/anubhav/buildings/${id}`,
   floors: '/anubhav/floors',
+  floorById: (id) => `/anubhav/floors/${id}`,
   rooms: '/anubhav/rooms',
+  roomById: (id) => `/anubhav/rooms/${id}`,
   allotments: '/anubhav/allotments',
   allotmentsBatch: '/anubhav/allotments/batch',
   allotmentById: (id) => `/anubhav/allotments/${id}`,
@@ -228,6 +234,33 @@ export const deleteAllotment = async (id) => {
   if (USE_MOCK) return mockDeleteAllotment(id);
   try {
     return unwrap(await apiClient.delete(ROUTES.allotmentById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteBuilding = async (id) => {
+  if (USE_MOCK) return mockDeleteBuilding(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.buildingById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteFloor = async (id) => {
+  if (USE_MOCK) return mockDeleteFloor(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.floorById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteRoom = async (id) => {
+  if (USE_MOCK) return mockDeleteRoom(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.roomById(id)));
   } catch (error) {
     return errorEnvelope(error);
   }

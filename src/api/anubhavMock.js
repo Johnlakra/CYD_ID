@@ -230,6 +230,7 @@ const enrichRegistration = (registration) => {
     deanery: profile ? profile.deanery : '-',
     phone: profile ? profile.phone : '-',
     father_name: profile ? profile.father_name : null,
+    photo_url: profile ? profile.photo_url || null : null,
     chaperone_name: chaperone ? chaperone.name : null,
     chaperone_phone: chaperone ? chaperone.phone : null,
     chaperone_type: chaperone ? chaperone.type : null,
@@ -511,6 +512,7 @@ const enrichOccupants = (roomId) => {
         deanery: profile ? profile.deanery : '-',
         phone: profile ? profile.phone : '-',
         father_name: profile ? profile.father_name : null,
+        photo_url: profile ? profile.photo_url || null : null,
       };
     });
 };
@@ -747,6 +749,88 @@ export const mockDeleteAllotment = async (id) => {
     allotments: store.allotments.filter((a) => a.id !== Number(id)),
   };
   return ok({ id: Number(id) }, 'Allotment removed');
+};
+
+// Cascade-delete: floors + their rooms + their allotments.
+export const mockDeleteBuilding = async (id) => {
+  await delay();
+  const buildingId = Number(id);
+  const target = store.buildings.find((b) => b.id === buildingId);
+  if (!target) return fail('Building not found');
+
+  const removedFloors = store.floors.filter((f) => f.building_id === buildingId);
+  const removedFloorIds = new Set(removedFloors.map((f) => f.id));
+  const removedRooms = store.rooms.filter((r) => removedFloorIds.has(r.floor_id));
+  const removedRoomIds = new Set(removedRooms.map((r) => r.id));
+  const removedAllotments = store.allotments.filter((a) => removedRoomIds.has(a.room_id));
+
+  store = {
+    ...store,
+    buildings: store.buildings.filter((b) => b.id !== buildingId),
+    floors: store.floors.filter((f) => f.building_id !== buildingId),
+    rooms: store.rooms.filter((r) => !removedFloorIds.has(r.floor_id)),
+    allotments: store.allotments.filter((a) => !removedRoomIds.has(a.room_id)),
+  };
+  return ok(
+    {
+      id: buildingId,
+      removed: {
+        floors: removedFloors.length,
+        rooms: removedRooms.length,
+        allotments: removedAllotments.length,
+      },
+    },
+    'Building deleted'
+  );
+};
+
+// Cascade-delete: rooms + their allotments.
+export const mockDeleteFloor = async (id) => {
+  await delay();
+  const floorId = Number(id);
+  const target = store.floors.find((f) => f.id === floorId);
+  if (!target) return fail('Floor not found');
+
+  const removedRooms = store.rooms.filter((r) => r.floor_id === floorId);
+  const removedRoomIds = new Set(removedRooms.map((r) => r.id));
+  const removedAllotments = store.allotments.filter((a) => removedRoomIds.has(a.room_id));
+
+  store = {
+    ...store,
+    floors: store.floors.filter((f) => f.id !== floorId),
+    rooms: store.rooms.filter((r) => r.floor_id !== floorId),
+    allotments: store.allotments.filter((a) => !removedRoomIds.has(a.room_id)),
+  };
+  return ok(
+    {
+      id: floorId,
+      removed: {
+        rooms: removedRooms.length,
+        allotments: removedAllotments.length,
+      },
+    },
+    'Floor deleted'
+  );
+};
+
+// Cascade-delete: allotments in this room.
+export const mockDeleteRoom = async (id) => {
+  await delay();
+  const roomId = Number(id);
+  const target = store.rooms.find((r) => r.id === roomId);
+  if (!target) return fail('Room not found');
+
+  const removedAllotments = store.allotments.filter((a) => a.room_id === roomId);
+
+  store = {
+    ...store,
+    rooms: store.rooms.filter((r) => r.id !== roomId),
+    allotments: store.allotments.filter((a) => a.room_id !== roomId),
+  };
+  return ok(
+    { id: roomId, removed: { allotments: removedAllotments.length } },
+    'Room deleted'
+  );
 };
 
 export const mockGetRooming = async (params) => {
@@ -1034,6 +1118,7 @@ export const mockGetMyEvent = async () => {
       return {
         name: profile ? profile.name : 'Unknown',
         parish: profile ? profile.parish : '-',
+        photo_url: profile ? profile.photo_url || null : null,
       };
     });
     room = {

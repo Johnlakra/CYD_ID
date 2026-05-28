@@ -1,6 +1,8 @@
 // Anubhav 2026 — shared helpers for the event module.
 // Pure functions only. No React imports.
 
+import dayjs from 'dayjs';
+
 export const PLACES = ['phagwara', 'abohar', 'amritsar'];
 
 export const PLACE_META = {
@@ -84,4 +86,29 @@ export const placeChipProps = (place) => {
 export const formatRupees = (amount) => {
   const value = Number(amount) || 0;
   return `Rs. ${value.toLocaleString('en-IN')}`;
+};
+
+// Display-only 12h formatter for "HH:mm" strings from the API.
+// Returns '' for null/empty so callers can render conditionally.
+export const to12h = (time) => {
+  if (!time) return '';
+  const [hStr, mStr = '00'] = String(time).split(':');
+  const h = Number(hStr);
+  if (Number.isNaN(h)) return '';
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  return `${h % 12 || 12}:${mStr} ${ampm}`;
+};
+
+// 12h date+time formatter for ISO timestamps (announcements, profile updated_at).
+export const formatDateTime = (iso) => {
+  if (!iso) return '';
+  const d = dayjs(iso);
+  return d.isValid() ? d.format('MMM D, h:mm A') : '';
+};
+
+// Slash-style timestamp used in registration lists.
+export const formatRegisteredAt = (iso) => {
+  if (!iso) return '';
+  const d = dayjs(iso);
+  return d.isValid() ? d.format('DD/MM/YYYY h:mm A') : '';
 };

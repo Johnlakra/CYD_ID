@@ -148,6 +148,7 @@ const AccommodationManager = ({ eventRole, locPlace, onLogout }) => {
         <TabPanel value={activeTab} index={0}>
           <BuildingSetup
             activePlace={activePlace}
+            eventRole={eventRole}
             onLogout={onLogout}
             onRoomChanged={onRoomChanged}
           />
@@ -156,8 +157,10 @@ const AccommodationManager = ({ eventRole, locPlace, onLogout }) => {
         <TabPanel value={activeTab} index={1}>
           <RoomBoard
             activePlace={activePlace}
+            eventRole={eventRole}
             onLogout={onLogout}
             refreshKey={refreshKey}
+            onRoomChanged={onRoomChanged}
           />
         </TabPanel>
 

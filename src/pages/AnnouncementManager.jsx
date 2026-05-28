@@ -21,7 +21,8 @@ import {
 import { Campaign as CampaignIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { getAnnouncements, createAnnouncement, deleteAnnouncement } from '../api/anubhavApi';
-import { PLACES, PLACE_META } from '../utils/anubhavHelpers';
+import { PLACES, PLACE_META, formatDateTime } from '../utils/anubhavHelpers';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const safeArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -103,8 +104,19 @@ const AnnouncementManager = ({ activePlace, eventRole, onLogout }) => {
     fetchAnnouncements();
   };
 
-  const handleDelete = async (id) => {
-    const res = await deleteAnnouncement(id);
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, ann: null });
+  const [deleting, setDeleting] = useState(false);
+
+  const askDelete = (ann) => {
+    setDeleteConfirm({ open: true, ann });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm.ann) return;
+    setDeleting(true);
+    const res = await deleteAnnouncement(deleteConfirm.ann.id);
+    setDeleting(false);
+    setDeleteConfirm({ open: false, ann: null });
     if (handleAuthError(res, onLogout)) return;
     if (!res.success) {
       toast.error(res.message || 'Failed to delete announcement');
@@ -112,18 +124,6 @@ const AnnouncementManager = ({ activePlace, eventRole, onLogout }) => {
     }
     toast.success('Announcement deleted');
     fetchAnnouncements();
-  };
-
-  const formatTime = (iso) => {
-    if (!iso) return '';
-    try {
-      return new Date(iso).toLocaleString('en-IN', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      });
-    } catch {
-      return iso;
-    }
   };
 
   if (loading) {
@@ -233,15 +233,16 @@ const AnnouncementManager = ({ activePlace, eventRole, onLogout }) => {
                     </Typography>
                     {ann.created_at && (
                       <Typography variant="caption" color="text.disabled">
-                        {formatTime(ann.created_at)}
+                        {formatDateTime(ann.created_at)}
                       </Typography>
                     )}
                   </Box>
                   <IconButton
                     size="small"
                     color="error"
-                    onClick={() => handleDelete(ann.id)}
-                    sx={{ flexShrink: 0 }}
+                    aria-label={`Delete announcement ${ann.title}`}
+                    onClick={() => askDelete(ann)}
+                    sx={{ flexShrink: 0, minWidth: 44, minHeight: 44 }}
                   >
                     <DeleteIcon fontSize="small" />
                   </IconButton>
@@ -251,6 +252,20 @@ const AnnouncementManager = ({ activePlace, eventRole, onLogout }) => {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="Delete announcement?"
+        body={
+          deleteConfirm.ann
+            ? `"${deleteConfirm.ann.title}" will be removed for everyone who can see this venue.`
+            : ''
+        }
+        confirmText="Delete"
+        loading={deleting}
+        onClose={() => !deleting && setDeleteConfirm({ open: false, ann: null })}
+        onConfirm={handleDelete}
+      />
     </Box>
   );
 };

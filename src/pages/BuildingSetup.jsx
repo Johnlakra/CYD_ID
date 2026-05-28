@@ -23,14 +23,26 @@ import {
   TextField,
   Stack,
   Alert,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
   Business as BusinessIcon,
   AddCircleOutline as AddIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getBuildings, createBuilding, createFloor, createRoom } from '../api/anubhavApi';
+import {
+  getBuildings,
+  createBuilding,
+  createFloor,
+  createRoom,
+  deleteBuilding,
+  deleteFloor,
+  deleteRoom,
+} from '../api/anubhavApi';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -265,13 +277,17 @@ const AddRoomDialog = ({ open, floor, onClose, onSaved }) => {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-const BuildingSetup = ({ activePlace, onLogout }) => {
+const BuildingSetup = ({ activePlace, eventRole, onLogout, onRoomChanged }) => {
+  const canDelete = eventRole === 'admin' || eventRole === 'dexco';
   const [buildings, setBuildings] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const [addBuildingOpen, setAddBuildingOpen] = useState(false);
   const [addFloorDialog, setAddFloorDialog] = useState({ open: false, building: null });
   const [addRoomDialog, setAddRoomDialog] = useState({ open: false, floor: null });
+
+  const [confirm, setConfirm] = useState({ open: false });
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const fetchBuildings = useCallback(async () => {
     if (!activePlace) return;
@@ -290,6 +306,90 @@ const BuildingSetup = ({ activePlace, onLogout }) => {
   useEffect(() => {
     fetchBuildings();
   }, [fetchBuildings]);
+
+  const notifyChanged = () => {
+    if (typeof onRoomChanged === 'function') onRoomChanged();
+  };
+
+  const askDeleteBuilding = (building) => {
+    const floorCount = safeArray(building.floors).length;
+    const roomCount = safeArray(building.floors).reduce(
+      (s, f) => s + safeArray(f.rooms).length,
+      0
+    );
+    setConfirm({
+      open: true,
+      title: `Delete ${building.name}?`,
+      body: 'This will permanently remove the building.',
+      warning:
+        floorCount + roomCount > 0
+          ? `${floorCount} floor${floorCount === 1 ? '' : 's'} and ${roomCount} room${roomCount === 1 ? '' : 's'} will be removed, along with any allotments inside them.`
+          : null,
+      confirmText: 'Delete building',
+      run: async () => {
+        const res = await deleteBuilding(building.id);
+        if (handleAuthError(res, onLogout)) return;
+        if (!res.success) { toast.error(res.message || 'Could not delete building'); return; }
+        toast.success(`${building.name} deleted`);
+        await fetchBuildings();
+        notifyChanged();
+      },
+    });
+  };
+
+  const askDeleteFloor = (floor, buildingName) => {
+    const roomCount = safeArray(floor.rooms).length;
+    setConfirm({
+      open: true,
+      title: `Delete ${floor.name}?`,
+      body: `This will remove the floor from ${buildingName}.`,
+      warning:
+        roomCount > 0
+          ? `${roomCount} room${roomCount === 1 ? '' : 's'} on this floor will be removed, along with any allotments inside them.`
+          : null,
+      confirmText: 'Delete floor',
+      run: async () => {
+        const res = await deleteFloor(floor.id);
+        if (handleAuthError(res, onLogout)) return;
+        if (!res.success) { toast.error(res.message || 'Could not delete floor'); return; }
+        toast.success(`${floor.name} deleted`);
+        await fetchBuildings();
+        notifyChanged();
+      },
+    });
+  };
+
+  const askDeleteRoom = (room, floorName, buildingName) => {
+    setConfirm({
+      open: true,
+      title: `Delete ${room.name}?`,
+      body: `This will remove the room from ${buildingName} · ${floorName}.`,
+      warning:
+        room.occupancy > 0
+          ? `${room.occupancy} youth currently allotted to this room will be un-allotted. Their registrations remain.`
+          : null,
+      confirmText: 'Delete room',
+      run: async () => {
+        const res = await deleteRoom(room.id);
+        if (handleAuthError(res, onLogout)) return;
+        if (!res.success) { toast.error(res.message || 'Could not delete room'); return; }
+        toast.success(`${room.name} deleted`);
+        await fetchBuildings();
+        notifyChanged();
+      },
+    });
+  };
+
+  const runConfirm = async () => {
+    if (!confirm.run) return;
+    setConfirmLoading(true);
+    try {
+      await confirm.run();
+    } finally {
+      setConfirmLoading(false);
+      setConfirm({ open: false });
+    }
+  };
 
   if (loading) {
     return (
@@ -337,8 +437,8 @@ const BuildingSetup = ({ activePlace, onLogout }) => {
             buildings.map((building) => (
               <Accordion key={building.id} sx={{ mb: 1, borderRadius: '8px !important', '&:before': { display: 'none' }, border: '1px solid', borderColor: 'divider' }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                    <Typography sx={{ fontWeight: 600 }}>{building.name}</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', width: '100%', pr: 1 }}>
+                    <Typography sx={{ fontWeight: 600, mr: 'auto' }}>{building.name}</Typography>
                     <Chip
                       size="small"
                       label={`${building.occupancy} / ${building.capacity}`}
@@ -348,6 +448,22 @@ const BuildingSetup = ({ activePlace, onLogout }) => {
                           : 'default'
                       }
                     />
+                    {canDelete && (
+                      <Tooltip title={`Delete ${building.name}`}>
+                        <IconButton
+                          size="small"
+                          aria-label={`Delete ${building.name}`}
+                          color="error"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            askDeleteBuilding(building);
+                          }}
+                          sx={{ minWidth: 44, minHeight: 44 }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails sx={{ pt: 0 }}>
@@ -364,9 +480,11 @@ const BuildingSetup = ({ activePlace, onLogout }) => {
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             mb: 1,
+                            gap: 1,
+                            flexWrap: 'wrap',
                           }}
                         >
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600, mr: 'auto' }}>
                             {floor.name}
                           </Typography>
                           <Button
@@ -375,9 +493,23 @@ const BuildingSetup = ({ activePlace, onLogout }) => {
                             onClick={() =>
                               setAddRoomDialog({ open: true, floor })
                             }
+                            sx={{ minHeight: 44 }}
                           >
                             Add Room
                           </Button>
+                          {canDelete && (
+                            <Tooltip title={`Delete ${floor.name}`}>
+                              <IconButton
+                                size="small"
+                                aria-label={`Delete ${floor.name}`}
+                                color="error"
+                                onClick={() => askDeleteFloor(floor, building.name)}
+                                sx={{ minWidth: 44, minHeight: 44 }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </Box>
                         {safeArray(floor.rooms).length === 0 ? (
                           <Typography variant="body2" color="text.secondary">
@@ -394,6 +526,7 @@ const BuildingSetup = ({ activePlace, onLogout }) => {
                                 <TableCell sx={{ fontWeight: 600 }} align="right">
                                   Occupancy
                                 </TableCell>
+                                {canDelete && <TableCell sx={{ p: 0.5 }} />}
                               </TableRow>
                             </TableHead>
                             <TableBody>
@@ -412,6 +545,21 @@ const BuildingSetup = ({ activePlace, onLogout }) => {
                                       }
                                     />
                                   </TableCell>
+                                  {canDelete && (
+                                    <TableCell align="right" sx={{ p: 0.5 }}>
+                                      <Tooltip title={`Delete ${room.name}`}>
+                                        <IconButton
+                                          size="small"
+                                          aria-label={`Delete ${room.name}`}
+                                          color="error"
+                                          onClick={() => askDeleteRoom(room, floor.name, building.name)}
+                                          sx={{ minWidth: 44, minHeight: 44 }}
+                                        >
+                                          <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                      </Tooltip>
+                                    </TableCell>
+                                  )}
                                 </TableRow>
                               ))}
                             </TableBody>
@@ -458,6 +606,17 @@ const BuildingSetup = ({ activePlace, onLogout }) => {
         floor={addRoomDialog.floor}
         onClose={() => setAddRoomDialog({ open: false, floor: null })}
         onSaved={fetchBuildings}
+      />
+
+      <ConfirmDialog
+        open={!!confirm.open}
+        title={confirm.title}
+        body={confirm.body}
+        warning={confirm.warning}
+        confirmText={confirm.confirmText || 'Confirm'}
+        loading={confirmLoading}
+        onClose={() => !confirmLoading && setConfirm({ open: false })}
+        onConfirm={runConfirm}
       />
     </Box>
   );

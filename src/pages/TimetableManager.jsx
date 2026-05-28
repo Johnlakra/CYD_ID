@@ -26,7 +26,8 @@ import { Schedule as ScheduleIcon, Delete as DeleteIcon, PictureAsPdf as PdfIcon
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-toastify';
 import { getTimetable, createTimetableItem, deleteTimetableItem } from '../api/anubhavApi';
-import { PLACES, PLACE_META } from '../utils/anubhavHelpers';
+import { PLACES, PLACE_META, to12h } from '../utils/anubhavHelpers';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const DAY_OPTIONS = [
   { value: 1, label: 'Day 1' },
@@ -43,14 +44,6 @@ const handleAuthError = (envelope, onLogout) => {
     return true;
   }
   return false;
-};
-
-const to12h = (t) => {
-  if (!t) return '';
-  const [hStr, mStr = '00'] = String(t).split(':');
-  const h = Number(hStr);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  return `${h % 12 || 12}:${mStr} ${ampm}`;
 };
 
 const EMPTY_FORM = {
@@ -119,8 +112,19 @@ const TimetableManager = ({ activePlace, eventRole, onLogout }) => {
     fetchItems();
   };
 
-  const handleDelete = async (id) => {
-    const res = await deleteTimetableItem(id);
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, item: null });
+  const [deleting, setDeleting] = useState(false);
+
+  const askDelete = (item) => {
+    setDeleteConfirm({ open: true, item });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm.item) return;
+    setDeleting(true);
+    const res = await deleteTimetableItem(deleteConfirm.item.id);
+    setDeleting(false);
+    setDeleteConfirm({ open: false, item: null });
     if (handleAuthError(res, onLogout)) return;
     if (!res.success) {
       toast.error(res.message || 'Failed to delete item');
@@ -384,7 +388,9 @@ const TimetableManager = ({ activePlace, eventRole, onLogout }) => {
                           <IconButton
                             size="small"
                             color="error"
-                            onClick={() => handleDelete(item.id)}
+                            aria-label={`Delete ${item.title}`}
+                            onClick={() => askDelete(item)}
+                            sx={{ minWidth: 44, minHeight: 44 }}
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
@@ -404,6 +410,20 @@ const TimetableManager = ({ activePlace, eventRole, onLogout }) => {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="Delete timetable item?"
+        body={
+          deleteConfirm.item
+            ? `${deleteConfirm.item.title} (${to12h(deleteConfirm.item.start_time)} – ${to12h(deleteConfirm.item.end_time)}) will be removed from the schedule.`
+            : ''
+        }
+        confirmText="Delete"
+        loading={deleting}
+        onClose={() => !deleting && setDeleteConfirm({ open: false, item: null })}
+        onConfirm={handleDelete}
+      />
     </Box>
   );
 };

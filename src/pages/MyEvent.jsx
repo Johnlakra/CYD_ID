@@ -15,24 +15,24 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  Avatar,
 } from '@mui/material';
 import { Celebration as CelebrationIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { getMyEvent, getTimetableLive } from '../api/anubhavApi';
-import { PLACE_META } from '../utils/anubhavHelpers';
+import { PLACE_META, to12h } from '../utils/anubhavHelpers';
 
 const POLL_INTERVAL_MS = 2 * 60 * 1000;
 
-const to12h = (t) => {
-  if (!t) return '';
-  const [hStr, mStr = '00'] = String(t).split(':');
-  const h = Number(hStr);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  return `${h % 12 || 12}:${mStr} ${ampm}`;
-};
-
 const DAY_LABELS = { 1: 'Day 1', 2: 'Day 2', 3: 'Day 3' };
 const safeArray = (v) => (Array.isArray(v) ? v : []);
+
+const initialsFor = (name) => {
+  if (!name) return '?';
+  const parts = String(name).trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
 
 const MyEvent = ({ user }) => {
   const [data, setData] = useState(null);
@@ -177,6 +177,14 @@ const MyEvent = ({ user }) => {
                       {room.roommates.map((rm, idx) => (
                         <Chip
                           key={idx}
+                          avatar={
+                            <Avatar
+                              src={rm.photo_url || undefined}
+                              imgProps={{ loading: 'lazy' }}
+                            >
+                              {initialsFor(rm.name)}
+                            </Avatar>
+                          }
                           label={`${rm.name} · ${rm.parish}`}
                           size="small"
                           variant="outlined"

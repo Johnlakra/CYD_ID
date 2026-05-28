@@ -7,7 +7,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { getTimetableLive } from '../api/anubhavApi';
-import { PLACES } from '../utils/anubhavHelpers';
+import { PLACES, to12h } from '../utils/anubhavHelpers';
 
 const POLL_INTERVAL_MS = 2 * 60 * 1000;
 
@@ -47,7 +47,7 @@ const AnubhavLiveBanner = ({ activePlace, eventRole }) => {
   const { now, next } = liveData;
 
   const formatRange = (item) =>
-    item ? `${item.start_time}–${item.end_time} ${item.title}` : null;
+    item ? `${to12h(item.start_time)}–${to12h(item.end_time)} ${item.title}` : null;
 
   return (
     <Paper

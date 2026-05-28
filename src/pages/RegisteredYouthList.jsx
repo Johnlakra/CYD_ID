@@ -21,10 +21,6 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
   Skeleton,
   Alert,
@@ -35,6 +31,7 @@ import {
   Stack,
   Switch,
   FormControlLabel,
+  Avatar,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -47,7 +44,6 @@ import {
   PictureAsPdf as PdfIcon,
 } from '@mui/icons-material';
 import { jsPDF } from 'jspdf';
-import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import {
   deaneriesForPlace,
@@ -55,12 +51,14 @@ import {
   SOFT_CAP_PER_PARISH,
   formatRupees,
   PLACE_META,
+  formatRegisteredAt,
 } from '../utils/anubhavHelpers';
 import {
   getRegistrations,
   getFees,
   deleteRegistration,
 } from '../api/anubhavApi';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const handleAuthError = (envelope, onLogout) => {
   if (envelope && envelope.status === 401 && typeof onLogout === 'function') {
@@ -72,7 +70,14 @@ const handleAuthError = (envelope, onLogout) => {
 };
 
 const ROW_SKELETON_COUNT = 5;
-const BASE_COLUMN_COUNT = 7;
+const BASE_COLUMN_COUNT = 8;
+
+const initialsFor = (name) => {
+  if (!name) return '?';
+  const parts = String(name).trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
 
 const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
   const theme = useTheme();
@@ -533,6 +538,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
             <Table stickyHeader size="small">
               <TableHead>
                 <TableRow>
+                  <TableCell sx={{ fontWeight: 600, width: 56 }} />
                   <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Father's Name</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Parish</TableCell>
@@ -576,6 +582,15 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                     const overCap = parishCount > SOFT_CAP_PER_PARISH;
                     return (
                       <TableRow key={row.registration_id} hover>
+                        <TableCell sx={{ py: 1, pr: 0 }}>
+                          <Avatar
+                            src={row.photo_url || undefined}
+                            sx={{ width: 36, height: 36 }}
+                            imgProps={{ loading: 'lazy' }}
+                          >
+                            {initialsFor(row.name)}
+                          </Avatar>
+                        </TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {row.name}
@@ -630,11 +645,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                         </TableCell>
                         {includePhones && <TableCell>{row.phone}</TableCell>}
                         <TableCell>
-                          {row.created_at
-                            ? dayjs(row.created_at).format(
-                                'DD/MM/YYYY h:mm A'
-                              )
-                            : '-'}
+                          {row.created_at ? formatRegisteredAt(row.created_at) : '-'}
                         </TableCell>
                         <TableCell align="right">
                           <Tooltip title="Un-register">
@@ -663,51 +674,22 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
         </CardContent>
       </Card>
 
-      <Dialog
+      <ConfirmDialog
         open={deleteDialog.open}
+        title="Un-register this youth?"
+        body="Their slot will be freed for the parish. This cannot be undone."
+        confirmText="Un-register"
+        loading={deleteDialog.saving}
         onClose={() =>
+          !deleteDialog.saving &&
           setDeleteDialog({
             open: false,
             registrationId: null,
             saving: false,
           })
         }
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Confirm un-registration</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to remove this registration? This will free up
-            a slot for the parish.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() =>
-              setDeleteDialog({
-                open: false,
-                registrationId: null,
-                saving: false,
-              })
-            }
-            disabled={deleteDialog.saving}
-          >
-            Cancel
-          </Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={handleConfirmDelete}
-            disabled={deleteDialog.saving}
-            startIcon={
-              deleteDialog.saving ? <CircularProgress size={18} /> : null
-            }
-          >
-            {deleteDialog.saving ? 'Removing...' : 'Un-register'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleConfirmDelete}
+      />
     </Box>
   );
 };
