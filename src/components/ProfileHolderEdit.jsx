@@ -24,7 +24,6 @@ import EncodeBase64 from '../components/EncodeBase64';
 const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
-  const [fileInput, setFileInput] = useState('');
   const [imgSrc, setImgSrc] = useState('');
   
   const [editForm, setEditForm] = useState({
@@ -64,6 +63,7 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken]);
 
   // Handle file upload
@@ -72,7 +72,6 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
     if (files[0]) {
       try {
         const base64 = await EncodeBase64(files[0]);
-        setFileInput(base64);
         setImgSrc(base64);
         setEditForm(prev => ({ ...prev, photo: base64 }));
       } catch (error) {

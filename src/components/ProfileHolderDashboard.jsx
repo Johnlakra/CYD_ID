@@ -16,7 +16,6 @@ import {
   CircularProgress,
 } from '@mui/material';
 import {
-  CardMembership as CardIcon,
   CalendarToday as CalendarIcon,
   CheckCircle as CheckIcon,
   Warning as WarningIcon,
@@ -57,6 +56,7 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken]);
 
   // Check ID card validity
@@ -77,11 +77,6 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
   };
 
   const validity = getIdCardValidity();
-
-  // View ID card
-  const viewIdCard = () => {
-    setIdCardDialog(true);
-  };
 
   if (loading && !profileData) {
     return (

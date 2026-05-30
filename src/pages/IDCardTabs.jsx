@@ -3,7 +3,6 @@ import {
   Box,
   Tabs,
   Tab,
-  Typography,
   Paper,
 } from '@mui/material';
 import {
@@ -56,13 +55,6 @@ const IDCardTabs = ({ authToken, user, onLogout }) => {
   const handleEditComplete = () => {
     setEditProfile(null);
     setActiveTab(1); // Switch back to manage tab
-  };
-
-  const getTabLabel = () => {
-    if (editProfile && activeTab === 0) {
-      return `Edit Profile - ${editProfile.name}`;
-    }
-    return activeTab === 0 ? "Create ID Card" : "Manage Profiles";
   };
 
   return (

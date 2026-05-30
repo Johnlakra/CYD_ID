@@ -398,6 +398,7 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
       setImgSrc("");
       setSelectedDeanery("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editProfile, reset]);
 
   // Submit form
