@@ -17,12 +17,22 @@ import {
   Divider,
   IconButton,
   Chip,
+  Link,
 } from '@mui/material';
-import { Campaign as CampaignIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import {
+  Campaign as CampaignIcon,
+  Delete as DeleteIcon,
+  OpenInNew as OpenInNewIcon,
+} from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { getAnnouncements, createAnnouncement, deleteAnnouncement } from '../api/anubhavApi';
 import { PLACES, PLACE_META, formatDateTime } from '../utils/anubhavHelpers';
 import ConfirmDialog from '../components/ConfirmDialog';
+
+// Public marketing/info website. Override per-environment via
+// REACT_APP_ANUBHAV_WEB_URL. TODO: confirm the final deployed domain.
+const ANUBHAV_WEB_URL =
+  process.env.REACT_APP_ANUBHAV_WEB_URL || 'https://anubhav.diocesseofjalandhar.in';
 
 const safeArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -145,6 +155,19 @@ const AnnouncementManager = ({ activePlace, eventRole, onLogout }) => {
             </Box>
           }
           subheader={`Venue: ${resolvedPlace}`}
+          action={
+            <Link
+              href={ANUBHAV_WEB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="body2"
+              underline="hover"
+              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mr: 1, mt: 1 }}
+            >
+              View public website
+              <OpenInNewIcon sx={{ fontSize: 16 }} />
+            </Link>
+          }
         />
         <CardContent>
           {/* Post form */}

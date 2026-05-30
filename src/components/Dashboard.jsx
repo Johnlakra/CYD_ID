@@ -40,6 +40,7 @@ import {
   Campaign as CampaignIcon,
   Celebration as CelebrationIcon,
   ManageAccounts as ManageAccountsIcon,
+  RecordVoiceOver as RecordVoiceOverIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
@@ -51,6 +52,7 @@ import AnnouncementManager from '../pages/AnnouncementManager';
 import AnubhavLiveBanner from '../pages/AnubhavLiveBanner';
 import MyEvent from '../pages/MyEvent';
 import RoleManagement from '../pages/RoleManagement';
+import SpeakersManager from '../pages/SpeakersManager';
 import { PLACES } from '../utils/anubhavHelpers';
 import ProfileSettings from '../components/ProfileSettings';
 import ProfileHolderSettings from './ProfileHolderSettings';
@@ -140,6 +142,15 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         id: 'anubhav-announcements',
         text: 'Announcements',
         icon: <CampaignIcon />,
+      });
+    }
+
+    // Speakers manager powers the public website — admin + dexco only (not loc).
+    if (user?.role === 'admin' || eventRole === 'dexco') {
+      base.splice(6, 0, {
+        id: 'anubhav-speakers',
+        text: 'Speakers',
+        icon: <RecordVoiceOverIcon />,
       });
     }
 
@@ -384,6 +395,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
             onLogout={onLogout}
           />
         );
+      case 'anubhav-speakers':
+        return <SpeakersManager onLogout={onLogout} />;
       case 'role-management':
         return <RoleManagement onLogout={onLogout} />;
       case 'profile':

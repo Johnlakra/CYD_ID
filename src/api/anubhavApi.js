@@ -37,6 +37,10 @@ import {
   mockSearchUsers,
   mockGrantRole,
   mockListRoles,
+  mockListSpeakers,
+  mockCreateSpeaker,
+  mockUpdateSpeaker,
+  mockDeleteSpeaker,
 } from './anubhavMock';
 
 const USE_MOCK = process.env.REACT_APP_ANUBHAV_MOCK !== 'false';
@@ -68,6 +72,8 @@ const ROUTES = {
   usersSearch: '/anubhav/users/search',
   roles: '/anubhav/roles',
   rolesGrant: '/anubhav/roles/grant',
+  speakers: '/anubhav/speakers',
+  speakerById: (id) => `/anubhav/speakers/${id}`,
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -394,6 +400,50 @@ export const listRoles = async () => {
   if (USE_MOCK) return mockListRoles();
   try {
     return unwrap(await apiClient.get(ROUTES.roles));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Speakers (admin + dexco) — powers the public website's speaker list.
+// Envelope data shapes (per API_CONTRACT.md):
+//   listSpeakers   -> { speakers: [...full rows incl. drafts...], count }
+//   create/update  -> { speaker }
+//   deleteSpeaker  -> soft delete (status=0)
+// ---------------------------------------------------------------------------
+
+export const listSpeakers = async () => {
+  if (USE_MOCK) return mockListSpeakers();
+  try {
+    return unwrap(await apiClient.get(ROUTES.speakers));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createSpeaker = async (body) => {
+  if (USE_MOCK) return mockCreateSpeaker(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.speakers, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const updateSpeaker = async (id, body) => {
+  if (USE_MOCK) return mockUpdateSpeaker(id, body);
+  try {
+    return unwrap(await apiClient.put(ROUTES.speakerById(id), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteSpeaker = async (id) => {
+  if (USE_MOCK) return mockDeleteSpeaker(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.speakerById(id)));
   } catch (error) {
     return errorEnvelope(error);
   }

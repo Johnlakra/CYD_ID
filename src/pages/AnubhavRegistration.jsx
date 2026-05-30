@@ -15,12 +15,14 @@ import {
   Switch,
   FormControlLabel,
   Tooltip,
+  Link,
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
   List as ListIcon,
   Event as EventIcon,
   PictureAsPdf as PdfIcon,
+  OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-toastify';
@@ -28,6 +30,11 @@ import { PLACES, PLACE_META, placeChipProps, FEE_PER_YOUTH } from '../utils/anub
 import { getRegistrations } from '../api/anubhavApi';
 import RegisterYouth from './RegisterYouth';
 import RegisteredYouthList from './RegisteredYouthList';
+
+// Public marketing/info website. Override per-environment via
+// REACT_APP_ANUBHAV_WEB_URL. TODO: confirm the final deployed domain.
+const ANUBHAV_WEB_URL =
+  process.env.REACT_APP_ANUBHAV_WEB_URL || 'https://anubhav.diocesseofjalandhar.in';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -236,6 +243,17 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
               {meta.venue} &nbsp;|&nbsp; {meta.dates}
             </Typography>
           )}
+          <Link
+            href={ANUBHAV_WEB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="body2"
+            underline="hover"
+            sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+          >
+            View public website
+            <OpenInNewIcon sx={{ fontSize: 16 }} />
+          </Link>
         </Box>
         {!isLoc && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>

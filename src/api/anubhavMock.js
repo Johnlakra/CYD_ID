@@ -1195,3 +1195,88 @@ export const mockListRoles = async () => {
   return ok({ roles: granted }, 'Roles listed');
 };
 
+// ---------------------------------------------------------------------------
+// Speakers seed + mock functions
+// Mirrors live shape exactly (BUG-001 lesson): list returns the wrapper
+// { speakers: [...], count } — never a bare array. create/update return
+// { speaker }. Delete is a soft delete (status -> 0); the admin list still
+// returns drafts (status 0), matching the contract.
+// ---------------------------------------------------------------------------
+
+const seedSpeakers = [
+  { id: 1, place: null,        name: 'Most Rev. Bishop',     role: 'Keynote Speaker',  bio: 'Shepherd of the diocese, opening the retreat.', photo_url: null, sort_order: 0, status: 1 },
+  { id: 2, place: 'phagwara',  name: 'Fr. Thomas',           role: 'Retreat Preacher', bio: 'Leading the Phagwara sessions.',                photo_url: null, sort_order: 1, status: 1 },
+  { id: 3, place: 'abohar',    name: 'Sr. Grace',            role: 'Worship Leader',   bio: 'Praise & worship animation.',                   photo_url: null, sort_order: 1, status: 1 },
+  { id: 4, place: 'amritsar',  name: 'Bro. Daniel',          role: 'Youth Animator',   bio: '',                                              photo_url: null, sort_order: 2, status: 1 },
+];
+
+store = { ...store, speakers: seedSpeakers };
+
+let nextSpeakerId = seedSpeakers.length + 1;
+
+const sortSpeakers = (list) =>
+  [...list].sort((a, b) => {
+    if ((a.sort_order || 0) !== (b.sort_order || 0)) {
+      return (a.sort_order || 0) - (b.sort_order || 0);
+    }
+    return String(a.name).localeCompare(String(b.name));
+  });
+
+export const mockListSpeakers = async () => {
+  await delay();
+  // Full list INCLUDING drafts (status 0), ordered by sort_order then name.
+  const speakers = sortSpeakers(store.speakers);
+  return ok({ speakers, count: speakers.length }, 'Speakers fetched');
+};
+
+export const mockCreateSpeaker = async (body) => {
+  await delay();
+  const { name, role } = body || {};
+  if (!name || !name.trim()) return fail('name is required');
+  if (!role || !role.trim()) return fail('role is required');
+  const created = {
+    id: nextSpeakerId,
+    place: body.place !== undefined ? body.place : null,
+    name: name.trim(),
+    role: role.trim(),
+    bio: (body.bio || '').trim(),
+    photo_url: (body.photo_url || '').trim() || null,
+    sort_order: Number(body.sort_order) || 0,
+    status: 1,
+  };
+  nextSpeakerId += 1;
+  store = { ...store, speakers: [...store.speakers, created] };
+  return ok({ speaker: created }, 'Speaker added');
+};
+
+export const mockUpdateSpeaker = async (id, body) => {
+  await delay();
+  const target = store.speakers.find((s) => s.id === Number(id));
+  if (!target) return fail('Speaker not found');
+  const patch = { ...body };
+  if (patch.name !== undefined) patch.name = String(patch.name).trim();
+  if (patch.role !== undefined) patch.role = String(patch.role).trim();
+  if (patch.bio !== undefined) patch.bio = String(patch.bio).trim();
+  if (patch.photo_url !== undefined) patch.photo_url = String(patch.photo_url).trim() || null;
+  if (patch.sort_order !== undefined) patch.sort_order = Number(patch.sort_order) || 0;
+  const updated = { ...target, ...patch, id: target.id };
+  store = {
+    ...store,
+    speakers: store.speakers.map((s) => (s.id === Number(id) ? updated : s)),
+  };
+  return ok({ speaker: updated }, 'Speaker updated');
+};
+
+export const mockDeleteSpeaker = async (id) => {
+  await delay();
+  const target = store.speakers.find((s) => s.id === Number(id));
+  if (!target) return fail('Speaker not found');
+  // Soft delete: status -> 0 (matches contract; still returned by the admin list).
+  const updated = { ...target, status: 0 };
+  store = {
+    ...store,
+    speakers: store.speakers.map((s) => (s.id === Number(id) ? updated : s)),
+  };
+  return ok({ speaker: updated }, 'Speaker removed');
+};
+
