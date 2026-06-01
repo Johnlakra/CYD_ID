@@ -84,6 +84,56 @@ GET   /anubhav/my/event                      -> self-scoped; no place param; no 
 **Role deassign path:** `POST /anubhav/roles/grant` with `event_role: "none"` is the deassign
 path — it clears `loc_place` to `null`. No separate deassign endpoint is needed.
 
+## Option B — Independent entries
+Youth who register directly for Anubhav without an existing ID-card profile. They are
+stored as `profile` rows with `is_independent = 1` and are **never** returned by `/profiles`.
+
+Existing list rows now carry an `is_independent` (0|1) flag so the UI can badge them:
+```
+GET /anubhav/eligible        -> each row includes is_independent (0|1)
+GET /anubhav/registrations   -> each row includes is_independent (0|1)
+GET /anubhav/rooming         -> each occupant includes is_independent (0|1) + photo_url
+```
+
+Independent-entry endpoints (admin / dexco / loc; loc is place-scoped):
+```
+POST  /anubhav/independents
+      body: { place, deanery, parish, name,
+              father_name?, phone?, date_of_birth?, level?, designation?, postal_address?, photo_url? }
+      required: name, deanery, parish, place
+      -> 201 { profile_id, independent }
+      -> 400 { message, missing_fields:[...] }   // when a required field is absent
+
+GET   /anubhav/independents?place=&deanery=&parish=&search=
+      -> { place,
+           independents: [{ id, name, father_name, date_of_birth, phone, deanery, parish,
+                            level, designation, postal_address, photo_url, is_independent,
+                            place, id_card_complete:bool }],
+           count }
+      // ONLY is_independent=1 rows. id_card_complete=true when every ID-card field is present.
+
+PUT   /anubhav/independents/:id            // all fields optional (patch)
+DELETE/anubhav/independents/:id            // soft delete; 409 if an active registration exists
+
+POST  /anubhav/independents/:id/promote    // ADMIN ONLY — turns the entry into a full profile
+      body fills any remaining gaps. ALL ID-card-required fields must end up present,
+      else -> 400 { message, missing_fields:[...] }
+      -> 200 { profile, credentials: { username, password_hint, message } }
+      // username = first 4 letters of name + DDMM of DOB; password = the youth's phone digits
+```
+
+ID-card-required fields (drive `id_card_complete`, promote gating, and print gating):
+`name, father_name (col father), deanery, parish, date_of_birth (col dob), phone,
+postal_address, level, designation, photo_url`.
+
+`/profiles` changes for Option B:
+```
+GET /profiles                -> now EXCLUDES independents (server-side AND p.is_independent = 0)
+GET /profiles/:id/idcard-data -> gates printing:
+      200 full profile only when complete,
+      else 400 { success:false, message, missing_fields:[...] }   // same completeness rule
+```
+
 ## Notes for the frontend session
 - All list endpoints already return counts where useful; do fee math display only,
   never recompute authoritative totals client-side.
