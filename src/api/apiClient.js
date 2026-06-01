@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const baseURL = 'http://localhost:3000';
+export const baseURL = 'https://cydidbe-production.up.railway.app';
 // Create axios instance
 const apiClient = axios.create({
   baseURL: baseURL,
