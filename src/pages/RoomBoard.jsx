@@ -52,6 +52,7 @@ import {
   deleteRoom,
 } from '../api/anubhavApi';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { IndependentDot } from '../components/IndependentBadge';
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -218,36 +219,42 @@ const OccupantTile = ({ occupant, onRemove }) => (
   >
     <Badge
       overlap="circular"
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      badgeContent={
-        <Tooltip title={`Remove ${occupant.name}`}>
-          <IconButton
-            size="small"
-            aria-label={`Remove ${occupant.name}`}
-            onClick={() => onRemove(occupant)}
-            sx={{
-              width: 24,
-              height: 24,
-              minWidth: 24,
-              minHeight: 24,
-              p: 0,
-              bgcolor: 'error.main',
-              color: 'error.contrastText',
-              boxShadow: 1,
-              '&:hover': { bgcolor: 'error.dark' },
-            }}
-          >
-            <CloseIcon sx={{ fontSize: 16 }} />
-          </IconButton>
-        </Tooltip>
-      }
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      badgeContent={occupant.is_independent ? <IndependentDot size={8} /> : null}
     >
-      <Avatar
-        src={occupant.photo_url || undefined}
-        sx={{ width: 56, height: 56, fontSize: '1rem' }}
+      <Badge
+        overlap="circular"
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        badgeContent={
+          <Tooltip title={`Remove ${occupant.name}`}>
+            <IconButton
+              size="small"
+              aria-label={`Remove ${occupant.name}`}
+              onClick={() => onRemove(occupant)}
+              sx={{
+                width: 24,
+                height: 24,
+                minWidth: 24,
+                minHeight: 24,
+                p: 0,
+                bgcolor: 'error.main',
+                color: 'error.contrastText',
+                boxShadow: 1,
+                '&:hover': { bgcolor: 'error.dark' },
+              }}
+            >
+              <CloseIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
+        }
       >
-        {initialsFor(occupant.name)}
-      </Avatar>
+        <Avatar
+          src={occupant.photo_url || undefined}
+          sx={{ width: 56, height: 56, fontSize: '1rem' }}
+        >
+          {initialsFor(occupant.name)}
+        </Avatar>
+      </Badge>
     </Badge>
     <Typography
       variant="caption"

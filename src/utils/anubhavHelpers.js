@@ -54,6 +54,41 @@ export const DEANERY_TO_PLACE = {
 export const FEE_PER_YOUTH = 50;
 export const SOFT_CAP_PER_PARISH = 15;
 
+// ID-card-required fields (mirrors API_CONTRACT.md). An independent entry can be
+// promoted to a full ID-card profile only once every one of these is present.
+// `key` matches the field name on an independent row from GET /anubhav/independents.
+export const ID_CARD_REQUIRED_FIELDS = [
+  { key: 'name', label: 'Name' },
+  { key: 'father_name', label: "Father's name" },
+  { key: 'deanery', label: 'Deanery' },
+  { key: 'parish', label: 'Parish' },
+  { key: 'date_of_birth', label: 'Date of birth' },
+  { key: 'phone', label: 'Phone' },
+  { key: 'postal_address', label: 'Postal address' },
+  { key: 'level', label: 'Level' },
+  { key: 'designation', label: 'Designation' },
+  { key: 'photo_url', label: 'Photo' },
+];
+
+// Level + designation option lists (mirror EditProfileDialog so independent
+// entries collect the same controlled values an ID-card profile would).
+export const LEVEL_OPTIONS = ['parish', 'deanery', 'dexco'];
+export const DESIGNATION_OPTIONS = [
+  'Member', 'President', 'Vice-President', 'Secretary', 'Joint Secretary',
+  'Treasurer', 'Joint Treasurer', 'Media Secretary', 'Joint Media Secretary',
+  'Boy Representative', 'Girl Representative', 'Boy Spokesperson', 'Girl Spokesperson',
+];
+
+// Returns the human labels of the ID-card-required fields still missing on a row.
+// Empty array means the row is complete and ready to print / promote.
+export const missingIdCardFields = (row) => {
+  if (!row) return ID_CARD_REQUIRED_FIELDS.map((f) => f.label);
+  return ID_CARD_REQUIRED_FIELDS.filter((f) => {
+    const value = row[f.key];
+    return !(value !== null && value !== undefined && String(value).trim() !== '');
+  }).map((f) => f.label);
+};
+
 export const placeForDeanery = (deanery) => {
   if (!deanery) return null;
   return DEANERY_TO_PLACE[deanery] || null;

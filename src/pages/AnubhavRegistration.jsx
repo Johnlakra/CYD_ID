@@ -160,9 +160,10 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
             const chap = row.chaperone_name
               ? `${row.chaperone_name}${includePhones && row.chaperone_phone ? ' ' + row.chaperone_phone : ''}`
               : '—';
+            const indSuffix = row.is_independent ? ' (IND)' : '';
             const vals = includePhones
-              ? [String(serial++), trunc(row.name,38), trunc(row.father_name,32), trunc(row.parish,30), trunc(row.deanery,24), trunc(row.phone,16), trunc(chap,20)]
-              : [String(serial++), trunc(row.name,46), trunc(row.father_name,36), trunc(row.parish,34), trunc(row.deanery,26), trunc(chap,20)];
+              ? [String(serial++), trunc(row.name,38) + indSuffix, trunc(row.father_name,32), trunc(row.parish,30), trunc(row.deanery,24), trunc(row.phone,16), trunc(chap,20)]
+              : [String(serial++), trunc(row.name,46) + indSuffix, trunc(row.father_name,36), trunc(row.parish,34), trunc(row.deanery,26), trunc(chap,20)];
             let x = M + 1;
             vals.forEach((v, i) => { doc.text(v, x, curY+5); x += COLS[i]; });
             curY += ROW_H;

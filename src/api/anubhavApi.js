@@ -41,6 +41,11 @@ import {
   mockCreateSpeaker,
   mockUpdateSpeaker,
   mockDeleteSpeaker,
+  mockGetIndependents,
+  mockCreateIndependent,
+  mockUpdateIndependent,
+  mockDeleteIndependent,
+  mockPromoteIndependent,
 } from './anubhavMock';
 
 const USE_MOCK = process.env.REACT_APP_ANUBHAV_MOCK !== 'false';
@@ -74,6 +79,9 @@ const ROUTES = {
   rolesGrant: '/anubhav/roles/grant',
   speakers: '/anubhav/speakers',
   speakerById: (id) => `/anubhav/speakers/${id}`,
+  independents: '/anubhav/independents',
+  independentById: (id) => `/anubhav/independents/${id}`,
+  independentPromote: (id) => `/anubhav/independents/${id}/promote`,
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -444,6 +452,60 @@ export const deleteSpeaker = async (id) => {
   if (USE_MOCK) return mockDeleteSpeaker(id);
   try {
     return unwrap(await apiClient.delete(ROUTES.speakerById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Option B — Independent entries (admin/dexco/loc). Stored as profile rows with
+// is_independent=1; never surfaced on /profiles. See API_CONTRACT.md.
+//   getIndependents     -> { place, independents: [...], count }
+//   createIndependent   -> { profile_id, independent }
+//   update/delete       -> standard envelope
+//   promoteIndependent  -> { profile, credentials } (admin only)
+// ---------------------------------------------------------------------------
+
+export const getIndependents = async (params) => {
+  if (USE_MOCK) return mockGetIndependents(params);
+  try {
+    return unwrap(await apiClient.get(ROUTES.independents, { params }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createIndependent = async (body) => {
+  if (USE_MOCK) return mockCreateIndependent(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.independents, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const updateIndependent = async (id, body) => {
+  if (USE_MOCK) return mockUpdateIndependent(id, body);
+  try {
+    return unwrap(await apiClient.put(ROUTES.independentById(id), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteIndependent = async (id) => {
+  if (USE_MOCK) return mockDeleteIndependent(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.independentById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const promoteIndependent = async (id, body) => {
+  if (USE_MOCK) return mockPromoteIndependent(id, body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.independentPromote(id), body));
   } catch (error) {
     return errorEnvelope(error);
   }

@@ -16,11 +16,13 @@ import {
   TableCell,
   TableBody,
   Avatar,
+  Badge,
 } from '@mui/material';
 import { Celebration as CelebrationIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { getMyEvent, getTimetableLive } from '../api/anubhavApi';
 import { PLACE_META, to12h } from '../utils/anubhavHelpers';
+import { IndependentDot } from '../components/IndependentBadge';
 
 const POLL_INTERVAL_MS = 2 * 60 * 1000;
 
@@ -178,12 +180,18 @@ const MyEvent = ({ user }) => {
                         <Chip
                           key={idx}
                           avatar={
-                            <Avatar
-                              src={rm.photo_url || undefined}
-                              imgProps={{ loading: 'lazy' }}
+                            <Badge
+                              overlap="circular"
+                              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                              badgeContent={rm.is_independent ? <IndependentDot size={7} /> : null}
                             >
-                              {initialsFor(rm.name)}
-                            </Avatar>
+                              <Avatar
+                                src={rm.photo_url || undefined}
+                                imgProps={{ loading: 'lazy' }}
+                              >
+                                {initialsFor(rm.name)}
+                              </Avatar>
+                            </Badge>
                           }
                           label={`${rm.name} · ${rm.parish}`}
                           size="small"

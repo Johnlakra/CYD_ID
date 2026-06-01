@@ -48,6 +48,8 @@ import {
   createChaperone,
   createRegistration,
 } from '../api/anubhavApi';
+import IndependentBadge, { INDEPENDENT_COLOR } from '../components/IndependentBadge';
+import IndependentEntryDialog from '../components/IndependentEntryDialog';
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -84,6 +86,7 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
   const [submitting, setSubmitting] = useState(false);
   const [softCap, setSoftCap] = useState({ open: false, count: 0 });
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [independentOpen, setIndependentOpen] = useState(false);
 
   const deaneriesForCurrentPlace = useMemo(
     () => Object.keys(deaneryParishMap).sort((a, b) => a.localeCompare(b)),
@@ -356,9 +359,12 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
                         {option.name?.charAt(0)}
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {option.name}
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {option.name}
+                          </Typography>
+                          {option.is_independent ? <IndependentBadge /> : null}
+                        </Box>
                         {option.father_name && (
                           <Typography variant="caption" color="text.secondary" display="block">
                             s/o {option.father_name}
@@ -382,6 +388,8 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
                       }
                       label={opt.name}
                       size="small"
+                      variant={opt.is_independent ? 'outlined' : 'filled'}
+                      sx={opt.is_independent ? { borderColor: INDEPENDENT_COLOR, color: INDEPENDENT_COLOR } : undefined}
                       {...getTagProps({ index })}
                     />
                   ))
@@ -405,6 +413,24 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
                   />
                 )}
               />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<PersonAddIcon />}
+                  onClick={() => setIndependentOpen(true)}
+                  disabled={!parish}
+                  sx={{ color: INDEPENDENT_COLOR, borderColor: INDEPENDENT_COLOR }}
+                >
+                  Add independent entry
+                </Button>
+                <Typography variant="caption" color="text.secondary">
+                  For a youth without an existing ID-card profile.
+                </Typography>
+              </Box>
             </Grid>
 
             {deanery && parish && eligible.length > 0 && (
@@ -733,6 +759,18 @@ const RegisterYouth = ({ activePlace, onLogout, onRegistered }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Add independent entry (Option B) — creates a youth without an existing
+          ID-card profile, who then becomes selectable in the eligible list. */}
+      <IndependentEntryDialog
+        open={independentOpen}
+        onClose={() => setIndependentOpen(false)}
+        mode="create"
+        place={activePlace}
+        deanery={deanery}
+        parish={parish}
+        onSaved={fetchEligible}
+      />
     </Box>
   );
 };
