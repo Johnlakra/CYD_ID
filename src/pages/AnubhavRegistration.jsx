@@ -15,12 +15,14 @@ import {
   Switch,
   FormControlLabel,
   Tooltip,
+  Link,
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
   List as ListIcon,
   Event as EventIcon,
   PictureAsPdf as PdfIcon,
+  OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-toastify';
@@ -28,6 +30,11 @@ import { PLACES, PLACE_META, placeChipProps, FEE_PER_YOUTH } from '../utils/anub
 import { getRegistrations } from '../api/anubhavApi';
 import RegisterYouth from './RegisterYouth';
 import RegisteredYouthList from './RegisteredYouthList';
+
+// Public marketing/info website. Override per-environment via
+// REACT_APP_ANUBHAV_WEB_URL. TODO: confirm the final deployed domain.
+const ANUBHAV_WEB_URL =
+  process.env.REACT_APP_ANUBHAV_WEB_URL || 'https://anubhav.diocesseofjalandhar.in';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -153,9 +160,10 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
             const chap = row.chaperone_name
               ? `${row.chaperone_name}${includePhones && row.chaperone_phone ? ' ' + row.chaperone_phone : ''}`
               : '—';
+            const indSuffix = row.is_independent ? ' (IND)' : '';
             const vals = includePhones
-              ? [String(serial++), trunc(row.name,38), trunc(row.father_name,32), trunc(row.parish,30), trunc(row.deanery,24), trunc(row.phone,16), trunc(chap,20)]
-              : [String(serial++), trunc(row.name,46), trunc(row.father_name,36), trunc(row.parish,34), trunc(row.deanery,26), trunc(chap,20)];
+              ? [String(serial++), trunc(row.name,38) + indSuffix, trunc(row.father_name,32), trunc(row.parish,30), trunc(row.deanery,24), trunc(row.phone,16), trunc(chap,20)]
+              : [String(serial++), trunc(row.name,46) + indSuffix, trunc(row.father_name,36), trunc(row.parish,34), trunc(row.deanery,26), trunc(chap,20)];
             let x = M + 1;
             vals.forEach((v, i) => { doc.text(v, x, curY+5); x += COLS[i]; });
             curY += ROW_H;
@@ -236,6 +244,17 @@ const AnubhavRegistration = ({ eventRole, locPlace, onLogout }) => {
               {meta.venue} &nbsp;|&nbsp; {meta.dates}
             </Typography>
           )}
+          <Link
+            href={ANUBHAV_WEB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="body2"
+            underline="hover"
+            sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+          >
+            View public website
+            <OpenInNewIcon sx={{ fontSize: 16 }} />
+          </Link>
         </Box>
         {!isLoc && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>

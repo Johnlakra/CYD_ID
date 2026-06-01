@@ -59,6 +59,7 @@ import {
   deleteRegistration,
 } from '../api/anubhavApi';
 import ConfirmDialog from '../components/ConfirmDialog';
+import IndependentBadge from '../components/IndependentBadge';
 
 const handleAuthError = (envelope, onLogout) => {
   if (envelope && envelope.status === 401 && typeof onLogout === 'function') {
@@ -84,6 +85,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
   const [deanery, setDeanery] = useState('');
   const [parish, setParish] = useState('');
   const [search, setSearch] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('all'); // all | existing | independent
 
   const [registrations, setRegistrations] = useState([]);
   const [countsByParish, setCountsByParish] = useState({});
@@ -167,8 +169,10 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
 
   const filteredRows = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return registrations;
     return registrations.filter((row) => {
+      if (sourceFilter === 'existing' && row.is_independent) return false;
+      if (sourceFilter === 'independent' && !row.is_independent) return false;
+      if (!term) return true;
       return (
         (row.name && row.name.toLowerCase().includes(term)) ||
         (row.father_name && row.father_name.toLowerCase().includes(term)) ||
@@ -177,7 +181,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
           row.chaperone_name.toLowerCase().includes(term))
       );
     });
-  }, [registrations, search]);
+  }, [registrations, search, sourceFilter]);
 
   const handleConfirmDelete = async () => {
     if (!deleteDialog.registrationId) return;
@@ -285,10 +289,11 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
           const chapStr = row.chaperone_name
             ? `${row.chaperone_name}${includePhones && row.chaperone_phone ? ' ' + row.chaperone_phone : ''}`
             : '—';
+          const indSuffix = row.is_independent ? ' (IND)' : '';
           const vals = includePhones
             ? [
                 String(serial++),
-                trunc(row.name, 28),
+                trunc(row.name, 28) + indSuffix,
                 trunc(row.father_name, 24),
                 trunc(row.parish, 26),
                 trunc(row.phone, 13),
@@ -296,7 +301,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
               ]
             : [
                 String(serial++),
-                trunc(row.name, 32),
+                trunc(row.name, 32) + indSuffix,
                 trunc(row.father_name, 26),
                 trunc(row.parish, 28),
                 trunc(chapStr, 36),
@@ -473,7 +478,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
         />
         <CardContent>
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
                 <InputLabel>Deanery</InputLabel>
                 <Select
@@ -490,7 +495,7 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
                 <InputLabel>Parish</InputLabel>
                 <Select
@@ -508,7 +513,21 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={6} md={2}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Show</InputLabel>
+                <Select
+                  value={sourceFilter}
+                  label="Show"
+                  onChange={(e) => setSourceFilter(e.target.value)}
+                >
+                  <MenuItem value="all">All</MenuItem>
+                  <MenuItem value="existing">Existing</MenuItem>
+                  <MenuItem value="independent">Independents only</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 size="small"
@@ -592,9 +611,12 @@ const RegisteredYouthList = ({ activePlace, onLogout, refreshKey }) => {
                           </Avatar>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {row.name}
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {row.name}
+                            </Typography>
+                            {row.is_independent ? <IndependentBadge /> : null}
+                          </Box>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" color="text.secondary">

@@ -9,6 +9,7 @@ import {
   DEANERY_TO_PLACE,
   FEE_PER_YOUTH,
   deaneriesForPlace,
+  missingIdCardFields,
 } from '../utils/anubhavHelpers';
 
 const delay = (ms) =>
@@ -78,6 +79,7 @@ const buildSeedEligibleProfiles = () => {
         dob: '2008-04-15',
         father_name: `${FIRST_NAMES[(nextProfileId * 7) % FIRST_NAMES.length]} ${LAST_NAMES[(nextProfileId * 11) % LAST_NAMES.length]}`,
         photo_url: null,
+        is_independent: 0,
       });
       nextProfileId += 1;
     }
@@ -136,7 +138,62 @@ const buildSeedRegistrations = (profiles, chaperones) => {
   return regs;
 };
 
-const seedProfiles = buildSeedEligibleProfiles();
+// Option B independent entries — youth registered directly for Anubhav without
+// an existing ID-card profile. Stored as profile rows with is_independent=1.
+// Seeded with a deliberate mix: one fully complete (promotable/printable), and
+// two incomplete (exercise the missing-fields tooltip + promote-gating paths).
+const buildSeedIndependents = () => {
+  const list = [
+    {
+      // COMPLETE — every ID-card-required field present.
+      name: 'Independent Asha',
+      parish: 'Hoshiarpur',
+      deanery: 'Hoshiarpur',
+      dob: '2008-07-21',
+      father_name: 'Joseph Masih',
+      photo_url: 'https://placehold.co/200x200',
+      level: 'parish',
+      designation: 'Member',
+      postal_address: '12 Church Road, Hoshiarpur',
+    },
+    {
+      // INCOMPLETE — missing father_name, dob, postal_address, level, designation, photo.
+      name: 'Independent Rahul',
+      parish: 'Moga',
+      deanery: 'Moga',
+      dob: null,
+      father_name: null,
+      photo_url: null,
+      level: null,
+      designation: null,
+      postal_address: null,
+    },
+    {
+      // PARTIAL — only the photo is missing.
+      name: 'Independent Neha',
+      parish: 'Amritsar Cantt.',
+      deanery: 'Amritsar',
+      dob: '2009-02-10',
+      father_name: 'Peter Singh',
+      photo_url: null,
+      level: 'deanery',
+      designation: 'Volunteer',
+      postal_address: '5 Mall Road, Amritsar',
+    },
+  ];
+  return list.map((seed) => {
+    const row = {
+      id: nextProfileId,
+      phone: `97${String(800000000 + nextProfileId).slice(-9)}`,
+      is_independent: 1,
+      ...seed,
+    };
+    nextProfileId += 1;
+    return row;
+  });
+};
+
+const seedProfiles = [...buildSeedEligibleProfiles(), ...buildSeedIndependents()];
 const seedChaperones = buildSeedChaperones();
 const seedRegistrations = buildSeedRegistrations(seedProfiles, seedChaperones);
 
@@ -159,7 +216,7 @@ const matchesSearch = (profile, search) => {
   if (!needle) return true;
   return (
     profile.name.toLowerCase().includes(needle) ||
-    profile.phone.includes(needle)
+    String(profile.phone || '').includes(needle)
   );
 };
 
@@ -231,6 +288,7 @@ const enrichRegistration = (registration) => {
     phone: profile ? profile.phone : '-',
     father_name: profile ? profile.father_name : null,
     photo_url: profile ? profile.photo_url || null : null,
+    is_independent: profile ? profile.is_independent || 0 : 0,
     chaperone_name: chaperone ? chaperone.name : null,
     chaperone_phone: chaperone ? chaperone.phone : null,
     chaperone_type: chaperone ? chaperone.type : null,
@@ -513,6 +571,7 @@ const enrichOccupants = (roomId) => {
         phone: profile ? profile.phone : '-',
         father_name: profile ? profile.father_name : null,
         photo_url: profile ? profile.photo_url || null : null,
+        is_independent: profile ? profile.is_independent || 0 : 0,
       };
     });
 };
@@ -1119,6 +1178,7 @@ export const mockGetMyEvent = async () => {
         name: profile ? profile.name : 'Unknown',
         parish: profile ? profile.parish : '-',
         photo_url: profile ? profile.photo_url || null : null,
+        is_independent: profile ? profile.is_independent || 0 : 0,
       };
     });
     room = {
@@ -1195,3 +1255,261 @@ export const mockListRoles = async () => {
   return ok({ roles: granted }, 'Roles listed');
 };
 
+// ---------------------------------------------------------------------------
+// Speakers seed + mock functions
+// Mirrors live shape exactly (BUG-001 lesson): list returns the wrapper
+// { speakers: [...], count } — never a bare array. create/update return
+// { speaker }. Delete is a soft delete (status -> 0); the admin list still
+// returns drafts (status 0), matching the contract.
+// ---------------------------------------------------------------------------
+
+const seedSpeakers = [
+  { id: 1, place: null,        name: 'Most Rev. Bishop',     role: 'Keynote Speaker',  bio: 'Shepherd of the diocese, opening the retreat.', photo_url: null, sort_order: 0, status: 1 },
+  { id: 2, place: 'phagwara',  name: 'Fr. Thomas',           role: 'Retreat Preacher', bio: 'Leading the Phagwara sessions.',                photo_url: null, sort_order: 1, status: 1 },
+  { id: 3, place: 'abohar',    name: 'Sr. Grace',            role: 'Worship Leader',   bio: 'Praise & worship animation.',                   photo_url: null, sort_order: 1, status: 1 },
+  { id: 4, place: 'amritsar',  name: 'Bro. Daniel',          role: 'Youth Animator',   bio: '',                                              photo_url: null, sort_order: 2, status: 1 },
+];
+
+store = { ...store, speakers: seedSpeakers };
+
+let nextSpeakerId = seedSpeakers.length + 1;
+
+const sortSpeakers = (list) =>
+  [...list].sort((a, b) => {
+    if ((a.sort_order || 0) !== (b.sort_order || 0)) {
+      return (a.sort_order || 0) - (b.sort_order || 0);
+    }
+    return String(a.name).localeCompare(String(b.name));
+  });
+
+export const mockListSpeakers = async () => {
+  await delay();
+  // Full list INCLUDING drafts (status 0), ordered by sort_order then name.
+  const speakers = sortSpeakers(store.speakers);
+  return ok({ speakers, count: speakers.length }, 'Speakers fetched');
+};
+
+export const mockCreateSpeaker = async (body) => {
+  await delay();
+  const { name, role } = body || {};
+  if (!name || !name.trim()) return fail('name is required');
+  if (!role || !role.trim()) return fail('role is required');
+  const created = {
+    id: nextSpeakerId,
+    place: body.place !== undefined ? body.place : null,
+    name: name.trim(),
+    role: role.trim(),
+    bio: (body.bio || '').trim(),
+    photo_url: (body.photo_url || '').trim() || null,
+    sort_order: Number(body.sort_order) || 0,
+    status: 1,
+  };
+  nextSpeakerId += 1;
+  store = { ...store, speakers: [...store.speakers, created] };
+  return ok({ speaker: created }, 'Speaker added');
+};
+
+export const mockUpdateSpeaker = async (id, body) => {
+  await delay();
+  const target = store.speakers.find((s) => s.id === Number(id));
+  if (!target) return fail('Speaker not found');
+  const patch = { ...body };
+  if (patch.name !== undefined) patch.name = String(patch.name).trim();
+  if (patch.role !== undefined) patch.role = String(patch.role).trim();
+  if (patch.bio !== undefined) patch.bio = String(patch.bio).trim();
+  if (patch.photo_url !== undefined) patch.photo_url = String(patch.photo_url).trim() || null;
+  if (patch.sort_order !== undefined) patch.sort_order = Number(patch.sort_order) || 0;
+  const updated = { ...target, ...patch, id: target.id };
+  store = {
+    ...store,
+    speakers: store.speakers.map((s) => (s.id === Number(id) ? updated : s)),
+  };
+  return ok({ speaker: updated }, 'Speaker updated');
+};
+
+export const mockDeleteSpeaker = async (id) => {
+  await delay();
+  const target = store.speakers.find((s) => s.id === Number(id));
+  if (!target) return fail('Speaker not found');
+  // Soft delete: status -> 0 (matches contract; still returned by the admin list).
+  const updated = { ...target, status: 0 };
+  store = {
+    ...store,
+    speakers: store.speakers.map((s) => (s.id === Number(id) ? updated : s)),
+  };
+  return ok({ speaker: updated }, 'Speaker removed');
+};
+
+// ---------------------------------------------------------------------------
+// Option B — Independent entries (profile rows with is_independent=1).
+// List shape mirrors live exactly: { place, independents: [...], count }.
+// Each row maps the internal profile-style `dob` to the contract `date_of_birth`
+// and carries a computed `id_card_complete` (true when nothing is missing).
+// ---------------------------------------------------------------------------
+
+const failWith = (message, data, status) => ({
+  success: false,
+  message: message || 'Error',
+  data: data || null,
+  status,
+});
+
+// Build the contract-shaped independent row from an internal profile record.
+const toIndependentRow = (p) => {
+  const row = {
+    id: p.id,
+    name: p.name,
+    father_name: p.father_name || null,
+    date_of_birth: p.dob || null,
+    phone: p.phone || null,
+    deanery: p.deanery,
+    parish: p.parish,
+    level: p.level || null,
+    designation: p.designation || null,
+    postal_address: p.postal_address || null,
+    photo_url: p.photo_url || null,
+    is_independent: 1,
+    place: DEANERY_TO_PLACE[p.deanery] || null,
+  };
+  return { ...row, id_card_complete: missingIdCardFields(row).length === 0 };
+};
+
+const findIndependent = (id) =>
+  store.eligibleProfiles.find(
+    (p) => p.id === Number(id) && p.is_independent === 1
+  );
+
+export const mockGetIndependents = async (params) => {
+  await delay();
+  const { place, deanery, parish, search } = params || {};
+  const rows = store.eligibleProfiles
+    .filter((p) => p.is_independent === 1)
+    .filter((p) => {
+      if (place && DEANERY_TO_PLACE[p.deanery] !== place) return false;
+      if (deanery && p.deanery !== deanery) return false;
+      if (parish && p.parish !== parish) return false;
+      if (!matchesSearch(p, search)) return false;
+      return true;
+    })
+    .map(toIndependentRow);
+  return ok(
+    { place: place || null, independents: rows, count: rows.length },
+    'Independents fetched'
+  );
+};
+
+export const mockCreateIndependent = async (body) => {
+  await delay();
+  const { place, deanery, parish, name } = body || {};
+  const missingFields = [];
+  if (!name || !name.trim()) missingFields.push('name');
+  if (!deanery) missingFields.push('deanery');
+  if (!parish) missingFields.push('parish');
+  if (!place) missingFields.push('place');
+  if (missingFields.length) {
+    return failWith('Missing required fields', { missing_fields: missingFields }, 400);
+  }
+  const created = {
+    id: nextProfileId,
+    name: name.trim(),
+    parish,
+    deanery,
+    phone: body.phone || null,
+    dob: body.date_of_birth || null,
+    father_name: body.father_name || null,
+    photo_url: body.photo_url || null,
+    level: body.level || null,
+    designation: body.designation || null,
+    postal_address: body.postal_address || null,
+    is_independent: 1,
+  };
+  nextProfileId += 1;
+  store = { ...store, eligibleProfiles: [...store.eligibleProfiles, created] };
+  return ok(
+    { profile_id: created.id, independent: toIndependentRow(created) },
+    'Independent entry created'
+  );
+};
+
+export const mockUpdateIndependent = async (id, body) => {
+  await delay();
+  const target = findIndependent(id);
+  if (!target) return fail('Independent entry not found');
+  const patch = { ...(body || {}) };
+  // Map contract field date_of_birth -> internal dob.
+  if ('date_of_birth' in patch) {
+    patch.dob = patch.date_of_birth;
+    delete patch.date_of_birth;
+  }
+  const updated = { ...target, ...patch, id: target.id, is_independent: 1 };
+  store = {
+    ...store,
+    eligibleProfiles: store.eligibleProfiles.map((p) =>
+      p.id === target.id ? updated : p
+    ),
+  };
+  return ok({ independent: toIndependentRow(updated) }, 'Independent entry updated');
+};
+
+export const mockDeleteIndependent = async (id) => {
+  await delay();
+  const target = findIndependent(id);
+  if (!target) return fail('Independent entry not found');
+  const hasActiveReg = store.registrations.some(
+    (r) => r.profile_id === target.id
+  );
+  if (hasActiveReg) {
+    return failWith('Cannot delete: an active registration exists', null, 409);
+  }
+  store = {
+    ...store,
+    eligibleProfiles: store.eligibleProfiles.filter((p) => p.id !== target.id),
+  };
+  return ok({ id: target.id }, 'Independent entry deleted');
+};
+
+export const mockPromoteIndependent = async (id, body) => {
+  await delay();
+  const target = findIndependent(id);
+  if (!target) return fail('Independent entry not found');
+  // Body fills gaps only (non-empty values win). Contract field names map to internal.
+  const fieldMap = { date_of_birth: 'dob' };
+  const merged = { ...target };
+  Object.entries(body || {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      merged[fieldMap[key] || key] = value;
+    }
+  });
+  const row = toIndependentRow(merged);
+  const missing = missingIdCardFields(row);
+  if (missing.length) {
+    return failWith('Cannot promote: required fields are missing', { missing_fields: missing }, 400);
+  }
+  // Promote: flip is_independent to 0 → becomes an ordinary ID-card profile.
+  const promoted = { ...merged, is_independent: 0 };
+  store = {
+    ...store,
+    eligibleProfiles: store.eligibleProfiles.map((p) =>
+      p.id === target.id ? promoted : p
+    ),
+  };
+  // Credentials per contract: username = first 4 letters of name + DDMM of DOB;
+  // password = the youth's phone digits.
+  const first4 = String(promoted.name).replace(/[^a-zA-Z]/g, '').slice(0, 4).toLowerCase();
+  const dob = promoted.dob ? new Date(promoted.dob) : null;
+  const ddmm = dob && !Number.isNaN(dob.getTime())
+    ? `${String(dob.getDate()).padStart(2, '0')}${String(dob.getMonth() + 1).padStart(2, '0')}`
+    : '0000';
+  const username = `${first4}${ddmm}`;
+  return ok(
+    {
+      profile: promoted,
+      credentials: {
+        username,
+        password_hint: 'phone number',
+        message: "Password is the youth's phone number — share this so they can log in.",
+      },
+    },
+    'Independent promoted to full profile'
+  );
+};

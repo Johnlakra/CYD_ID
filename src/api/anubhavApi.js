@@ -37,6 +37,15 @@ import {
   mockSearchUsers,
   mockGrantRole,
   mockListRoles,
+  mockListSpeakers,
+  mockCreateSpeaker,
+  mockUpdateSpeaker,
+  mockDeleteSpeaker,
+  mockGetIndependents,
+  mockCreateIndependent,
+  mockUpdateIndependent,
+  mockDeleteIndependent,
+  mockPromoteIndependent,
 } from './anubhavMock';
 
 const USE_MOCK = process.env.REACT_APP_ANUBHAV_MOCK !== 'false';
@@ -68,6 +77,11 @@ const ROUTES = {
   usersSearch: '/anubhav/users/search',
   roles: '/anubhav/roles',
   rolesGrant: '/anubhav/roles/grant',
+  speakers: '/anubhav/speakers',
+  speakerById: (id) => `/anubhav/speakers/${id}`,
+  independents: '/anubhav/independents',
+  independentById: (id) => `/anubhav/independents/${id}`,
+  independentPromote: (id) => `/anubhav/independents/${id}/promote`,
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -394,6 +408,104 @@ export const listRoles = async () => {
   if (USE_MOCK) return mockListRoles();
   try {
     return unwrap(await apiClient.get(ROUTES.roles));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Speakers (admin + dexco) — powers the public website's speaker list.
+// Envelope data shapes (per API_CONTRACT.md):
+//   listSpeakers   -> { speakers: [...full rows incl. drafts...], count }
+//   create/update  -> { speaker }
+//   deleteSpeaker  -> soft delete (status=0)
+// ---------------------------------------------------------------------------
+
+export const listSpeakers = async () => {
+  if (USE_MOCK) return mockListSpeakers();
+  try {
+    return unwrap(await apiClient.get(ROUTES.speakers));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createSpeaker = async (body) => {
+  if (USE_MOCK) return mockCreateSpeaker(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.speakers, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const updateSpeaker = async (id, body) => {
+  if (USE_MOCK) return mockUpdateSpeaker(id, body);
+  try {
+    return unwrap(await apiClient.put(ROUTES.speakerById(id), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteSpeaker = async (id) => {
+  if (USE_MOCK) return mockDeleteSpeaker(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.speakerById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Option B — Independent entries (admin/dexco/loc). Stored as profile rows with
+// is_independent=1; never surfaced on /profiles. See API_CONTRACT.md.
+//   getIndependents     -> { place, independents: [...], count }
+//   createIndependent   -> { profile_id, independent }
+//   update/delete       -> standard envelope
+//   promoteIndependent  -> { profile, credentials } (admin only)
+// ---------------------------------------------------------------------------
+
+export const getIndependents = async (params) => {
+  if (USE_MOCK) return mockGetIndependents(params);
+  try {
+    return unwrap(await apiClient.get(ROUTES.independents, { params }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createIndependent = async (body) => {
+  if (USE_MOCK) return mockCreateIndependent(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.independents, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const updateIndependent = async (id, body) => {
+  if (USE_MOCK) return mockUpdateIndependent(id, body);
+  try {
+    return unwrap(await apiClient.put(ROUTES.independentById(id), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteIndependent = async (id) => {
+  if (USE_MOCK) return mockDeleteIndependent(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.independentById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const promoteIndependent = async (id, body) => {
+  if (USE_MOCK) return mockPromoteIndependent(id, body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.independentPromote(id), body));
   } catch (error) {
     return errorEnvelope(error);
   }

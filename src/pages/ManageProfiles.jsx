@@ -31,6 +31,8 @@ import {
   TablePagination,
   CircularProgress,
   Skeleton,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -48,6 +50,7 @@ import dayjs from 'dayjs';
 import { baseURL } from '../api/apiClient';
 import IDCard from '../components/IDCard';
 import { capitalizeName } from '../utils/text-format';
+import IndependentEntriesTab from './IndependentEntriesTab';
 
 // Debounce function
 const debounce = (func, delay) => {
@@ -87,6 +90,7 @@ const fallbackDesignationOptions = [
 
 const ManageProfiles = ({ authToken, user, onLogout, onEditProfile }) => {
   // State management
+  const [activeTab, setActiveTab] = useState(0); // 0 = ID-Card Profiles, 1 = Independent Entries
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterOptions, setFilterOptions] = useState({
@@ -325,10 +329,23 @@ const tableHeaders = [
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 300, mb: 1 }}>
         Manage Profiles
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
         View, edit, and manage all ID card profiles
       </Typography>
 
+      <Tabs
+        value={activeTab}
+        onChange={(_, v) => setActiveTab(v)}
+        aria-label="Profile management tabs"
+        sx={{ mb: 3 }}
+      >
+        <Tab label="ID-Card Profiles" />
+        <Tab label="Independent Entries" />
+      </Tabs>
+
+      {activeTab === 1 && <IndependentEntriesTab onLogout={onLogout} />}
+
+      {activeTab === 0 && (
       <Card sx={{ borderRadius: 3 }}>
         <CardHeader
           title={
@@ -655,6 +672,7 @@ const tableHeaders = [
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog
