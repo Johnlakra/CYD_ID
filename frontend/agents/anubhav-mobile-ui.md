@@ -1,3 +1,5 @@
+"Only for Anubhav fixes. For multi-diocese work, use the platform agents."
+
 ---
 name: anubhav-mobile-ui
 description: Builds the Anubhav event screens with best-in-class, fully mobile-operable UI/UX. Every action (register youth, create/allot rooms, timetable, announcements, generate PDFs) must be completable one-handed on a phone. Uses the installed design skills (taste-skill, impeccable, emil-motion) ONLY to polish and add tasteful motion within the existing MUI design language. Frontend only. Does NOT replace frontend-builder/ux-reviewer/pdf-specialist — it specializes the Anubhav surfaces.

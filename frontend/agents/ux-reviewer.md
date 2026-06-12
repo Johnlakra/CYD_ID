@@ -1,3 +1,4 @@
+"Only for Anubhav fixes. For multi-diocese work, use the platform agents."
 ---
 name: ux-reviewer
 description: Reviews every new event-module screen for visual consistency with the existing MUI design, responsive/mobile correctness, loading/empty/error states, and accessibility. Frontend only.

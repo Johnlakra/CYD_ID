@@ -1,3 +1,4 @@
+"Only for Anubhav fixes. For multi-diocese work, use the platform agents."
 ---
 name: pdf-specialist
 description: Implements pure-frontend jsPDF generation for per-room, per-floor, per-building, and full-place rooming lists, verified to work in mobile browsers. Frontend only.

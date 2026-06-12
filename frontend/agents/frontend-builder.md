@@ -1,3 +1,5 @@
+"Only for Anubhav fixes. For multi-diocese work, use the platform agents."
+
 ---
 name: frontend-builder
 description: Builds new React/MUI pages for the event module, wires them into the existing state-based navigation and role-gated sidebar, and consumes the /anubhav API per the contract. Frontend only.
