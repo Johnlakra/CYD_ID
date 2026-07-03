@@ -41,6 +41,10 @@ import {
   Celebration as CelebrationIcon,
   ManageAccounts as ManageAccountsIcon,
   RecordVoiceOver as RecordVoiceOverIcon,
+  Domain as DomainIcon,
+  AccountTree as AccountTreeIcon,
+  UploadFile as UploadFileIcon,
+  PlaylistAddCheck as PlaylistAddCheckIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
@@ -58,6 +62,18 @@ import ProfileSettings from '../components/ProfileSettings';
 import ProfileHolderSettings from './ProfileHolderSettings';
 import ProfileHolderDashboard from './ProfileHolderDashboard';
 import { getMyRole } from '../api/anubhavApi';
+// Multi-diocese platform (Phases 1-2) — additive; legacy diocese-1 users see
+// none of it (gates below resolve false for diocese_id 1/null/missing).
+import ApprovalConsole from '../pages/platform/ApprovalConsole';
+import OrgStructureManager from '../pages/platform/OrgStructureManager';
+import ImportWizard from '../pages/platform/ImportWizard';
+import SetupWizard from '../pages/platform/SetupWizard';
+import {
+  isLegacyDiocese,
+  isSuperAdmin,
+  isNewDioceseAdmin,
+  getSetupProgress,
+} from '../utils/platformHelpers';
 
 const drawerWidth = 280;
 
@@ -80,27 +96,61 @@ const Dashboard = ({ authToken, user, onLogout }) => {
     });
   }, []);
 
+  // New-diocese admins land in the setup wizard until they finish it once.
+  useEffect(() => {
+    if (isNewDioceseAdmin(user) && !getSetupProgress(user.diocese_id).completed) {
+      setSelectedMenu('platform-setup');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Restrict menu items based on user role
   const getMenuItems = () => {
+    // Platform super_admin: approvals console + settings only (no Anubhav,
+    // no diocese-scoped ID card management).
+    if (isSuperAdmin(user)) {
+      return [
+        {
+          id: 'dashboard',
+          text: 'Dashboard',
+          icon: <DashboardIcon />,
+        },
+        {
+          id: 'platform-dioceses',
+          text: 'Diocese Approvals',
+          icon: <DomainIcon />,
+        },
+        {
+          id: 'profile',
+          text: 'Profile & Settings',
+          icon: <PersonIcon />,
+        },
+      ];
+    }
+
     const isEventManager = eventRole === 'loc' || eventRole === 'dexco';
     if (user?.role === 'profile_holder' && !isEventManager) {
-      return [
+      const items = [
         {
           id: 'dashboard',
           text: 'My Profile',
           icon: <PersonIcon />,
         },
-        {
+      ];
+      // Anubhav is a diocese-1 event; new-diocese youth never see it.
+      if (isLegacyDiocese(user)) {
+        items.push({
           id: 'anubhav-my-event',
           text: 'Anubhav 2026',
           icon: <CelebrationIcon />,
-        },
-        {
-          id: 'profile',
-          text: 'Settings',
-          icon: <SettingsIcon />,
-        },
-      ];
+        });
+      }
+      items.push({
+        id: 'profile',
+        text: 'Settings',
+        icon: <SettingsIcon />,
+      });
+      return items;
     }
 
     // Default menu for admin/user
@@ -122,7 +172,11 @@ const Dashboard = ({ authToken, user, onLogout }) => {
       },
     ];
 
-    if (eventRole === 'loc' || eventRole === 'dexco' || user?.role === 'admin') {
+    // Anubhav 2026 is a diocese-1 (Jalandhar) event; the gates below are
+    // additive — every legacy user resolves isLegacyDiocese=true and sees
+    // the exact same menu as before.
+    if (isLegacyDiocese(user) &&
+        (eventRole === 'loc' || eventRole === 'dexco' || user?.role === 'admin')) {
       base.splice(2, 0, {
         id: 'anubhav-registration',
         text: 'Anubhav 2026',
@@ -146,7 +200,7 @@ const Dashboard = ({ authToken, user, onLogout }) => {
     }
 
     // Speakers manager powers the public website — admin + dexco only (not loc).
-    if (user?.role === 'admin' || eventRole === 'dexco') {
+    if (isLegacyDiocese(user) && (user?.role === 'admin' || eventRole === 'dexco')) {
       base.splice(6, 0, {
         id: 'anubhav-speakers',
         text: 'Speakers',
@@ -154,12 +208,33 @@ const Dashboard = ({ authToken, user, onLogout }) => {
       });
     }
 
-    if (user?.role === 'admin') {
+    if (user?.role === 'admin' && isLegacyDiocese(user)) {
       base.push({
         id: 'role-management',
         text: 'Role Management',
         icon: <ManageAccountsIcon />,
       });
+    }
+
+    // New-diocese admins: organisation + import + setup (Platform Phases 1-2).
+    if (isNewDioceseAdmin(user)) {
+      base.push(
+        {
+          id: 'platform-org',
+          text: 'Organisation',
+          icon: <AccountTreeIcon />,
+        },
+        {
+          id: 'platform-import',
+          text: 'Bulk Import',
+          icon: <UploadFileIcon />,
+        },
+        {
+          id: 'platform-setup',
+          text: 'Setup Wizard',
+          icon: <PlaylistAddCheckIcon />,
+        }
+      );
     }
 
     return base;
@@ -399,6 +474,20 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         return <SpeakersManager onLogout={onLogout} />;
       case 'role-management':
         return <RoleManagement onLogout={onLogout} />;
+      case 'platform-dioceses':
+        return <ApprovalConsole onLogout={onLogout} />;
+      case 'platform-org':
+        return <OrgStructureManager onLogout={onLogout} />;
+      case 'platform-import':
+        return <ImportWizard onLogout={onLogout} />;
+      case 'platform-setup':
+        return (
+          <SetupWizard
+            user={user}
+            onLogout={onLogout}
+            onFinished={() => setSelectedMenu('dashboard')}
+          />
+        );
       case 'profile':
         return <ProfileSettings authToken={authToken} user={user} onLogout={onLogout} />;
       default:
@@ -413,7 +502,9 @@ const Dashboard = ({ authToken, user, onLogout }) => {
               </Typography>
             </Box>
 
-            <AnubhavLiveBanner activePlace={locPlace || PLACES[0]} eventRole={eventRole} />
+            {isLegacyDiocese(user) && !isSuperAdmin(user) && (
+              <AnubhavLiveBanner activePlace={locPlace || PLACES[0]} eventRole={eventRole} />
+            )}
 
             {/* Stats Cards */}
             <Box sx={{ mb: 4 }}>

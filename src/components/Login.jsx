@@ -10,10 +10,10 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { Card, CardContent } from '@mui/material';
+import { Card, CardContent, Link } from '@mui/material';
 import { baseURL } from '../api/apiClient';
 
-const Login = ({ onLoginSuccess }) => {
+const Login = ({ onLoginSuccess, onRegisterDiocese }) => {
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
@@ -175,6 +175,23 @@ const Login = ({ onLoginSuccess }) => {
           </Box>
           
           {renderForm}
+
+          {/* Multi-diocese platform: public diocese onboarding entry (additive). */}
+          {onRegisterDiocese && (
+            <Box sx={{ textAlign: 'center', mt: 3 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                New diocese?{' '}
+                <Link
+                  component="button"
+                  type="button"
+                  variant="body2"
+                  onClick={onRegisterDiocese}
+                >
+                  Register your diocese
+                </Link>
+              </Typography>
+            </Box>
+          )}
         </CardContent>
       </Card>
     </Box>

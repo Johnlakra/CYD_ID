@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
+import DioceseRegistration from "./pages/platform/DioceseRegistration";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -8,6 +9,8 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authToken, setAuthToken] = useState('');
   const [user, setUser] = useState(null);
+  // Pre-login view: 'login' | 'register-diocese' (multi-diocese platform).
+  const [authView, setAuthView] = useState('login');
 
   // Check if user is already logged in on app load
   useEffect(() => {
@@ -40,7 +43,14 @@ function App() {
   return (
     <>
       {!isLoggedIn ? (
-        <Login onLoginSuccess={handleLoginSuccess} />
+        authView === 'register-diocese' ? (
+          <DioceseRegistration onBackToLogin={() => setAuthView('login')} />
+        ) : (
+          <Login
+            onLoginSuccess={handleLoginSuccess}
+            onRegisterDiocese={() => setAuthView('register-diocese')}
+          />
+        )
       ) : (
         <Dashboard 
           authToken={authToken} 
