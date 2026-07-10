@@ -45,6 +45,7 @@ import {
   AccountTree as AccountTreeIcon,
   UploadFile as UploadFileIcon,
   PlaylistAddCheck as PlaylistAddCheckIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
@@ -74,6 +75,11 @@ import {
   isNewDioceseAdmin,
   getSetupProgress,
 } from '../utils/platformHelpers';
+// Phase 3: permission engine — matrix screen for admins, gated by the new
+// ui.tab.permissions key (resolves false on older backends, so nothing shows).
+import PermissionMatrix from '../pages/platform/PermissionMatrix';
+import { usePermissions } from '../utils/usePermissions';
+import { PERM } from '../utils/permissionKeys';
 
 const drawerWidth = 280;
 
@@ -86,6 +92,7 @@ const Dashboard = ({ authToken, user, onLogout }) => {
   const [loading, setLoading] = useState(false);
   const [eventRole, setEventRole] = useState('none');
   const [locPlace, setLocPlace] = useState(null);
+  const { can } = usePermissions();
 
   useEffect(() => {
     getMyRole().then((res) => {
@@ -213,6 +220,16 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         id: 'role-management',
         text: 'Role Management',
         icon: <ManageAccountsIcon />,
+      });
+    }
+
+    // Phase 3: permission matrix — any diocese admin whose backend grants
+    // the ui.tab.permissions key (legacy admins resolve to all keys).
+    if (user?.role === 'admin' && can(PERM.UI_TAB_PERMISSIONS)) {
+      base.push({
+        id: 'platform-permissions',
+        text: 'Permissions',
+        icon: <SecurityIcon />,
       });
     }
 
@@ -476,6 +493,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         return <RoleManagement onLogout={onLogout} />;
       case 'platform-dioceses':
         return <ApprovalConsole onLogout={onLogout} />;
+      case 'platform-permissions':
+        return <PermissionMatrix onLogout={onLogout} />;
       case 'platform-org':
         return <OrgStructureManager onLogout={onLogout} />;
       case 'platform-import':

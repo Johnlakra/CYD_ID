@@ -4,6 +4,7 @@
 // State resets on refresh, same as anubhavMock.
 
 import { SLUG_PATTERN, slugify } from '../utils/platformHelpers';
+import { PERMISSION_CATALOG, ROLE_KEY_PATTERN } from '../utils/permissionKeys';
 
 const LATENCY_MS = 250;
 const delay = (ms = LATENCY_MS) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -622,4 +623,264 @@ export const mockCommitOrgImport = async (body) => {
 export const mockListImportJobs = async () => {
   await delay();
   return ok({ jobs: clone(importJobs) }, 'Import jobs retrieved');
+};
+
+// ---- Phase 3: permission engine ---------------------------------------------
+// Mirrors controllers/permissionController.js + the 104 migration seed.
+
+const permissionRows = PERMISSION_CATALOG.map((permission, index) => ({
+  id: index + 1,
+  perm_key: permission.perm_key,
+  module: permission.module,
+  label: permission.label,
+  description: null,
+}));
+const ALL_PERM_KEYS = permissionRows.map((p) => p.perm_key).sort();
+const permByKey = new Map(permissionRows.map((p) => [p.perm_key, p]));
+
+const EVENT_ROLE_KEYS = [
+  'events.view', 'events.manage', 'events.scan_register',
+  'ui.tab.events', 'ui.tab.accommodation', 'ui.tab.timetable',
+  'ui.tab.speakers', 'ui.tab.announcements',
+].sort();
+const PROFILE_HOLDER_KEYS = ['idcards.view', 'ui.tab.idcards'].sort();
+
+// Same system-role template the backend seeds for diocese 1 and provisions
+// for newly approved dioceses.
+const seedRolesFor = (dioceseId, startId) => [
+  { id: startId, diocese_id: dioceseId, role_key: 'admin', label: 'Administrator', is_system: 1, permissions: [...ALL_PERM_KEYS] },
+  { id: startId + 1, diocese_id: dioceseId, role_key: 'event_loc', label: 'Event LOC', is_system: 1, permissions: [...EVENT_ROLE_KEYS] },
+  { id: startId + 2, diocese_id: dioceseId, role_key: 'event_dexco', label: 'Event DEXCO', is_system: 1, permissions: [...EVENT_ROLE_KEYS] },
+  { id: startId + 3, diocese_id: dioceseId, role_key: 'profile_holder', label: 'Profile Holder', is_system: 1, permissions: [...PROFILE_HOLDER_KEYS] },
+];
+
+let roles = [...seedRolesFor(1, 1), ...seedRolesFor(2, 5)];
+let nextRoleId = 9;
+
+// Per-user assignments/overrides, keyed by numeric user id.
+const userRolesById = {};      // userId -> [{ role_id, scope_type, scope_ref }]
+const userOverridesById = {};  // userId -> [{ perm_key, effect }]
+
+const rolesForDiocese = (dioceseId) => {
+  if (!roles.some((r) => r.diocese_id === dioceseId)) {
+    roles = [...roles, ...seedRolesFor(dioceseId, nextRoleId)];
+    nextRoleId += 4;
+  }
+  return roles
+    .filter((r) => r.diocese_id === dioceseId)
+    .sort((a, b) => b.is_system - a.is_system || a.label.localeCompare(b.label));
+};
+
+const findRole = (roleId, dioceseId) =>
+  rolesForDiocese(dioceseId).find((r) => r.id === Number(roleId)) || null;
+
+const currentMockUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem('user') || 'null') || {};
+  } catch (e) {
+    return {};
+  }
+};
+
+// Legacy 'user' accounts keep their current day-to-day abilities in mock mode.
+const LEGACY_USER_KEYS = [
+  'profiles.view', 'profiles.create', 'profiles.update',
+  'idcards.view', 'idcards.generate',
+  'ui.tab.profiles', 'ui.tab.idcards',
+].sort();
+
+const resolveMockPermissions = (user) => {
+  const role = user && user.role;
+  if (role === 'super_admin' || role === 'admin') return [...ALL_PERM_KEYS];
+  if (role === 'profile_holder') return [...PROFILE_HOLDER_KEYS];
+  const userId = Number(user && user.id);
+  const assigned = userRolesById[userId] || [];
+  const fromRoles = assigned.flatMap((link) => {
+    const role_ = roles.find((r) => r.id === link.role_id);
+    return role_ ? role_.permissions : [];
+  });
+  const merged = new Set([...(role === 'user' ? LEGACY_USER_KEYS : []), ...fromRoles]);
+  for (const override of userOverridesById[userId] || []) {
+    if (override.effect === 'allow') merged.add(override.perm_key);
+    if (override.effect === 'deny') merged.delete(override.perm_key);
+  }
+  return [...merged].sort();
+};
+
+export const mockGetMyPermissions = async () => {
+  await delay(80);
+  return ok({ permissions: resolveMockPermissions(currentMockUser()) }, 'Permissions resolved');
+};
+
+export const mockGetPermissionCatalog = async () => {
+  await delay();
+  const modules = {};
+  for (const row of permissionRows) {
+    if (!modules[row.module]) modules[row.module] = [];
+    modules[row.module].push(clone(row));
+  }
+  return ok({ modules }, 'Permission catalog retrieved');
+};
+
+export const mockGetPermissionMatrix = async () => {
+  await delay();
+  const dioceseRoles = rolesForDiocese(currentDioceseId());
+  const grid = {};
+  for (const role of dioceseRoles) grid[role.id] = [...role.permissions];
+  return ok(
+    {
+      permissions: permissionRows.map(({ id, perm_key, module, label }) => ({ id, perm_key, module, label })),
+      roles: dioceseRoles.map(({ id, role_key, label, is_system }) => ({ id, role_key, label, is_system })),
+      grid,
+    },
+    'Permission matrix retrieved'
+  );
+};
+
+export const mockListRoles = async () => {
+  await delay();
+  return ok({ roles: clone(rolesForDiocese(currentDioceseId())) }, 'Roles retrieved');
+};
+
+export const mockCreateRole = async (body) => {
+  await delay();
+  const roleKey = String((body && body.role_key) || '').trim().toLowerCase();
+  const label = String((body && body.label) || '').trim();
+  if (!ROLE_KEY_PATTERN.test(roleKey)) {
+    return fail('role_key must be 2-60 chars of lowercase letters, numbers, underscores', 400);
+  }
+  if (label.length < 2 || label.length > 100) {
+    return fail('label must be between 2 and 100 characters', 400);
+  }
+  const dioceseId = currentDioceseId();
+  if (rolesForDiocese(dioceseId).some((r) => r.role_key === roleKey)) {
+    return fail('Role key already exists in this diocese', 409);
+  }
+  const role = { id: nextRoleId++, diocese_id: dioceseId, role_key: roleKey, label, is_system: 0, permissions: [] };
+  roles = [...roles, role];
+  return { ...ok({ id: role.id, role_key: roleKey, label, is_system: 0, permissions: [] }, 'Role created'), status: 201 };
+};
+
+export const mockSetRolePermissions = async (roleId, permKeys) => {
+  await delay();
+  const role = findRole(roleId, currentDioceseId());
+  if (!role) return fail('Role not found in this diocese', 404);
+  if (role.is_system && role.role_key === 'admin') {
+    return fail('The admin system role always has every permission', 400);
+  }
+  if (!Array.isArray(permKeys)) return fail('perm_keys must be an array of permission keys', 400);
+  const unknown = permKeys.filter((key) => !permByKey.has(key));
+  if (unknown.length) return fail(`Unknown permission keys: ${unknown.join(', ')}`, 400);
+
+  roles = roles.map((r) => (r.id === role.id ? { ...r, permissions: [...permKeys].sort() } : r));
+  return ok({ id: role.id, permissions: permKeys }, 'Role permissions updated');
+};
+
+export const mockDuplicateRole = async (roleId, body) => {
+  await delay();
+  const source = findRole(roleId, currentDioceseId());
+  if (!source) return fail('Role not found in this diocese', 404);
+  const roleKey = String((body && body.role_key) || '').trim().toLowerCase();
+  const label = String((body && body.label) || '').trim() || `${source.label} (copy)`;
+  if (!ROLE_KEY_PATTERN.test(roleKey)) {
+    return fail('role_key must be 2-60 chars of lowercase letters, numbers, underscores', 400);
+  }
+  if (rolesForDiocese(source.diocese_id).some((r) => r.role_key === roleKey)) {
+    return fail('Role key already exists in this diocese', 409);
+  }
+  const role = {
+    id: nextRoleId++,
+    diocese_id: source.diocese_id,
+    role_key: roleKey,
+    label,
+    is_system: 0,
+    permissions: [...source.permissions],
+  };
+  roles = [...roles, role];
+  return { ...ok({ id: role.id, role_key: roleKey, label }, `Role duplicated from '${source.role_key}'`), status: 201 };
+};
+
+export const mockDeleteRole = async (roleId) => {
+  await delay();
+  const role = findRole(roleId, currentDioceseId());
+  if (!role) return fail('Role not found in this diocese', 404);
+  if (role.is_system) return fail('System roles cannot be deleted', 400);
+  roles = roles.filter((r) => r.id !== role.id);
+  for (const userId of Object.keys(userRolesById)) {
+    userRolesById[userId] = userRolesById[userId].filter((link) => link.role_id !== role.id);
+  }
+  return ok({ id: role.id }, 'Role deleted');
+};
+
+export const mockGetUserAccess = async (userId) => {
+  await delay();
+  const id = Number(userId);
+  if (!Number.isInteger(id) || id <= 0) return fail('User not found in this diocese', 404);
+  const assigned = (userRolesById[id] || []).map((link) => {
+    const role = roles.find((r) => r.id === link.role_id);
+    return {
+      id: link.role_id,
+      role_key: role ? role.role_key : 'unknown',
+      label: role ? role.label : 'Unknown',
+      scope_type: link.scope_type,
+      scope_ref: link.scope_ref,
+    };
+  });
+  const overrides = clone(userOverridesById[id] || []);
+  const stored = currentMockUser();
+  const target = Number(stored.id) === id
+    ? stored
+    : { id, username: `user${id}`, role: 'user' };
+  return ok(
+    {
+      user: { id, username: target.username || `user${id}`, role: target.role || 'user' },
+      roles: assigned,
+      overrides,
+      effective_permissions: resolveMockPermissions(target),
+    },
+    'User access retrieved'
+  );
+};
+
+export const mockAssignUserRole = async (userId, body) => {
+  await delay();
+  const id = Number(userId);
+  const role = findRole(body && body.role_id, currentDioceseId());
+  if (!role) return fail('Role not found in this diocese', 404);
+  const scopeType = ['diocese', 'deanery', 'parish', 'event'].includes(body && body.scope_type)
+    ? body.scope_type : 'diocese';
+  const scopeRef = body && body.scope_ref ? String(body.scope_ref).slice(0, 100) : null;
+  const existing = (userRolesById[id] || []).filter((link) => link.role_id !== role.id);
+  userRolesById[id] = [...existing, { role_id: role.id, scope_type: scopeType, scope_ref: scopeRef }];
+  return {
+    ...ok({ user_id: id, role_id: role.id, scope_type: scopeType, scope_ref: scopeRef }, `Role '${role.role_key}' assigned`),
+    status: 201,
+  };
+};
+
+export const mockRemoveUserRole = async (userId, roleId) => {
+  await delay();
+  const id = Number(userId);
+  const role = findRole(roleId, currentDioceseId());
+  if (!role) return fail('Role not found in this diocese', 404);
+  userRolesById[id] = (userRolesById[id] || []).filter((link) => link.role_id !== role.id);
+  return ok({ user_id: id, role_id: role.id }, `Role '${role.role_key}' removed`);
+};
+
+export const mockSetUserOverride = async (userId, body) => {
+  await delay();
+  const id = Number(userId);
+  const permKey = body && body.perm_key;
+  if (!permByKey.has(permKey)) return fail('Unknown permission key', 404);
+  const effect = body && body.effect;
+  const others = (userOverridesById[id] || []).filter((o) => o.perm_key !== permKey);
+  if (effect === null || effect === undefined || effect === '') {
+    userOverridesById[id] = others;
+    return ok({ perm_key: permKey, effect: null }, 'Override cleared');
+  }
+  if (!['allow', 'deny'].includes(effect)) {
+    return fail("effect must be 'allow', 'deny', or null", 400);
+  }
+  userOverridesById[id] = [...others, { perm_key: permKey, effect }];
+  return ok({ perm_key: permKey, effect }, 'Override saved');
 };

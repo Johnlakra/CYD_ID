@@ -6,6 +6,18 @@
 
 import apiClient from './apiClient';
 import {
+  mockGetMyPermissions,
+  mockGetPermissionCatalog,
+  mockGetPermissionMatrix,
+  mockListRoles,
+  mockCreateRole,
+  mockSetRolePermissions,
+  mockDuplicateRole,
+  mockDeleteRole,
+  mockGetUserAccess,
+  mockAssignUserRole,
+  mockRemoveUserRole,
+  mockSetUserOverride,
   mockRegisterDiocese,
   mockListDioceses,
   mockApproveDiocese,
@@ -43,6 +55,17 @@ const ROUTES = {
   importYouthCommit: '/imports/youth/commit',
   importOrgCommit: '/imports/org/commit',
   importJobs: '/imports/jobs',
+  myPermissions: '/auth/me/permissions',
+  permissionCatalog: '/permissions/catalog',
+  permissionMatrix: '/permissions/matrix',
+  permissionRoles: '/permissions/roles',
+  permissionRoleById: (id) => `/permissions/roles/${id}`,
+  permissionRolePerms: (id) => `/permissions/roles/${id}/permissions`,
+  permissionRoleDuplicate: (id) => `/permissions/roles/${id}/duplicate`,
+  permissionUser: (userId) => `/permissions/users/${userId}`,
+  permissionUserRoles: (userId) => `/permissions/users/${userId}/roles`,
+  permissionUserRoleById: (userId, roleId) => `/permissions/users/${userId}/roles/${roleId}`,
+  permissionUserOverrides: (userId) => `/permissions/users/${userId}/overrides`,
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -218,6 +241,118 @@ export const listImportJobs = async () => {
   if (USE_MOCK) return mockListImportJobs();
   try {
     return unwrap(await apiClient.get(ROUTES.importJobs));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---- Phase 3: permission engine ----------------------------------------------
+
+export const getMyPermissions = async () => {
+  if (USE_MOCK) return mockGetMyPermissions();
+  try {
+    return unwrap(await apiClient.get(ROUTES.myPermissions));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getPermissionCatalog = async () => {
+  if (USE_MOCK) return mockGetPermissionCatalog();
+  try {
+    return unwrap(await apiClient.get(ROUTES.permissionCatalog));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getPermissionMatrix = async () => {
+  if (USE_MOCK) return mockGetPermissionMatrix();
+  try {
+    return unwrap(await apiClient.get(ROUTES.permissionMatrix));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const listRoles = async () => {
+  if (USE_MOCK) return mockListRoles();
+  try {
+    return unwrap(await apiClient.get(ROUTES.permissionRoles));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createRole = async (body) => {
+  if (USE_MOCK) return mockCreateRole(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.permissionRoles, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const setRolePermissions = async (roleId, permKeys) => {
+  if (USE_MOCK) return mockSetRolePermissions(roleId, permKeys);
+  try {
+    return unwrap(
+      await apiClient.put(ROUTES.permissionRolePerms(roleId), { perm_keys: permKeys })
+    );
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const duplicateRole = async (roleId, body) => {
+  if (USE_MOCK) return mockDuplicateRole(roleId, body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.permissionRoleDuplicate(roleId), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteRole = async (roleId) => {
+  if (USE_MOCK) return mockDeleteRole(roleId);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.permissionRoleById(roleId)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getUserAccess = async (userId) => {
+  if (USE_MOCK) return mockGetUserAccess(userId);
+  try {
+    return unwrap(await apiClient.get(ROUTES.permissionUser(userId)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const assignUserRole = async (userId, body) => {
+  if (USE_MOCK) return mockAssignUserRole(userId, body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.permissionUserRoles(userId), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const removeUserRole = async (userId, roleId) => {
+  if (USE_MOCK) return mockRemoveUserRole(userId, roleId);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.permissionUserRoleById(userId, roleId)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const setUserOverride = async (userId, body) => {
+  if (USE_MOCK) return mockSetUserOverride(userId, body);
+  try {
+    return unwrap(await apiClient.put(ROUTES.permissionUserOverrides(userId), body));
   } catch (error) {
     return errorEnvelope(error);
   }

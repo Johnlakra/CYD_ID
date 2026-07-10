@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import DioceseRegistration from "./pages/platform/DioceseRegistration";
+import { clearPermissionsCache } from "./utils/usePermissions";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -26,6 +27,7 @@ function App() {
 
   // Handle successful login
   const handleLoginSuccess = (token, userData) => {
+    clearPermissionsCache();
     setAuthToken(token);
     setUser(userData);
     setIsLoggedIn(true);
@@ -33,6 +35,7 @@ function App() {
 
   // Handle logout
   const handleLogout = () => {
+    clearPermissionsCache();
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     setAuthToken('');
