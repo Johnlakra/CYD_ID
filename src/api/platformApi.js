@@ -36,6 +36,17 @@ import {
   mockCommitOrgImport,
   mockListImportJobs,
 } from './platformMock';
+import {
+  mockListIdCardTemplates,
+  mockGetIdCardGallery,
+  mockResolveIdCardTemplate,
+  mockGetIdCardTemplate,
+  mockCreateIdCardTemplate,
+  mockUpdateIdCardTemplate,
+  mockSetDefaultIdCardTemplate,
+  mockDuplicateIdCardTemplate,
+  mockDeleteIdCardTemplate,
+} from './platformMockIdCards';
 
 const USE_MOCK = process.env.REACT_APP_PLATFORM_MOCK !== 'false';
 
@@ -66,6 +77,12 @@ const ROUTES = {
   permissionUserRoles: (userId) => `/permissions/users/${userId}/roles`,
   permissionUserRoleById: (userId, roleId) => `/permissions/users/${userId}/roles/${roleId}`,
   permissionUserOverrides: (userId) => `/permissions/users/${userId}/overrides`,
+  idCardTemplates: '/idcard-templates',
+  idCardGallery: '/idcard-templates/gallery',
+  idCardResolve: '/idcard-templates/resolve',
+  idCardTemplateById: (id) => `/idcard-templates/${id}`,
+  idCardTemplateDefault: (id) => `/idcard-templates/${id}/default`,
+  idCardTemplateDuplicate: (id) => `/idcard-templates/${id}/duplicate`,
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -353,6 +370,89 @@ export const setUserOverride = async (userId, body) => {
   if (USE_MOCK) return mockSetUserOverride(userId, body);
   try {
     return unwrap(await apiClient.put(ROUTES.permissionUserOverrides(userId), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---- Phase 4: ID card template designer ----------------------------------------
+
+export const listIdCardTemplates = async () => {
+  if (USE_MOCK) return mockListIdCardTemplates();
+  try {
+    return unwrap(await apiClient.get(ROUTES.idCardTemplates));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getIdCardGallery = async () => {
+  if (USE_MOCK) return mockGetIdCardGallery();
+  try {
+    return unwrap(await apiClient.get(ROUTES.idCardGallery));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const resolveIdCardTemplate = async (level) => {
+  if (USE_MOCK) return mockResolveIdCardTemplate(level);
+  try {
+    return unwrap(await apiClient.get(ROUTES.idCardResolve, { params: { level } }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getIdCardTemplate = async (id) => {
+  if (USE_MOCK) return mockGetIdCardTemplate(id);
+  try {
+    return unwrap(await apiClient.get(ROUTES.idCardTemplateById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createIdCardTemplate = async (body) => {
+  if (USE_MOCK) return mockCreateIdCardTemplate(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.idCardTemplates, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const updateIdCardTemplate = async (id, body) => {
+  if (USE_MOCK) return mockUpdateIdCardTemplate(id, body);
+  try {
+    return unwrap(await apiClient.put(ROUTES.idCardTemplateById(id), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const setDefaultIdCardTemplate = async (id) => {
+  if (USE_MOCK) return mockSetDefaultIdCardTemplate(id);
+  try {
+    return unwrap(await apiClient.put(ROUTES.idCardTemplateDefault(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const duplicateIdCardTemplate = async (id, body = {}) => {
+  if (USE_MOCK) return mockDuplicateIdCardTemplate(id, body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.idCardTemplateDuplicate(id), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteIdCardTemplate = async (id) => {
+  if (USE_MOCK) return mockDeleteIdCardTemplate(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.idCardTemplateById(id)));
   } catch (error) {
     return errorEnvelope(error);
   }

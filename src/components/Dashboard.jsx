@@ -78,6 +78,8 @@ import {
 // Phase 3: permission engine — matrix screen for admins, gated by the new
 // ui.tab.permissions key (resolves false on older backends, so nothing shows).
 import PermissionMatrix from '../pages/platform/PermissionMatrix';
+// Phase 4: ID card template designer, gated by the idcards.design key.
+import IdCardDesigner from '../pages/platform/idcard/IdCardDesigner';
 import { usePermissions } from '../utils/usePermissions';
 import { PERM } from '../utils/permissionKeys';
 
@@ -230,6 +232,15 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         id: 'platform-permissions',
         text: 'Permissions',
         icon: <SecurityIcon />,
+      });
+    }
+
+    // Phase 4: ID card template designer — admins holding idcards.design.
+    if (user?.role === 'admin' && can(PERM.IDCARDS_DESIGN)) {
+      base.push({
+        id: 'platform-idcard-designer',
+        text: 'Card Designer',
+        icon: <BadgeIcon />,
       });
     }
 
@@ -495,6 +506,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         return <ApprovalConsole onLogout={onLogout} />;
       case 'platform-permissions':
         return <PermissionMatrix onLogout={onLogout} />;
+      case 'platform-idcard-designer':
+        return <IdCardDesigner onLogout={onLogout} />;
       case 'platform-org':
         return <OrgStructureManager onLogout={onLogout} />;
       case 'platform-import':

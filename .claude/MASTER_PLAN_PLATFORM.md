@@ -242,7 +242,7 @@ CREATE TABLE event_venues (               -- generalizes Anubhav's 'place'
 | 1 | Multi-tenancy core: dioceses, backfill, JWT claim, tenantScope, super_admin, onboarding + approval + setup wizard skeleton | New diocese can register & be approved; Jalandhar untouched (E2E green) | ✅ BE DONE (`ece5196`); ✅ FE DONE (`757cdfc`) |
 | 2 | Org structure CRUD + Excel import wizard (org + youth) | Fresh diocese imports an xlsx of youth; profiles + optional users created | ✅ BE DONE (`0af53a3`); ✅ FE DONE (`757cdfc`) |
 | 3 | Permission engine + matrix UI + ui.* gating on new screens | Admin can grant/revoke any permission incl. a specific tab/button; legacy roles unchanged | ✅ BE DONE (`7d4d0aa`); ✅ FE DONE 2026-07-10 — matrix + override drawer + usePermissions/<Can>; tests 56/56, build clean |
-| 4 | ID card designer + templates + gallery + Jalandhar seed templates | Designer card output pixel-matches legacy for diocese 1; new diocese designs a card end-to-end |
+| 4 | ID card designer + templates + gallery + Jalandhar seed templates | Designer card output pixel-matches legacy for diocese 1; new diocese designs a card end-to-end | ✅ BE DONE; ✅ FE DONE 2026-07-10 — designer (react-rnd) + gallery + seeds + IDCard template branch; tests 93/93, build clean |
 | 5 | Events generalization + venues + fee/accommodation toggles + Anubhav backfill | Anubhav E2E green via events tables; new parish-scoped event w/o accommodation works |
 | 6 | QR tokens + scan desk + instant registration | Scan→registered round trip < 2s; duplicates handled |
 | 7 | Full cross-repo E2E, docs, API_CONTRACT update | All phases' checks green in one pass |

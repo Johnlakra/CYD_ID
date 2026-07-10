@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 import ParishIdPic from "../assets/images/Parish.jpg";
 import DeaneryIdPic from "../assets/images/Deanery.jpg";
@@ -6,12 +6,34 @@ import DexcoIdPic from "../assets/images/Dexco.jpg";
 import dayjs from "dayjs";
 import { toPng } from "html-to-image";
 import { capitalizeName } from "../utils/text-format";
+// Platform Phase 4: template-driven branch. When a designed template exists
+// for this diocese + level it renders instead; the hardcoded legacy layout
+// below stays untouched as the fallback (pixel parity for diocese 1).
+import TemplateCardRenderer from "./TemplateCardRenderer";
+import { resolveIdCardTemplate } from "../api/platformApi";
 
 
 const IDCard = ({ data }) => {
   const ref = useRef(null);
-  console.log(data,'data');
-  
+  // Phase 4: null = no template (legacy render); object = designed template.
+  const [template, setTemplate] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    resolveIdCardTemplate(data.level)
+      .then((res) => {
+        if (active) {
+          setTemplate((res.success && res.data && res.data.template) || null);
+        }
+      })
+      .catch(() => {
+        if (active) setTemplate(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [data.level]);
+
 
   let IdPic;
   switch (data.level) {
@@ -46,6 +68,26 @@ const IDCard = ({ data }) => {
       });
   }, [data.name, data.parish, data.phone]);
 
+  // Phase 4: designed template found — render it through the shared template
+  // renderer (same html-to-image export path). Legacy layout continues below
+  // when no template exists.
+  if (template) {
+    return (
+      <div>
+        <TemplateCardRenderer ref={ref} template={template} data={data} />
+        <button
+          onClick={handleDownloadImage}
+          style={{
+            marginTop: "10px",
+            padding: "5px 10px",
+            cursor: "pointer",
+          }}
+        >
+          <PrintOutlinedIcon /> Download as PNG
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
