@@ -46,6 +46,7 @@ import {
   UploadFile as UploadFileIcon,
   PlaylistAddCheck as PlaylistAddCheckIcon,
   Security as SecurityIcon,
+  EventNote as EventNoteIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
@@ -80,6 +81,8 @@ import {
 import PermissionMatrix from '../pages/platform/PermissionMatrix';
 // Phase 4: ID card template designer, gated by the idcards.design key.
 import IdCardDesigner from '../pages/platform/idcard/IdCardDesigner';
+// Phase 5: generalized events (list + wizard + records), gated by ui.tab.events.
+import EventsManager from '../pages/platform/events/EventsManager';
 import { usePermissions } from '../utils/usePermissions';
 import { PERM } from '../utils/permissionKeys';
 
@@ -241,6 +244,16 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         id: 'platform-idcard-designer',
         text: 'Card Designer',
         icon: <BadgeIcon />,
+      });
+    }
+
+    // Phase 5: generalized events — admins whose backend grants ui.tab.events
+    // (resolves false on older backends, so legacy menus are unchanged).
+    if (user?.role === 'admin' && can(PERM.UI_TAB_EVENTS)) {
+      base.push({
+        id: 'platform-events',
+        text: 'Events',
+        icon: <EventNoteIcon />,
       });
     }
 
@@ -508,6 +521,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         return <PermissionMatrix onLogout={onLogout} />;
       case 'platform-idcard-designer':
         return <IdCardDesigner onLogout={onLogout} />;
+      case 'platform-events':
+        return <EventsManager onLogout={onLogout} />;
       case 'platform-org':
         return <OrgStructureManager onLogout={onLogout} />;
       case 'platform-import':

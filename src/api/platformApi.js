@@ -37,6 +37,18 @@ import {
   mockListImportJobs,
 } from './platformMock';
 import {
+  mockArchiveEvent,
+  mockCreateEvent,
+  mockCreateEventVenue,
+  mockDeleteEventVenue,
+  mockGetEvent,
+  mockGetEventStats,
+  mockListEventVenues,
+  mockListEvents,
+  mockUpdateEvent,
+  mockUpdateEventVenue,
+} from './platformMockEvents';
+import {
   mockListIdCardTemplates,
   mockGetIdCardGallery,
   mockResolveIdCardTemplate,
@@ -83,6 +95,11 @@ const ROUTES = {
   idCardTemplateById: (id) => `/idcard-templates/${id}`,
   idCardTemplateDefault: (id) => `/idcard-templates/${id}/default`,
   idCardTemplateDuplicate: (id) => `/idcard-templates/${id}/duplicate`,
+  events: '/events',
+  eventById: (id) => `/events/${id}`,
+  eventVenues: (id) => `/events/${id}/venues`,
+  eventVenueById: (id, venueId) => `/events/${id}/venues/${venueId}`,
+  eventStats: (id) => `/events/${id}/stats`,
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -453,6 +470,99 @@ export const deleteIdCardTemplate = async (id) => {
   if (USE_MOCK) return mockDeleteIdCardTemplate(id);
   try {
     return unwrap(await apiClient.delete(ROUTES.idCardTemplateById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---- Phase 5: generalized events engine -----------------------------------------
+
+export const listEvents = async () => {
+  if (USE_MOCK) return mockListEvents();
+  try {
+    return unwrap(await apiClient.get(ROUTES.events));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createEvent = async (body) => {
+  if (USE_MOCK) return mockCreateEvent(body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.events, body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getEvent = async (id) => {
+  if (USE_MOCK) return mockGetEvent(id);
+  try {
+    return unwrap(await apiClient.get(ROUTES.eventById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const updateEvent = async (id, body) => {
+  if (USE_MOCK) return mockUpdateEvent(id, body);
+  try {
+    return unwrap(await apiClient.put(ROUTES.eventById(id), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// DELETE /events/:id is a soft archive on the backend (status='archived').
+export const archiveEvent = async (id) => {
+  if (USE_MOCK) return mockArchiveEvent(id);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.eventById(id)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const listEventVenues = async (eventId) => {
+  if (USE_MOCK) return mockListEventVenues(eventId);
+  try {
+    return unwrap(await apiClient.get(ROUTES.eventVenues(eventId)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const createEventVenue = async (eventId, body) => {
+  if (USE_MOCK) return mockCreateEventVenue(eventId, body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.eventVenues(eventId), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const updateEventVenue = async (eventId, venueId, body) => {
+  if (USE_MOCK) return mockUpdateEventVenue(eventId, venueId, body);
+  try {
+    return unwrap(await apiClient.put(ROUTES.eventVenueById(eventId, venueId), body));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const deleteEventVenue = async (eventId, venueId) => {
+  if (USE_MOCK) return mockDeleteEventVenue(eventId, venueId);
+  try {
+    return unwrap(await apiClient.delete(ROUTES.eventVenueById(eventId, venueId)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const getEventStats = async (eventId) => {
+  if (USE_MOCK) return mockGetEventStats(eventId);
+  try {
+    return unwrap(await apiClient.get(ROUTES.eventStats(eventId)));
   } catch (error) {
     return errorEnvelope(error);
   }
