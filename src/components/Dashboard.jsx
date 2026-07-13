@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
   Box,
   Drawer,
@@ -47,6 +47,7 @@ import {
   PlaylistAddCheck as PlaylistAddCheckIcon,
   Security as SecurityIcon,
   EventNote as EventNoteIcon,
+  QrCodeScanner as QrCodeScannerIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
@@ -85,6 +86,10 @@ import IdCardDesigner from '../pages/platform/idcard/IdCardDesigner';
 import EventsManager from '../pages/platform/events/EventsManager';
 import { usePermissions } from '../utils/usePermissions';
 import { PERM } from '../utils/permissionKeys';
+
+// Phase 6: QR scan desk, gated by events.scan_register. Lazy: html5-qrcode
+// (camera + decoder) is ~120 kB gzip and only scan-desk users need it.
+const ScanDesk = lazy(() => import('../pages/platform/events/ScanDesk'));
 
 const drawerWidth = 280;
 
@@ -254,6 +259,16 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         id: 'platform-events',
         text: 'Events',
         icon: <EventNoteIcon />,
+      });
+    }
+
+    // Phase 6: scan desk — anyone (admin or scanning volunteer) holding
+    // events.scan_register; the key resolves false on older backends.
+    if (can(PERM.EVENTS_SCAN_REGISTER)) {
+      base.push({
+        id: 'platform-scan-desk',
+        text: 'Scan Desk',
+        icon: <QrCodeScannerIcon />,
       });
     }
 
@@ -523,6 +538,18 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         return <IdCardDesigner onLogout={onLogout} />;
       case 'platform-events':
         return <EventsManager onLogout={onLogout} />;
+      case 'platform-scan-desk':
+        return (
+          <Suspense
+            fallback={
+              <Box sx={{ p: 6, textAlign: 'center' }}>
+                <CircularProgress />
+              </Box>
+            }
+          >
+            <ScanDesk onLogout={onLogout} />
+          </Suspense>
+        );
       case 'platform-org':
         return <OrgStructureManager onLogout={onLogout} />;
       case 'platform-import':

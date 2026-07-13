@@ -10,13 +10,16 @@ import { capitalizeName } from "../utils/text-format";
 // for this diocese + level it renders instead; the hardcoded legacy layout
 // below stays untouched as the fallback (pixel parity for diocese 1).
 import TemplateCardRenderer from "./TemplateCardRenderer";
-import { resolveIdCardTemplate } from "../api/platformApi";
+import { resolveIdCardTemplate, ensureProfileQr } from "../api/platformApi";
+import { toQrDataUrl } from "../utils/qrHelpers";
 
 
 const IDCard = ({ data }) => {
   const ref = useRef(null);
   // Phase 4: null = no template (legacy render); object = designed template.
   const [template, setTemplate] = useState(null);
+  // Phase 6: SVG data URL for the template's `qr` element (placeholder until resolved).
+  const [qrImageUrl, setQrImageUrl] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -33,6 +36,33 @@ const IDCard = ({ data }) => {
       active = false;
     };
   }, [data.level]);
+
+  // Phase 6: when the template contains a `qr` element, fetch/mint this
+  // profile's token and render the CYD:<slug>:<qr_token> payload. Failures
+  // (older backend, missing permission) leave the placeholder — never break
+  // the card.
+  const templateHasQr = !!(
+    template &&
+    template.layout_json &&
+    Array.isArray(template.layout_json.elements) &&
+    template.layout_json.elements.some((element) => element.type === 'qr')
+  );
+
+  useEffect(() => {
+    let active = true;
+    setQrImageUrl(null);
+    if (!templateHasQr || !data.id) return undefined;
+    ensureProfileQr(data.id)
+      .then(async (res) => {
+        if (!res.success || !res.data || !res.data.payload) return;
+        const image = await toQrDataUrl(res.data.payload);
+        if (active) setQrImageUrl(image);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [templateHasQr, data.id]);
 
 
   let IdPic;
@@ -74,7 +104,11 @@ const IDCard = ({ data }) => {
   if (template) {
     return (
       <div>
-        <TemplateCardRenderer ref={ref} template={template} data={data} />
+        <TemplateCardRenderer
+          ref={ref}
+          template={template}
+          data={qrImageUrl ? { ...data, qr_image_url: qrImageUrl } : data}
+        />
         <button
           onClick={handleDownloadImage}
           style={{

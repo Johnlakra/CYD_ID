@@ -26,6 +26,8 @@ import { toast } from 'react-toastify';
 import { baseURL } from '../api/apiClient';
 import IDCard from '../components/IDCard';
 import { capitalizeName } from '../utils/text-format';
+// Platform Phase 6: "My QR" card — self-hiding when the backend lacks QR support.
+import MyQrCard from './MyQrCard';
 
 const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
   const [profileData, setProfileData] = useState(null);
@@ -158,6 +160,7 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
 
         {/* ID Card Actions */}
         <Grid item xs={12} md={4}>
+          <MyQrCard />
           <Card sx={{ borderRadius: 3, mb: 2 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>ID Card</Typography>

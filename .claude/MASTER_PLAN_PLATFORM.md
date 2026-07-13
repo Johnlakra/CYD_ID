@@ -244,7 +244,7 @@ CREATE TABLE event_venues (               -- generalizes Anubhav's 'place'
 | 3 | Permission engine + matrix UI + ui.* gating on new screens | Admin can grant/revoke any permission incl. a specific tab/button; legacy roles unchanged | ✅ BE DONE (`7d4d0aa`); ✅ FE DONE 2026-07-10 — matrix + override drawer + usePermissions/<Can>; tests 56/56, build clean |
 | 4 | ID card designer + templates + gallery + Jalandhar seed templates | Designer card output pixel-matches legacy for diocese 1; new diocese designs a card end-to-end | ✅ BE DONE; ✅ FE DONE 2026-07-10 — designer (react-rnd) + gallery + seeds + IDCard template branch; tests 93/93, build clean |
 | 5 | Events generalization + venues + fee/accommodation toggles + Anubhav backfill | Anubhav E2E green via events tables; new parish-scoped event w/o accommodation works | ✅ BE DONE; ✅ FE DONE 2026-07-11 — events list + wizard + records/fees/CSV export, ui.tab.events gating; tests 121/121, build clean |
-| 6 | QR tokens + scan desk + instant registration | Scan→registered round trip < 2s; duplicates handled |
+| 6 | QR tokens + scan desk + instant registration | Scan→registered round trip < 2s; duplicates handled | ✅ BE DONE; ✅ FE DONE 2026-07-11 — My QR card, scan desk (html5-qrcode, lazy chunk), duplicate 409 w/ timestamp, phone fallback, ID-card qr element wired; tests 143/143, build clean |
 | 7 | Full cross-repo E2E, docs, API_CONTRACT update | All phases' checks green in one pass |
 
 Rules: one phase per session where possible; update `.claude/sessions/` log +

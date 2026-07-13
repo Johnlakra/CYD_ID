@@ -4,6 +4,12 @@
 // refresh, same as the other mock layers.
 
 import { EVENT_SCOPES, VENUE_KEY_PATTERN } from '../utils/eventHelpers';
+import { isValidQrToken } from '../utils/qrHelpers';
+import {
+  findMockQrProfileById,
+  findMockQrProfileByToken,
+  mockQrProfileSummary,
+} from './platformMockQr';
 
 const LATENCY_MS = 250;
 const delay = (ms = LATENCY_MS) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -117,16 +123,22 @@ const seedRegistrationCounts = () => ({ 1: { phagwara: 412, abohar: 158, amritsa
 let events = seedEvents();
 let venues = seedVenues();
 let registrationCounts = seedRegistrationCounts();
+// Phase 6: registrations created live at the scan desk (per-profile rows on
+// top of the aggregate demo counts above).
+let registrations = [];
 let nextEventId = 3;
 let nextVenueId = 5;
+let nextRegistrationId = 1;
 
 // Test hook — restores the pristine seed state.
 export const __resetEventsMock = () => {
   events = seedEvents();
   venues = seedVenues();
   registrationCounts = seedRegistrationCounts();
+  registrations = [];
   nextEventId = 3;
   nextVenueId = 5;
+  nextRegistrationId = 1;
 };
 
 const eventsForDiocese = (dioceseId) => events.filter((event) => event.diocese_id === dioceseId);
@@ -330,8 +342,107 @@ export const mockGetEventStats = async (eventId) => {
   const counts = registrationCounts[event.id] || {};
   const byVenue = venuesForEvent(event.id).map((venue) => ({
     venue_key: venue.venue_key,
-    registrations: Number(counts[venue.venue_key] || 0),
+    registrations:
+      Number(counts[venue.venue_key] || 0) +
+      registrations.filter(
+        (row) => row.event_id === event.id && row.venue_key === venue.venue_key
+      ).length,
   }));
   const total = byVenue.reduce((sum, row) => sum + row.registrations, 0);
   return ok({ event_id: event.id, by_venue: byVenue, total_registrations: total });
+};
+
+// ---- Phase 6: scan-desk lookup + instant registration -------------------------
+
+const venueAllowsDeanery = (venue, deanery) => {
+  const list = Array.isArray(venue.deaneries) ? venue.deaneries : [];
+  if (list.length === 0) return true; // no batch restriction = open venue
+  return list.includes(deanery);
+};
+
+const findRegistration = (eventId, venueKey, profileId) =>
+  registrations.find(
+    (row) => row.event_id === eventId && row.venue_key === venueKey && row.profile_id === profileId
+  );
+
+// GET /profiles/qr/:token[?event_id=&venue_key=] — mirrors routes/qr.js.
+export const mockQrScanLookup = async (token, { event_id, venue_key } = {}) => {
+  await delay();
+  if (!isValidQrToken(token)) return fail('Invalid QR token format', 400);
+  const dioceseId = currentDioceseId();
+  const profile = findMockQrProfileByToken(token, dioceseId);
+  if (!profile) return fail('No profile matches this QR code', 404);
+
+  const payload = { profile: mockQrProfileSummary(profile) };
+  const eventId = Number(event_id);
+  if (eventId && venue_key) {
+    const event = findEvent(eventId);
+    if (!event) return fail('Event not found', 404);
+    const venue = venuesForEvent(event.id).find((row) => row.venue_key === venue_key);
+    if (!venue) return fail('Venue not found for this event', 404);
+
+    const existing = findRegistration(event.id, venue_key, profile.id);
+    const deaneryOk = venueAllowsDeanery(venue, profile.deanery);
+    payload.eligibility = {
+      event_id: event.id,
+      venue_key,
+      event_open: event.status === 'open',
+      deanery_allowed: deaneryOk,
+      already_registered: !!existing,
+      registered_at: existing ? existing.created_at : null,
+      eligible: event.status === 'open' && deaneryOk && !existing,
+      reason: !deaneryOk
+        ? `Deanery '${profile.deanery}' is not assigned to venue '${venue_key}'`
+        : existing
+          ? 'Already registered'
+          : event.status !== 'open'
+            ? 'Event is not open'
+            : null,
+    };
+  }
+  return ok(clone(payload));
+};
+
+// POST /events/:id/registrations — one of qr_token | profile_id required.
+export const mockScanRegister = async (eventId, { venue_key, qr_token, profile_id } = {}) => {
+  await delay();
+  const event = findEvent(eventId);
+  if (!event) return fail('Event not found', 404);
+  const venue = venuesForEvent(event.id).find((row) => row.venue_key === venue_key);
+  if (!venue) return fail('Venue not found for this event', 404);
+
+  const dioceseId = currentDioceseId();
+  const profile = qr_token
+    ? findMockQrProfileByToken(qr_token, dioceseId)
+    : findMockQrProfileById(profile_id, dioceseId);
+  if (!profile) return fail('Profile not found', 404);
+
+  if (event.status !== 'open') return fail('Event is not open for registrations', 400);
+  if (!venueAllowsDeanery(venue, profile.deanery)) {
+    return fail(`Deanery '${profile.deanery}' is not assigned to venue '${venue_key}'`, 400);
+  }
+
+  const existing = findRegistration(event.id, venue_key, profile.id);
+  if (existing) {
+    return {
+      success: false,
+      message: 'Already registered',
+      status: 409,
+      data: { already_registered: true, registered_at: existing.created_at },
+    };
+  }
+
+  const registration = {
+    id: nextRegistrationId++,
+    event_id: event.id,
+    venue_key,
+    profile_id: profile.id,
+    fee_amount: Number(event.fee_enabled) ? Number(event.fee_amount) : 0,
+    created_at: new Date().toISOString(),
+  };
+  registrations = [...registrations, registration];
+  return ok(
+    { registration: clone(registration), profile: mockQrProfileSummary(profile) },
+    'Registered'
+  );
 };

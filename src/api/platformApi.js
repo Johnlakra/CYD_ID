@@ -47,7 +47,14 @@ import {
   mockListEvents,
   mockUpdateEvent,
   mockUpdateEventVenue,
+  mockQrScanLookup,
+  mockScanRegister,
 } from './platformMockEvents';
+import {
+  mockEnsureProfileQr,
+  mockGetMyQr,
+  mockSearchQrProfiles,
+} from './platformMockQr';
 import {
   mockListIdCardTemplates,
   mockGetIdCardGallery,
@@ -100,6 +107,11 @@ const ROUTES = {
   eventVenues: (id) => `/events/${id}/venues`,
   eventVenueById: (id, venueId) => `/events/${id}/venues/${venueId}`,
   eventStats: (id) => `/events/${id}/stats`,
+  eventRegistrations: (id) => `/events/${id}/registrations`,
+  myQr: '/profile-holder/my-qr',
+  qrLookup: (token) => `/profiles/qr/${token}`,
+  qrEnsure: (profileId) => `/profiles/qr/ensure/${profileId}`,
+  profilesSearch: '/profiles',
 };
 
 // Normalize axios -> standard envelope shape so callers only handle one shape.
@@ -563,6 +575,61 @@ export const getEventStats = async (eventId) => {
   if (USE_MOCK) return mockGetEventStats(eventId);
   try {
     return unwrap(await apiClient.get(ROUTES.eventStats(eventId)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// ---- Phase 6: QR tokens + scan-desk instant registration --------------------------
+
+export const getMyQr = async () => {
+  if (USE_MOCK) return mockGetMyQr();
+  try {
+    return unwrap(await apiClient.get(ROUTES.myQr));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+export const ensureProfileQr = async (profileId) => {
+  if (USE_MOCK) return mockEnsureProfileQr(profileId);
+  try {
+    return unwrap(await apiClient.post(ROUTES.qrEnsure(profileId)));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// params: { event_id, venue_key } adds eligibility to the lookup.
+export const qrScanLookup = async (token, params = {}) => {
+  if (USE_MOCK) return mockQrScanLookup(token, params);
+  try {
+    return unwrap(await apiClient.get(ROUTES.qrLookup(token), { params }));
+  } catch (error) {
+    return errorEnvelope(error);
+  }
+};
+
+// body: { venue_key, qr_token? | profile_id? }. A 409 carries
+// { already_registered, registered_at } in data.
+export const scanRegister = async (eventId, body) => {
+  if (USE_MOCK) return mockScanRegister(eventId, body);
+  try {
+    return unwrap(await apiClient.post(ROUTES.eventRegistrations(eventId), body));
+  } catch (error) {
+    const envelope = errorEnvelope(error);
+    const data = error && error.response && error.response.data;
+    // Preserve duplicate metadata (already_registered/registered_at) on 409s.
+    return data && typeof data === 'object' ? { ...envelope, data: data.data || data } : envelope;
+  }
+};
+
+// Scan-desk phone fallback. Mock searches the QR profile store; real mode
+// reuses the legacy admin search (GET /profiles?search=).
+export const searchScanProfiles = async (search) => {
+  if (USE_MOCK) return mockSearchQrProfiles(search);
+  try {
+    return unwrap(await apiClient.get(ROUTES.profilesSearch, { params: { search, limit: 10 } }));
   } catch (error) {
     return errorEnvelope(error);
   }
