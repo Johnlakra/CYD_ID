@@ -63,6 +63,7 @@ const ProfileHolderEdit = ({ authToken, user, onLogout }) => {
 
   useEffect(() => {
     fetchProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken]);
 
   // Handle file upload

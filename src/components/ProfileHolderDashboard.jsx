@@ -16,7 +16,8 @@ import {
   CircularProgress,
 } from '@mui/material';
 import {
-  CardMembership as CardIcon,
+  // eslint-disable-next-line no-unused-vars
+  CardMembership as CardIcon, // used by the "View My ID Card" button, currently commented out below
   CalendarToday as CalendarIcon,
   CheckCircle as CheckIcon,
   Warning as WarningIcon,
@@ -57,6 +58,7 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
 
   useEffect(() => {
     fetchProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken]);
 
   // Check ID card validity
@@ -79,6 +81,9 @@ const ProfileHolderDashboard = ({ authToken, user, onLogout }) => {
   const validity = getIdCardValidity();
 
   // View ID card
+  // The only opener for the ID card dialog below. Its button is currently
+  // commented out, so this is unreferenced until that button is restored.
+  // eslint-disable-next-line no-unused-vars
   const viewIdCard = () => {
     setIdCardDialog(true);
   };

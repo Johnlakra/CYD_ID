@@ -151,6 +151,7 @@ const Dashboard = ({ authToken, user, onLogout }) => {
     if (selectedMenu === 'dashboard') {
       fetchStats();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMenu, authToken]);
 
   const renderStatsCards = () => {
