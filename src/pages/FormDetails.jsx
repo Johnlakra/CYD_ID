@@ -39,6 +39,12 @@ import { CalendarMonth, ArrowBack, ContentCopy } from "@mui/icons-material";
 // Toast Notifications
 import { toast } from "react-toastify";
 import { baseURL } from "../api/apiClient";
+import {
+  deaneryOptionsWith,
+  parishesForWith,
+  levelOptions,
+  designationOptions,
+} from "../data/deaneries";
 
 const schema = yup.object().shape({
   name: yup.string().required("Name is required."),
@@ -65,215 +71,7 @@ const schema = yup.object().shape({
   designation: yup.string().required("Designation is required."),
 });
 
-// Define options for Level and Designation dropdowns
-const levelOptions = ["parish", "deanery", "dexco"];
-
-const designationOptions = [
-  "Member",
-  "President",
-  "Vice-President",
-  "Secretary",
-  "Joint Secretary",
-  "Treasurer",
-  "Joint Treasurer",
-  "Media Secretary",
-  "Joint Media Secretary",
-  "Boy Representative",
-  "Girl Representative",
-  "Boy Spokesperson",
-  "Girl Spokesperson",
-];
-
 const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete }) => {
-
-  const deaneries = {
-  Ajnala: [
-    "Ajnala ",
-    "Chamiyari",
-    "Chogawan",
-    "Chuchakwal",
-    "Karyal",
-    "Othian",
-    "Punga",
-    "Ramdas",
-  ],
-  Amritsar: [
-    "Amritsar Cantt.",
-    "Bharariwal",
-    "Gumtala",
-    "Khasa",
-    "Lahorigate",
-    "Majitha Road",
-    "Nai Abadi",
-    "Rajasansi",
-  ],
-  Dhariwal: [
-    "Batala",
-    "Dhariwal",
-    "Dialgarh",
-    "Kalanaur",
-    "Mastkot",
-    "Naushera Majja Singh",
-    "Qadian",
-  ],
-  "Fatehgarh Churian": [
-    "Fatehgarh Churian",
-    "Dera Baba Nanak",
-    "Dharamkot Randhawa",
-    "Ghanie Ke Banger",
-    "Kotli",
-    "Machi Nangal",
-    "Majitha",
-    "Pakharpura",
-  ],
-  Ferozpur: [
-    "Faridkot",
-    "Badhni Mahafariste Wala",
-    "Ferozpur Canal Colony",
-    "Ferozpur Cantt",
-    "Ferozpur City",
-    "Gulami Wala",
-    "Guru Har Sahai",
-    "Lohgarh-Sur Singh Wala (Station)",
-    "Mamdot",
-    "Mudki (Station)",
-    "Sadiq",
-    "Talwandi Bhai",
-    "Tehna, Faridkot",
-  ],
-  Gurdaspur: [
-    "Balun (Station)",
-    "Dalhousie",
-    "Dina Nagar",
-    "Dorangala",
-    "Gurdaspur",
-    "Jandwal, Pathankot",
-    "Kahnuwan",
-    "Narot Jaimal Singh (Station)",
-    "Pathankot City",
-    "Puranashalla",
-    "Sidhwan Jamita, Joura Chitra",
-    "Sujanpur, Pathankot",
-  ],
-  Hoshiarpur: [
-    "Kakkon",
-    "Baijnath",
-    "Balachaur",
-    "Bassi Bahian",
-    "Bhunga",
-    "Gaggal",
-    "Garshankar",
-    "Jindwari",
-    "Mehtiana, Khanaura",
-    "Nandachaur",
-    "Nangal",
-    "Palampur",
-    "Una",
-    "Yol Camp",
-  ],
-  "Jalandhar Cantt.": [
-    "Apra",
-    "Banga (Station)",
-    "Behram (Station)",
-    "Dhina-Chittewani",
-    "Jalandhar Cantt",
-    "Jandiala Manjki",
-    "Nawanshahar",
-    "Phagwara",
-    "Phulriwal",
-    "Rawalpindi",
-    "Sansarpur",
-  ],
-  "Jalandhar City": [
-    "Adampur",
-    "Bootan",
-    "Chogitty",
-    "Gakhalan",
-    "Jalandhar City",
-    "Lambapind",
-    "Maqsudan",
-  ],
-  Kapurthala: [
-    "Hussainpur- Lodhi Bhulana",
-    "Kapurthala",
-    "Kishangarh",
-    "Kartarpur",
-    "Mehatpur",
-    "Nakodar",
-    "Shahkot",
-    "Sultanpur Lodhi",
-  ],
-  Ludhiana: [
-    "BRS Nagar",
-    "Jagraon",
-    "Jalandhar Bypass, Ludhiana",
-    "Kidwai Nagar",
-    "Phillaur",
-    "Raekot",
-    "Sarabha Nagar",
-  ],
-  Moga: [
-    "Baghapurana",
-    "Buggipura, Moga (Station)",
-    "Buttar, Moga (Station)",
-    "Dharamkot, Moga",
-    "Kot-Ise-Khan, Moga (Station)",
-    "Makhu",
-    "Moga",
-    "Nihal Singh Wala, Moga (Station)",
-    "Singhanwala, Moga",
-    "Takhtupura",
-    "Zira",
-  ],
-  Muktsar: [
-    "Abohar",
-    "Bhagsar",
-    "Danewala",
-    "Enakhera",
-    "Fazilka",
-    "Gidderbaha (Station)",
-    "Jaiton",
-    "Jalalabad",
-    "Kotkapura",
-    "Malout Pind",
-    "Malout",
-    "Muktsar, Bir Sarkar",
-    "Muktsar",
-    "Panjgaraian (Station)",
-    "Sikhwala",
-  ],
-  Sahnewal: [
-    "Bhammian Kalan (Station)",
-    "Jamalpur",
-    "Khanna",
-    "Khanpur-Jassar-Sangowal-Rania",
-    "Machhiwara",
-    "Machian Khurd",
-    "Sahnewal",
-    "Samrala",
-  ],
-  Tanda: [
-    "Bhogpur",
-    "Bholath",
-    "Dasuya",
-    "Mukerian",
-    "Tanda",
-    "Sri Hargobindpur",
-  ],
-  "Tarn Taran": [
-    "Akalgarh (Station)",
-    "Beas",
-    "Bhikhiwind",
-    "Bhojian",
-    "Chabhal (Station)",
-    "Fatehabad (Station)",
-    "Harike",
-    "Jandiala Guru",
-    "Khem Karan",
-    "Patti",
-    "Tarn Taran",
-  ],
-};
 
   const firstDeanery = "";
 
@@ -760,7 +558,7 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
                           setValue('parish', '');
                         }}
                       >
-                        {Object.keys(deaneries).map((deanery) => (
+                        {deaneryOptionsWith(field.value).map((deanery) => (
                           <MenuItem key={deanery} value={deanery}>
                             {deanery}
                           </MenuItem>
@@ -783,27 +581,33 @@ const FormDetails = ({ authToken, user, onLogout, editProfile, onEditComplete })
                   <Controller
                     name="parish"
                     control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        label="Parish"
-                        onChange={(e) => {
-                          field.onChange(e);
-                        }}
-                      >
-                        {selectedDeanery && deaneries[selectedDeanery] ? (
-                          deaneries[selectedDeanery].map((parish) => (
-                            <MenuItem key={parish} value={parish}>
-                              {parish}
+                    render={({ field }) => {
+                      const parishOptions = parishesForWith(
+                        selectedDeanery,
+                        field.value
+                      );
+                      return (
+                        <Select
+                          {...field}
+                          label="Parish"
+                          onChange={(e) => {
+                            field.onChange(e);
+                          }}
+                        >
+                          {parishOptions.length ? (
+                            parishOptions.map((parish) => (
+                              <MenuItem key={parish} value={parish}>
+                                {parish}
+                              </MenuItem>
+                            ))
+                          ) : (
+                            <MenuItem value="">
+                              <em>Select Deanery First</em>
                             </MenuItem>
-                          ))
-                        ) : (
-                          <MenuItem value="">
-                            <em>Select Deanery First</em>
-                          </MenuItem>
-                        )}
-                      </Select>
-                    )}
+                          )}
+                        </Select>
+                      );
+                    }}
                   />
                   <Typography variant="body2" color="error">
                     {errors.parish?.message}

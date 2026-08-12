@@ -21,7 +21,6 @@ import {
   Avatar,
   Tooltip,
   Chip,
-  LinearProgress,
   Table,
   TableBody,
   TableCell,
@@ -31,7 +30,6 @@ import {
   Paper,
   TablePagination,
   CircularProgress,
-  Alert,
   Skeleton,
 } from '@mui/material';
 import {
@@ -48,6 +46,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { baseURL } from '../api/apiClient';
+import { deaneries as fallbackDeaneries, levelOptions as fallbackLevelOptions, designationOptions as fallbackDesignationOptions } from '../data/deaneries';
 import IDCard from '../components/IDCard';
 import { capitalizeName } from '../utils/text-format';
 
@@ -60,32 +59,9 @@ const debounce = (func, delay) => {
   };
 };
 
-// Fallback static data (your existing data as backup)
-const fallbackDeaneries = {
-  Ajnala: ["Ajnala", "Chamiyari", "Chogawan", "Chuchakwal", "Karyal", "Othian", "Punga", "Ramdas"],
-  Amritsar: ["Amritsar Cantt.", "Bharariwal", "Gumtala", "Khasa", "Lahorigate", "Majitha Road", "Nai Abadi", "Rajasansi"],
-  Dhariwal: ["Batala", "Dhariwal", "Dialgarh", "Kalanaur", "Mastkot", "Naushera Majja Singh", "Qadian"],
-  "Fatehgarh Churian": ["Fatehgarh Churian", "Dera Baba Nanak", "Dharamkot Randhawa", "Ghanie Ke Banger", "Kotli", "Machi Nangal", "Majitha", "Pakharpura"],
-  Ferozpur: ["Faridkot", "Badhni Mahafariste Wala", "Ferozpur Canal Colony", "Ferozpur Cantt", "Ferozpur City", "Gulami Wala", "Guru Har Sahai", "Lohgarh-Sur Singh Wala (Station)", "Mamdot", "Mudki (Station)", "Sadiq", "Talwandi Bhai", "Tehna, Faridkot"],
-  Gurdaspur: ["Balun (Station)", "Dalhousie", "Dina Nagar", "Dorangala", "Gurdaspur", "Jandwal, Pathankot", "Kahnuwan", "Narot Jaimal Singh (Station)", "Pathankot City", "Puranashalla", "Sidhwan Jamita, Joura Chitra", "Sujanpur, Pathankot"],
-  Hoshiarpur: ["Kakkon", "Baijnath", "Balachaur", "Bassi Bahian", "Bhunga", "Gaggal", "Garshankar", "Jindwari", "Mehtiana, Khanaura", "Nandachaur", "Nangal", "Palampur", "Una", "Yol Camp"],
-  "Jalandhar Cantt.": ["Apra", "Banga (Station)", "Behram (Station)", "Dhina-Chittewani", "Jalandhar Cantt", "Jandiala Manjki", "Nawanshahar", "Phagwara", "Phulriwal", "Rawalpindi", "Sansarpur"],
-  "Jalandhar City": ["Adampur", "Bootan", "Chogitty", "Gakhalan", "Jalandhar City", "Lambapind", "Maqsudan"],
-  Kapurthala: ["Hussainpur- Lodhi Bhulana", "Kapurthala", "Kishangarh", "Kartarpur", "Mehatpur", "Nakodar", "Shahkot", "Sultanpur Lodhi"],
-  Ludhiana: ["BRS Nagar", "Jagraon", "Jalandhar Bypass, Ludhiana", "Kidwai Nagar", "Phillaur", "Raekot", "Sarabha Nagar"],
-  Moga: ["Baghapurana", "Buggipura, Moga (Station)", "Buttar, Moga (Station)", "Dharamkot, Moga", "Kot-Ise-Khan, Moga (Station)", "Makhu", "Moga", "Nihal Singh Wala, Moga (Station)", "Singhanwala, Moga", "Zira"],
-  Muktsar: ["Abohar", "Bhagsar", "Danewala", "Fazilka", "Gidderbaha (Station)", "Jaiton", "Jalalabad", "Kotkapura", "Malout Pind", "Malout", "Muktsar, Bir Sarkar", "Muktsar", "Panjgaraian (Station)", "Sikhwala"],
-  Sahnewal: ["Bhammian Kalan (Station)", "Jamalpur", "Khanna", "Khanpur-Jassar-Sangowal-Rania", "Machhiwara", "Machian Khurd", "Sahnewal", "Samrala"],
-  Tanda: ["Bhogpur", "Bholath", "Dasuya", "Mukerian", "Tanda", "Sri Hargobindpur"],
-  "Tarn Taran": ["Akalgarh (Station)", "Beas", "Bhikhiwind", "Bhojian", "Chabhal (Station)", "Fatehabad (Station)", "Harike", "Jandiala Guru", "Khem Karan", "Patti", "Tarn Taran"],
-};
-
-const fallbackLevelOptions = ["parish", "deanery", "dexco"];
-const fallbackDesignationOptions = [
-  "Member", "President", "Vice-President", "Secretary", "Joint Secretary",
-  "Treasurer", "Joint Treasurer", "Media Secretary", "Joint Media Secretary",
-  "Boy Representative", "Girl Representative", "Boy Spokesperson", "Girl Spokesperson",
-];
+// Shared source of truth for the deanery -> parish dropdowns.
+// Live filter values still come from the API (DISTINCT over stored profile rows);
+// these are the fallback used when that request fails.
 
 const ManageProfiles = ({ authToken, user, onLogout, onEditProfile }) => {
   // State management

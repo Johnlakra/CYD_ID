@@ -13,7 +13,6 @@ import {
   ListItemIcon,
   ListItemText,
   Avatar,
-  Paper,
   Grid,
   Card,
   CardContent,
