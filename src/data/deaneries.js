@@ -91,6 +91,7 @@ export const deaneries = {
     'Narot Jaimal Singh (Station)',
     'Pathankot City',
     'Puranashalla',
+    'Sarawan',
     'Sidhwan Jamita, Joura Chitra',
     'Sujanpur, Pathankot',
   ],
