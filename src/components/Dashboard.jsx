@@ -34,6 +34,8 @@ import {
   TrendingUp as TrendingUpIcon,
   CalendarToday as CalendarIcon,
   PhotoCamera as PhotoIcon,
+  Storefront as StorefrontIcon,
+  Sell as SellIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
@@ -41,6 +43,8 @@ import IDCardTabs from '../pages/IDCardTabs';
 import ProfileSettings from '../components/ProfileSettings';
 import ProfileHolderSettings from './ProfileHolderSettings';
 import ProfileHolderDashboard from './ProfileHolderDashboard';
+import ShopApp from '../pages/shop/ShopApp';
+import AdminShopModeration from '../pages/shop/AdminShopModeration';
 
 const drawerWidth = 280;
 
@@ -55,11 +59,16 @@ const Dashboard = ({ authToken, user, onLogout }) => {
   // Restrict menu items based on user role
   const getMenuItems = () => {
     if (user?.role === 'profile_holder') {
-      return [
+      const items = [
         {
           id: 'dashboard',
           text: 'My Profile',
           icon: <PersonIcon />,
+        },
+        {
+          id: 'shop',
+          text: 'Shop',
+          icon: <StorefrontIcon />,
         },
         {
           id: 'profile',
@@ -67,10 +76,11 @@ const Dashboard = ({ authToken, user, onLogout }) => {
           icon: <SettingsIcon />,
         }
       ];
+      return items;
     }
 
     // Default menu for admin/user
-    return [
+    const items = [
       {
         id: 'dashboard',
         text: 'Dashboard',
@@ -82,11 +92,28 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         icon: <CardIcon />,
       },
       {
+        id: 'shop',
+        text: 'Shop',
+        icon: <StorefrontIcon />,
+      },
+      {
         id: 'profile',
         text: 'Profile & Settings',
         icon: <PersonIcon />,
       },
     ];
+
+    // Shop ownership is an additive in-app capability, not a role - any admin/user can also
+    // browse/sell. Admins additionally get the moderation queue for shop applications.
+    if (user?.role === 'admin') {
+      items.push({
+        id: 'shop-admin',
+        text: 'Shop Applications',
+        icon: <SellIcon />,
+      });
+    }
+
+    return items;
   };
 
   const menuItems = getMenuItems();
@@ -272,6 +299,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
 
     if (user?.role === 'profile_holder') {
       switch (selectedMenu) {
+        case 'shop':
+          return <ShopApp authToken={authToken} user={user} />;
         case 'profile':
           return <ProfileHolderSettings authToken={authToken} user={user} onLogout={onLogout} />;
         default:
@@ -282,6 +311,10 @@ const Dashboard = ({ authToken, user, onLogout }) => {
     switch (selectedMenu) {
       case 'id-card':
         return <IDCardTabs authToken={authToken} user={user} onLogout={onLogout} />;
+      case 'shop':
+        return <ShopApp authToken={authToken} user={user} />;
+      case 'shop-admin':
+        return <AdminShopModeration authToken={authToken} user={user} />;
       case 'profile':
         return <ProfileSettings authToken={authToken} user={user} onLogout={onLogout} />;
       default:
