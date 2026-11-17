@@ -46,6 +46,12 @@ call per shop (see the backend doc's "one order per shop" design note).
 
 ## UPI payment flow (YouPI-PG)
 
+> ⚠️ **This flow does not work as built (audit, 2026-11-17).** YouPI-PG's `Youpi.pay()` throws
+> unless the payment was first created server-side and you pass it `checkoutUrl`/`paymentId`.
+> The steps below call `Youpi.pay({orderId, amount})`, which always throws. There is also an
+> open decision on whether YouPI-PG can be used for a multi-vendor marketplace at all. See
+> [`IMPROVEMENT_PLAN.md` §5](IMPROVEMENT_PLAN.md#5-phase-1--payments-the-decision-comes-first).
+
 Read `cyd_id_be/docs/PAYMENTS.md` before touching this — YouPI-PG is explicitly an experimental,
 non-bank-certified gateway. The payment-processing screen:
 1. Calls `POST /shop/payments/initiate` with the order id.

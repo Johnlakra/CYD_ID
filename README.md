@@ -1,3 +1,9 @@
+# CYD ID — Frontend
+
+Frontend for the CYD ID Card Management System (Diocese of Jalandhar), plus the CYD Shop
+marketplace module. Docs: [`docs/SHOP_MODULE.md`](docs/SHOP_MODULE.md), and the known flaws and
+fix plan for both frontend and backend in [`docs/IMPROVEMENT_PLAN.md`](docs/IMPROVEMENT_PLAN.md).
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
