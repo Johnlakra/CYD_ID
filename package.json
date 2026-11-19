@@ -24,6 +24,7 @@
     "jspdf": "^2.5.1",
     "nanoid": "^5.0.7",
     "pdf2pic": "^3.1.1",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.51.5",
@@ -63,5 +64,11 @@
   },
   "devDependencies": {
     "gh-pages": "^6.1.1"
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\](?!axios[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+      "^.+\\.module\\.(css|sass|scss)$"
+    ]
   }
 }
