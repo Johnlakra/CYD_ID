@@ -1,0 +1,8 @@
+{
+  "values": [
+    "parish",
+    "deanery",
+    "dexco"
+  ],
+  "note": "Send the lowercase value. The card background follows the level: parish -> Parish.jpg, deanery -> Deanery.jpg, dexco -> Dexco.jpg; anything else falls back to Parish.jpg."
+}

@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics=""><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Archivo:wght@400;500;600;700;800&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet"><style>body{margin:0;background:#0E0E10}*{-webkit-font-smoothing:antialiased;box-sizing:border-box}a{color:#FFA51F}a:hover{color:#FFC266}::-webkit-scrollbar{width:0;height:0}input,textarea{outline:none}
+@keyframes cydIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes cydShim{0%{opacity:.45}50%{opacity:.9}100%{opacity:.45}}
+@keyframes cydPulse{0%{transform:scale(.9);opacity:.6}70%{transform:scale(1.35);opacity:0}100%{transform:scale(1.35);opacity:0}}
+@keyframes cydPop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes cydSheet{from{transform:translateY(102%)}to{transform:none}}
+@keyframes cydVeil{from{opacity:0}to{opacity:1}}
+</style></helmet>
+<div style="min-height:100vh;background:#0E0E10;font-family:Archivo,system-ui,sans-serif;padding:40px 24px 60px;display:flex;flex-direction:column;align-items:center;gap:26px">
+<div style="width:100%;max-width:1000px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font:500 10px/1 'DM Mono',monospace;letter-spacing:.18em;color:#FFA51F;text-transform:uppercase">CYD Shop · interactive mockup · Flutter reference</div>
+<div style="font:400 40px/.95 Anton,sans-serif;color:#F5F5F0;text-transform:uppercase">Browse → cart → pay → fulfil</div>
+<div style="font:400 13px/1.5 Archivo,sans-serif;color:rgba(255,255,255,.5);max-width:640px;text-wrap:pretty">Every screen is clickable. Switch persona to see the shop-owner and admin flows; the switches below force list states, seller application status and the payment outcome so each branch can be reviewed.</div>
+</div>
+<div style="display:flex;gap:18px;flex-wrap:wrap">
+<sc-for list="{{ controls }}" as="c" hint-placeholder-count="5"><div style="display:flex;flex-direction:column;gap:7px"><div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;color:rgba(255,255,255,.4);text-transform:uppercase">{{ c.label }}</div><div style="display:flex;gap:4px;background:#16161A;border:1px solid rgba(255,255,255,.08);border-radius:11px;padding:4px"><sc-for list="{{ c.opts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" style="border:0;cursor:pointer;font:600 11px/1 Archivo,sans-serif;padding:8px 11px;border-radius:8px;white-space:nowrap;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for></div></div></sc-for>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{ jumps }}" as="j" hint-placeholder-count="16"><button onClick="{{ j.go }}" style="border:1px solid {{ j.bd }};cursor:pointer;font:500 10px/1 'DM Mono',monospace;letter-spacing:.06em;padding:8px 10px;border-radius:99px;white-space:nowrap;background:{{ j.bg }};color:{{ j.fg }};text-transform:uppercase">{{ j.n }} {{ j.label }}</button></sc-for>
+</div>
+</div>
+
+<div style="position:relative;width:414px;height:868px;border-radius:56px;background:linear-gradient(155deg,#3A3A40 0%,#17171A 26%,#0D0D0F 60%,#26262B 100%);padding:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),inset 0 1px 1px rgba(255,255,255,.18);filter:drop-shadow(0 30px 54px rgba(0,0,0,.45))">
+<div style="position:relative;width:390px;height:844px;border-radius:44px;overflow:hidden;background:var(--bg);color:var(--ink);--bg:{{ th.bg }};--card:{{ th.card }};--raised:{{ th.raised }};--sunk:{{ th.sunk }};--ink:{{ th.ink }};--mute:{{ th.mute }};--faint:{{ th.faint }};--line:{{ th.line }};--line2:{{ th.line2 }};--acc:#FFA51F;--accSoft:{{ th.accSoft }};--accText:{{ th.accText }};--danger:{{ th.danger }};--ok:{{ th.ok }};--tabbg:{{ th.tabbg }};--skel:{{ th.skel }}">
+<div style="position:absolute;inset:0;border-radius:44px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.08);z-index:100;pointer-events:none"></div>
+<div style="position:absolute;top:13px;left:50%;transform:translateX(-50%);width:104px;height:29px;border-radius:99px;background:#08080A;z-index:99;pointer-events:none"></div>
+<div style="position:absolute;top:0;left:0;right:0;height:52px;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:0 26px;pointer-events:none"><span style="font:700 14px/1 Archivo,sans-serif;color:var(--ink)">9:41</span><span style="font:500 10px/1 'DM Mono',monospace;color:var(--ink);letter-spacing:.06em">5G ▮▮▮</span></div>
+<div ref="{{ setScroller }}" style="position:absolute;inset:0">
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="01 Home" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 0 130px;animation:cydIn .4s cubic-bezier(.19,1,.22,1)">
+<div style="padding:0 20px;display:flex;align-items:center;gap:11px">
+<div style="width:42px;height:42px;border-radius:50%;background:var(--sunk);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:400 15px/1 Anton,sans-serif;color:var(--ink)">{{ me.ini }}</div>
+<div style="flex:1;min-width:0"><div style="font:700 15px/1.2 Archivo,sans-serif;color:var(--ink)">Hi {{ me.first }}</div><div style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-top:3px">{{ me.where }}</div></div>
+<button onClick="{{ goCart }}" style="position:relative;width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Anton,sans-serif;cursor:pointer">₹<sc-if value="{{ cartCount }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:#FFA51F;color:#0A0A0B;font:700 10px/18px Archivo,sans-serif">{{ cartCount }}</span></sc-if></button>
+</div>
+<div style="padding:22px 20px 0;font:400 46px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink);display:flex;flex-direction:column;align-items:flex-start;gap:2px"><span>Shop the</span><span style="background:#FFA51F;color:#0A0A0B;padding:0 8px 3px;line-height:1">diocese.</span></div>
+<div style="padding:18px 20px 0"><button onClick="{{ goSearch }}" style="width:100%;height:52px;border-radius:16px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;gap:10px;padding:0 16px;cursor:pointer;font:400 14px/1 Archivo,sans-serif;color:var(--faint)"><span style="font:600 16px/1 Archivo,sans-serif;color:var(--ink)">⌕</span>Search rosaries, books, hoodies…</button></div>
+<div style="display:flex;gap:10px;overflow-x:auto;padding:20px 20px 4px">
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="7"><button onClick="{{ c.go }}" style="flex:none;width:72px;border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;padding:0"><span style="width:58px;height:58px;border-radius:18px;background:{{ c.bg }};border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:400 22px/1 Anton,sans-serif;color:{{ c.fg }}">{{ c.mark }}</span><span style="font:600 10px/1.2 Archivo,sans-serif;color:var(--ink);text-align:center">{{ c.short }}</span></button></sc-for>
+</div>
+<div style="display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:18px 20px 0">
+<div style="flex:none;width:300px;height:156px;border-radius:22px;background:#FFA51F;padding:18px;display:flex;flex-direction:column;justify-content:space-between;scroll-snap-align:start;box-shadow:0 14px 30px -18px rgba(255,165,31,.9)">
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;color:rgba(10,10,11,.6)">NEW THIS MONTH</div>
+<div><div style="font:400 30px/.95 Anton,sans-serif;color:#0A0A0B;text-transform:uppercase">5 parish shops<br>just joined</div><div style="font:500 12px/1.4 Archivo,sans-serif;color:rgba(10,10,11,.65);margin-top:6px">From Amritsar to Kapurthala.</div></div>
+</div>
+<button onClick="{{ goAdvent }}" style="flex:none;width:300px;height:156px;border-radius:22px;background:var(--raised);border:1px solid var(--line);padding:18px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;scroll-snap-align:start;cursor:pointer">
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;color:var(--accText)">SEASONAL</div>
+<div><div style="font:400 30px/.95 Anton,sans-serif;color:var(--ink);text-transform:uppercase">The Advent<br>collection is here</div><div style="font:600 12px/1.4 Archivo,sans-serif;color:var(--mute);margin-top:6px">Candles, wreaths and calendars →</div></div>
+</button>
+</div>
+<div style="padding:26px 20px 12px;display:flex;align-items:baseline;justify-content:space-between"><div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)">Featured shops</div></div>
+<div style="display:flex;gap:10px;overflow-x:auto;padding:0 20px">
+<sc-for list="{{ featured }}" as="f" hint-placeholder-count="4"><button onClick="{{ f.go }}" style="flex:none;width:156px;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:10px">
+<span style="width:44px;height:44px;border-radius:50%;background:{{ f.bg }};display:flex;align-items:center;justify-content:center;font:400 15px/1 Anton,sans-serif;color:{{ f.fg }}">{{ f.mark }}</span>
+<span style="font:700 13px/1.25 Archivo,sans-serif;color:var(--ink);min-height:32px">{{ f.name }}</span>
+<span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">{{ f.deanery }} deanery</span>
+<span style="font:600 12px/1 Archivo,sans-serif;color:var(--accText)">Visit shop →</span>
+</button></sc-for>
+</div>
+<div style="padding:26px 20px 12px;font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)">Fresh from parish shops</div>
+<div style="padding:0 20px">
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px"><sc-for list="{{ skel4 }}" as="k" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:8px"><div style="aspect-ratio:4/5;border-radius:16px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div><div style="height:12px;width:90%;border-radius:6px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div><div style="height:10px;width:55%;border-radius:6px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div><div style="height:12px;width:38%;border-radius:6px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div></div></sc-for></div></sc-if>
+<sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:36px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="width:56px;height:56px;border-radius:16px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:400 24px/1 Anton,sans-serif;color:var(--danger)">!</div><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">Couldn't load products</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute);max-width:240px">Check your connection, then try again.</div><button onClick="{{ retry }}" style="margin-top:4px;height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Tap to retry</button></div></sc-if>
+<sc-if value="{{ homeEmpty }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:36px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="width:56px;height:56px;border-radius:16px;background:#FFA51F;display:flex;align-items:center;justify-content:center;font:400 24px/1 Anton,sans-serif;color:#0A0A0B">☼</div><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">No products yet</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute);max-width:250px">Parish shops are still setting up. Check back after Sunday Mass.</div></div></sc-if>
+<sc-if value="{{ homeLive }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 12px">
+<sc-for list="{{ homeProducts }}" as="p" hint-placeholder-count="4"><div onClick="{{ p.open }}" style="display:flex;flex-direction:column;gap:7px;cursor:pointer;min-width:0;transition:transform .18s" style-active="transform:scale(.97)"><div style="position:relative;aspect-ratio:4/5;border-radius:16px;background:{{ p.tileBg }};border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden"><span style="font:400 46px/1 Anton,sans-serif;color:{{ p.markFg }}">{{ p.mark }}</span><span style="position:absolute;left:10px;bottom:10px;font:500 8px/1 'DM Mono',monospace;letter-spacing:.14em;color:{{ p.markFg }}">PHOTO</span><button onClick="{{ p.like }}" style="position:absolute;top:6px;right:6px;width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:{{ p.heartFg }};font:400 16px/1 Archivo,sans-serif;cursor:pointer">{{ p.heart }}</button><sc-if value="{{ p.soldOut }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(10,10,11,.5);display:flex;align-items:center;justify-content:center"><span style="font:500 10px/1 'DM Mono',monospace;letter-spacing:.14em;color:#fff;border:1px solid rgba(255,255,255,.5);padding:7px 10px;border-radius:99px">SOLD OUT</span></div></sc-if></div><div style="font:600 13px/1.3 Archivo,sans-serif;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ p.title }}</div><div style="font:400 11px/1.2 Archivo,sans-serif;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-3px">{{ p.shopName }}</div><div style="display:flex;align-items:baseline;gap:6px"><span style="font:700 14px/1 Archivo,sans-serif;color:var(--ink)">{{ p.priceT }}</span><sc-if value="{{ p.hasComp }}" hint-placeholder-val="{{ false }}"><span style="font:400 11px/1 Archivo,sans-serif;color:var(--faint);text-decoration:line-through">{{ p.compT }}</span></sc-if></div></div></sc-for>
+</div></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCategories }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="02 Categories" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:66px 20px 130px;animation:cydIn .4s cubic-bezier(.19,1,.22,1)">
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:8px">7 categories</div>
+<div style="font:400 40px/.95 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-bottom:20px">What are you<br>looking for?</div>
+<button onClick="{{ goSearch }}" style="width:100%;height:52px;border-radius:16px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;gap:10px;padding:0 16px;cursor:pointer;font:400 14px/1 Archivo,sans-serif;color:var(--faint);margin-bottom:18px"><span style="font:600 16px/1 Archivo,sans-serif;color:var(--ink)">⌕</span>Search everything</button>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="7"><button onClick="{{ c.go }}" style="text-align:left;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:14px;min-height:132px" style-active="transform:scale(.97)"><span style="width:48px;height:48px;border-radius:15px;background:{{ c.bg }};display:flex;align-items:center;justify-content:center;font:400 20px/1 Anton,sans-serif;color:{{ c.fg }}">{{ c.mark }}</span><span style="display:flex;flex-direction:column;gap:5px"><span style="font:700 14px/1.2 Archivo,sans-serif;color:var(--ink)">{{ c.name }}</span><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.1em;color:var(--faint)">{{ c.count }} ITEMS</span></span></button></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="03 Search" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 20px 130px">
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+<button onClick="{{ back }}" style="flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button>
+<div style="flex:1;height:48px;border-radius:14px;border:1px solid #FFA51F;background:var(--card);display:flex;align-items:center;gap:8px;padding:0 14px"><span style="font:600 16px/1 Archivo,sans-serif;color:var(--ink)">⌕</span><input value="{{ query }}" onChange="{{ setQuery }}" placeholder="Search products and shops" style="flex:1;min-width:0;border:0;background:transparent;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"><sc-if value="{{ searching }}" hint-placeholder-val="{{ false }}"><button onClick="{{ clearQuery }}" style="border:0;background:var(--sunk);width:24px;height:24px;border-radius:50%;color:var(--mute);cursor:pointer;font:400 12px/1 Archivo,sans-serif">×</button></sc-if></div>
+<button onClick="{{ openFilter }}" style="flex:none;position:relative;height:48px;padding:0 14px;border-radius:14px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 12px/1 Archivo,sans-serif;cursor:pointer">Filter<sc-if value="{{ hasFilterCount }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#FFA51F;color:#0A0A0B;font:700 10px/18px Archivo,sans-serif">{{ filterCount }}</span></sc-if></button>
+</div>
+<sc-if value="{{ notSearching }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ hasRecent }}" hint-placeholder-val="{{ true }}"><div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 10px"><div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)">Recent searches</div><button onClick="{{ clearRecent }}" style="border:0;background:transparent;font:600 11px/1 Archivo,sans-serif;color:var(--mute);cursor:pointer;padding:8px 0">Clear</button></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px"><sc-for list="{{ recent }}" as="r" hint-placeholder-count="3"><button onClick="{{ r.go }}" style="height:36px;padding:0 14px;border-radius:99px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:500 12px/1 Archivo,sans-serif;cursor:pointer">↺ {{ r.r }}</button></sc-for></div></sc-if>
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:8px 0 10px">Trending categories</div>
+<div style="display:flex;flex-direction:column;border:1px solid var(--line);border-radius:20px;background:var(--card);overflow:hidden"><sc-for list="{{ cats }}" as="c" hint-placeholder-count="7"><button onClick="{{ c.go }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;cursor:pointer;text-align:left"><span style="width:34px;height:34px;border-radius:10px;background:{{ c.bg }};display:flex;align-items:center;justify-content:center;font:400 14px/1 Anton,sans-serif;color:{{ c.fg }}">{{ c.mark }}</span><span style="flex:1;font:600 13px/1.2 Archivo,sans-serif;color:var(--ink)">{{ c.name }}</span><span style="font:500 10px/1 'DM Mono',monospace;color:var(--faint)">{{ c.count }} →</span></button></sc-for></div>
+</sc-if>
+<sc-if value="{{ searching }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:14px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-right:4px">{{ resultCount }}</span><sc-for list="{{ activeFilters }}" as="a" hint-placeholder-count="1"><button onClick="{{ a.x }}" style="height:30px;padding:0 10px;border-radius:99px;border:0;background:var(--accSoft);color:var(--accText);font:600 11px/1 Archivo,sans-serif;cursor:pointer">{{ a.label }} ×</button></sc-for></div>
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px"><sc-for list="{{ skel4 }}" as="k" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:8px"><div style="aspect-ratio:4/5;border-radius:16px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div><div style="height:12px;width:90%;border-radius:6px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div><div style="height:12px;width:40%;border-radius:6px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div></div></sc-for></div></sc-if>
+<sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:36px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="width:56px;height:56px;border-radius:16px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:400 24px/1 Anton,sans-serif;color:var(--danger)">!</div><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">Search isn't working right now</div><button onClick="{{ retry }}" style="height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Tap to retry</button></div></sc-if>
+<sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:36px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="width:56px;height:56px;border-radius:16px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:400 24px/1 Anton,sans-serif;color:var(--ink)">?</div><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">{{ noResultsT }}</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute);max-width:250px">Try a shorter word, or browse by category instead.</div><button onClick="{{ clearQuery }}" style="height:44px;padding:0 22px;border:1px solid var(--line2);border-radius:12px;background:transparent;color:var(--ink);font:600 13px/1 Archivo,sans-serif;cursor:pointer">Browse categories</button></div></sc-if>
+<sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 12px">
+<sc-for list="{{ results }}" as="p" hint-placeholder-count="4"><div onClick="{{ p.open }}" style="display:flex;flex-direction:column;gap:7px;cursor:pointer;min-width:0" style-active="transform:scale(.97)"><div style="position:relative;aspect-ratio:4/5;border-radius:16px;background:{{ p.tileBg }};border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden"><span style="font:400 46px/1 Anton,sans-serif;color:{{ p.markFg }}">{{ p.mark }}</span><span style="position:absolute;left:10px;bottom:10px;font:500 8px/1 'DM Mono',monospace;letter-spacing:.14em;color:{{ p.markFg }}">PHOTO</span><button onClick="{{ p.like }}" style="position:absolute;top:6px;right:6px;width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:{{ p.heartFg }};font:400 16px/1 Archivo,sans-serif;cursor:pointer">{{ p.heart }}</button><sc-if value="{{ p.soldOut }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(10,10,11,.5);display:flex;align-items:center;justify-content:center"><span style="font:500 10px/1 'DM Mono',monospace;letter-spacing:.14em;color:#fff;border:1px solid rgba(255,255,255,.5);padding:7px 10px;border-radius:99px">SOLD OUT</span></div></sc-if></div><div style="font:600 13px/1.3 Archivo,sans-serif;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ p.title }}</div><div style="font:400 11px/1.2 Archivo,sans-serif;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-3px">{{ p.shopName }}</div><div style="display:flex;align-items:baseline;gap:6px"><span style="font:700 14px/1 Archivo,sans-serif;color:var(--ink)">{{ p.priceT }}</span><sc-if value="{{ p.hasComp }}" hint-placeholder-val="{{ false }}"><span style="font:400 11px/1 Archivo,sans-serif;color:var(--faint);text-decoration:line-through">{{ p.compT }}</span></sc-if></div></div></sc-for>
+</div></sc-if>
+</sc-if>
+</div>
+<sc-if value="{{ filterOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeFilter }}" style="position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:70;animation:cydVeil .25s"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;z-index:71;background:var(--raised);border-radius:28px 28px 0 0;border-top:1px solid var(--line2);padding:12px 20px 30px;max-height:80%;overflow-y:auto;animation:cydSheet .42s cubic-bezier(.19,1,.22,1)">
+<div style="width:40px;height:4px;border-radius:2px;background:var(--line2);margin:0 auto 16px"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px"><div style="font:400 26px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">Filter &amp; sort</div><button onClick="{{ resetFilters }}" style="border:0;background:transparent;font:600 12px/1 Archivo,sans-serif;color:var(--mute);cursor:pointer;padding:10px 0">Reset</button></div>
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:10px">Category</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px"><sc-for list="{{ fCats }}" as="c" hint-placeholder-count="8"><button onClick="{{ c.go }}" style="height:36px;padding:0 13px;border-radius:99px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:600 12px/1 Archivo,sans-serif;cursor:pointer">{{ c.l }}</button></sc-for></div>
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:10px">Parish deanery</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px"><sc-for list="{{ fDeans }}" as="c" hint-placeholder-count="5"><button onClick="{{ c.go }}" style="height:36px;padding:0 13px;border-radius:99px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:600 12px/1 Archivo,sans-serif;cursor:pointer">{{ c.l }}</button></sc-for></div>
+<div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)">Price</span><span style="font:600 12px/1 Archivo,sans-serif;color:var(--ink)">{{ maxPriceT }}</span></div>
+<input type="range" min="50" max="1000" step="50" value="{{ maxPrice }}" onChange="{{ setMax }}" style="width:100%;accent-color:#FFA51F;margin-bottom:22px">
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:6px">Sort by</div>
+<div style="display:flex;flex-direction:column;margin-bottom:20px"><sc-for list="{{ sorts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" style="display:flex;align-items:center;gap:12px;height:46px;border:0;border-bottom:1px solid var(--line);background:transparent;cursor:pointer;font:500 14px/1 Archivo,sans-serif;color:var(--ink);text-align:left;padding:0"><span style="width:20px;height:20px;border-radius:50%;border:2px solid {{ o.ring }};display:flex;align-items:center;justify-content:center"><span style="width:10px;height:10px;border-radius:50%;background:{{ o.dot }}"></span></span>{{ o.l }}</button></sc-for></div>
+<button onClick="{{ closeFilter }}" style="width:100%;height:56px;border:0;border-radius:16px;background:#FFA51F;color:#0A0A0B;font:700 15px/1 Archivo,sans-serif;cursor:pointer;box-shadow:0 10px 24px -12px rgba(255,165,31,.8)">Show {{ resultCount }}</button>
+</div>
+</sc-if>
+</sc-if>
+<sc-if value="{{ isShop }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="04 Storefront" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:0 0 130px">
+<div style="position:relative;height:210px;background:{{ shop.bg }};display:flex;align-items:flex-end;justify-content:flex-end;padding:14px 18px"><span style="font:500 8px/1 'DM Mono',monospace;letter-spacing:.14em;color:{{ shop.fg }}">SHOP BANNER</span><button onClick="{{ back }}" style="position:absolute;top:56px;left:18px;width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button></div>
+<div style="padding:0 20px;margin-top:-40px;position:relative">
+<div style="width:84px;height:84px;border-radius:50%;background:var(--card);border:4px solid var(--bg);display:flex;align-items:center;justify-content:center;font:400 28px/1 Anton,sans-serif;color:{{ shop.fg }}">{{ shop.mark }}</div>
+<div style="font:400 32px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-top:12px">{{ shop.name }}</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><span style="height:26px;padding:0 10px;border-radius:99px;background:var(--accSoft);color:var(--accText);font:600 11px/26px Archivo,sans-serif">⛪ {{ shop.parish }}</span><span style="height:26px;padding:0 10px;border-radius:99px;border:1px solid var(--line2);color:var(--mute);font:600 11px/24px Archivo,sans-serif">{{ shop.deanery }} deanery</span></div>
+<div style="font:400 13px/1.55 Archivo,sans-serif;color:var(--mute);margin-top:12px;text-wrap:pretty">{{ shop.desc }}</div>
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:20px 0 10px">{{ shop.count }}</div>
+<div style="display:flex;gap:6px;overflow-x:auto;margin:0 -20px 16px;padding:0 20px"><sc-for list="{{ shopCats }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.go }}" style="flex:none;height:36px;padding:0 14px;border-radius:99px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:600 12px/1 Archivo,sans-serif;cursor:pointer">{{ c.label }}</button></sc-for></div>
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px"><sc-for list="{{ skel4 }}" as="k" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:8px"><div style="aspect-ratio:4/5;border-radius:16px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div><div style="height:12px;width:80%;border-radius:6px;background:var(--skel)"></div></div></sc-for></div></sc-if>
+<sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">Couldn't load this shop</div><button onClick="{{ retry }}" style="height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Tap to retry</button></div></sc-if>
+<sc-if value="{{ shopEmpty }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">This shop hasn't added products yet</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute)">Check back soon.</div></div></sc-if>
+<sc-if value="{{ shopLive }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 12px"><sc-for list="{{ shopProducts }}" as="p" hint-placeholder-count="2"><div onClick="{{ p.open }}" style="display:flex;flex-direction:column;gap:7px;cursor:pointer;min-width:0"><div style="position:relative;aspect-ratio:4/5;border-radius:16px;background:{{ p.tileBg }};border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden"><span style="font:400 46px/1 Anton,sans-serif;color:{{ p.markFg }}">{{ p.mark }}</span><button onClick="{{ p.like }}" style="position:absolute;top:6px;right:6px;width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:{{ p.heartFg }};font:400 16px/1 Archivo,sans-serif;cursor:pointer">{{ p.heart }}</button><sc-if value="{{ p.soldOut }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(10,10,11,.5);display:flex;align-items:center;justify-content:center"><span style="font:500 10px/1 'DM Mono',monospace;letter-spacing:.14em;color:#fff;border:1px solid rgba(255,255,255,.5);padding:7px 10px;border-radius:99px">SOLD OUT</span></div></sc-if></div><div style="font:600 13px/1.3 Archivo,sans-serif;color:var(--ink)">{{ p.title }}</div><div style="display:flex;align-items:baseline;gap:6px"><span style="font:700 14px/1 Archivo,sans-serif;color:var(--ink)">{{ p.priceT }}</span><sc-if value="{{ p.hasComp }}" hint-placeholder-val="{{ false }}"><span style="font:400 11px/1 Archivo,sans-serif;color:var(--faint);text-decoration:line-through">{{ p.compT }}</span></sc-if></div></div></sc-for></div></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProduct }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="05 Product" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:0 0 120px">
+<div style="position:relative">
+<div onScroll="{{ onGallery }}" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;height:420px"><sc-for list="{{ gallery }}" as="g" hint-placeholder-count="3"><div style="flex:none;width:390px;height:420px;scroll-snap-align:start;background:{{ prod.tileBg }};display:flex;align-items:center;justify-content:center;position:relative"><span style="font:400 120px/1 Anton,sans-serif;color:{{ prod.markFg }}">{{ prod.mark }}</span><span style="position:absolute;left:20px;bottom:40px;font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:{{ prod.markFg }}">PRODUCT PHOTO {{ g.n }}</span></div></sc-for></div>
+<button onClick="{{ back }}" style="position:absolute;top:56px;left:18px;width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button>
+<button onClick="{{ prod.like }}" style="position:absolute;top:56px;right:18px;width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:{{ prod.heartFg }};font:400 17px/1 Archivo,sans-serif;cursor:pointer">{{ prod.heart }}</button>
+<div style="position:absolute;bottom:16px;left:0;right:0;display:flex;justify-content:center;gap:5px"><sc-for list="{{ dots }}" as="d" hint-placeholder-count="3"><span style="width:{{ d.w }};height:6px;border-radius:3px;background:{{ d.bg }};transition:width .3s"></span></sc-for></div>
+</div>
+<div style="padding:20px">
+<button onClick="{{ goProdShop }}" style="display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:0;cursor:pointer;margin-bottom:12px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accText)">{{ prod.shopName }} →</span></button>
+<div style="font:400 32px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">{{ prod.title }}</div>
+<div style="display:flex;align-items:baseline;gap:10px;margin-top:14px"><span style="font:400 34px/1 Anton,sans-serif;color:var(--ink)">{{ prod.priceT }}</span><sc-if value="{{ prod.hasComp }}" hint-placeholder-val="{{ false }}"><span style="font:400 14px/1 Archivo,sans-serif;color:var(--faint);text-decoration:line-through">{{ prod.compT }}</span></sc-if><sc-if value="{{ hasOff }}" hint-placeholder-val="{{ false }}"><span style="font:700 11px/1 Archivo,sans-serif;color:#0A0A0B;background:#FFA51F;padding:5px 8px;border-radius:99px">{{ off }}</span></sc-if></div>
+<div style="display:flex;gap:6px;margin-top:14px"><span style="height:28px;padding:0 11px;border-radius:99px;background:{{ stockChip.bg }};color:{{ stockChip.fg }};font:600 11px/28px Archivo,sans-serif">{{ stockChip.g }} {{ stockChip.label }}</span><span style="height:28px;padding:0 11px;border-radius:99px;border:1px solid var(--line2);color:var(--mute);font:600 11px/26px Archivo,sans-serif">{{ prod.catName }}</span></div>
+<div style="height:1px;background:var(--line);margin:20px 0"></div>
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:10px">About this item</div>
+<div style="font:400 14px/1.6 Archivo,sans-serif;color:var(--mute);display:-webkit-box;-webkit-line-clamp:{{ descClamp }};-webkit-box-orient:vertical;overflow:hidden;text-wrap:pretty">{{ prod.desc }}</div>
+<sc-if value="{{ longDesc }}" hint-placeholder-val="{{ false }}"><button onClick="{{ descToggle }}" style="border:0;background:transparent;padding:10px 0;font:700 12px/1 Archivo,sans-serif;color:var(--accText);cursor:pointer">{{ descLabel }}</button></sc-if>
+</div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;z-index:40;padding:12px 16px 26px;background:var(--raised);border-top:1px solid var(--line);display:flex;gap:8px;align-items:center">
+<sc-if value="{{ canBuy }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;border:1px solid var(--line2);border-radius:14px;height:52px"><button onClick="{{ decQty }}" style="width:40px;height:50px;border:0;background:transparent;color:var(--ink);font:500 18px/1 Archivo,sans-serif;cursor:pointer">−</button><span style="width:22px;text-align:center;font:700 15px/1 Archivo,sans-serif;color:var(--ink)">{{ qty }}</span><button onClick="{{ incQty }}" style="width:40px;height:50px;border:0;background:transparent;color:var(--ink);font:500 18px/1 Archivo,sans-serif;cursor:pointer">+</button></div>
+<button onClick="{{ addCart }}" style="flex:1;height:52px;border-radius:14px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:700 13px/1 Archivo,sans-serif;cursor:pointer">Add to cart</button>
+<button onClick="{{ buyNow }}" style="flex:1;height:52px;border-radius:14px;border:0;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer;box-shadow:0 10px 24px -12px rgba(255,165,31,.8)">Buy now</button>
+</sc-if>
+<sc-if value="{{ cantBuy }}" hint-placeholder-val="{{ false }}"><button style="flex:1;height:52px;border-radius:14px;border:0;background:var(--sunk);color:var(--faint);font:700 13px/1 Archivo,sans-serif">Out of stock</button></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCart }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="06 Cart" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:66px 20px 240px">
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:8px">{{ cartCount }} items</div>
+<div style="font:400 40px/.95 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-bottom:18px">Your cart</div>
+<sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:40px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="width:56px;height:56px;border-radius:16px;background:#FFA51F;display:flex;align-items:center;justify-content:center;font:400 24px/1 Anton,sans-serif;color:#0A0A0B">₹</div><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">Your cart is empty</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute)">Find something from a parish shop.</div><button onClick="{{ goHome }}" style="height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Start shopping</button></div></sc-if>
+<sc-if value="{{ cartLive }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ multiShop }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:10px;padding:12px 14px;border-radius:14px;background:var(--accSoft);margin-bottom:14px"><span style="font:700 13px/1.3 Archivo,sans-serif;color:var(--accText)">ⓘ</span><span style="font:500 12px/1.45 Archivo,sans-serif;color:var(--accText)">Items from {{ shopCountT }} are sent as separate orders, one per shop.</span></div></sc-if>
+<div style="display:flex;flex-direction:column;gap:12px"><sc-for list="{{ groups }}" as="g" hint-placeholder-count="2"><div style="border:1px solid var(--line);border-radius:20px;background:var(--card);overflow:hidden">
+<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)"><span style="width:30px;height:30px;border-radius:50%;background:{{ g.bg }};display:flex;align-items:center;justify-content:center;font:400 11px/1 Anton,sans-serif;color:{{ g.fg }}">{{ g.mark }}</span><span style="flex:1;font:700 13px/1.2 Archivo,sans-serif;color:var(--ink)">{{ g.name }}</span><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.1em;color:var(--faint)">{{ g.deanery }}</span></div>
+<sc-for list="{{ g.items }}" as="i" hint-placeholder-count="1"><div style="display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)"><div onClick="{{ i.open }}" style="flex:none;width:64px;height:64px;border-radius:12px;background:{{ i.tileBg }};display:flex;align-items:center;justify-content:center;font:400 24px/1 Anton,sans-serif;color:{{ i.markFg }};cursor:pointer">{{ i.mark }}</div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><div style="display:flex;gap:8px"><span style="flex:1;font:600 13px/1.3 Archivo,sans-serif;color:var(--ink)">{{ i.title }}</span><button onClick="{{ i.rm }}" style="flex:none;width:28px;height:28px;margin:-4px -6px 0 0;border:0;background:transparent;color:var(--faint);font:400 16px/1 Archivo,sans-serif;cursor:pointer">×</button></div><span style="font:400 11px/1 Archivo,sans-serif;color:var(--faint)">{{ i.unitT }}</span><div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px"><div style="display:flex;align-items:center;border:1px solid var(--line2);border-radius:10px;height:34px"><button onClick="{{ i.dec }}" style="width:32px;height:32px;border:0;background:transparent;color:var(--ink);opacity:{{ i.decOp }};font:500 15px/1 Archivo,sans-serif;cursor:pointer">−</button><span style="width:20px;text-align:center;font:700 13px/1 Archivo,sans-serif;color:var(--ink)">{{ i.qty }}</span><button onClick="{{ i.inc }}" style="width:32px;height:32px;border:0;background:transparent;color:var(--ink);opacity:{{ i.incOp }};font:500 15px/1 Archivo,sans-serif;cursor:pointer">+</button></div><span style="font:700 14px/1 Archivo,sans-serif;color:var(--ink)">{{ i.lineT }}</span></div></div></div></sc-for>
+<div style="display:flex;justify-content:space-between;padding:12px 14px"><span style="font:500 12px/1 Archivo,sans-serif;color:var(--mute)">Shop subtotal</span><span style="font:700 13px/1 Archivo,sans-serif;color:var(--ink)">{{ g.subT }}</span></div>
+</div></sc-for></div>
+</sc-if>
+</div>
+<sc-if value="{{ cartLive }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:0;right:0;bottom:92px;z-index:45;padding:14px 16px 12px;background:var(--raised);border-top:1px solid var(--line);border-radius:22px 22px 0 0"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)">Total · delivery arranged by shop</span><span style="font:400 26px/1 Anton,sans-serif;color:var(--ink)">{{ cartTotalT }}</span></div><button onClick="{{ goCheckout }}" style="width:100%;height:54px;border:0;border-radius:16px;background:#FFA51F;color:#0A0A0B;font:700 15px/1 Archivo,sans-serif;cursor:pointer;box-shadow:0 10px 24px -12px rgba(255,165,31,.8)">Proceed to checkout</button></div></sc-if>
+</sc-if>
+
+<sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="07 Checkout" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 20px 120px">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button onClick="{{ ckBack }}" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button><span style="font:400 26px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">Checkout</span></div>
+<div style="display:flex;gap:6px;margin-bottom:22px"><sc-for list="{{ steps }}" as="t" hint-placeholder-count="3"><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div style="height:4px;border-radius:2px;background:{{ t.bg }};transition:background .3s"></div><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:{{ t.fg }}">{{ t.n }} {{ t.l }}</span></div></sc-for></div>
+<sc-if value="{{ step1 }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 22px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-bottom:12px">Deliver to</div>
+<div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ addrCards }}" as="a" hint-placeholder-count="2"><button onClick="{{ a.go }}" style="display:flex;gap:12px;text-align:left;padding:14px;border-radius:18px;border:1.5px solid {{ a.bd }};background:var(--card);cursor:pointer"><span style="flex:none;width:20px;height:20px;border-radius:50%;border:2px solid {{ a.ring }};display:flex;align-items:center;justify-content:center;margin-top:1px"><span style="width:10px;height:10px;border-radius:50%;background:{{ a.dot }}"></span></span><span style="display:flex;flex-direction:column;gap:4px"><span style="font:700 13px/1.2 Archivo,sans-serif;color:var(--ink)">{{ a.label }} · {{ a.name }}</span><span style="font:400 12px/1.45 Archivo,sans-serif;color:var(--mute)">{{ a.line1 }}</span><span style="font:400 12px/1.45 Archivo,sans-serif;color:var(--mute)">{{ a.l2 }}</span><span style="font:500 10px/1 'DM Mono',monospace;color:var(--faint);margin-top:2px">{{ a.phone }}</span></span></button></sc-for></div>
+<button onClick="{{ addNewAddr }}" style="width:100%;margin-top:10px;height:50px;border-radius:16px;border:1.5px dashed var(--line2);background:transparent;color:var(--ink);font:600 13px/1 Archivo,sans-serif;cursor:pointer">+ Add a new address</button>
+</sc-if>
+<sc-if value="{{ step2 }}" hint-placeholder-val="{{ false }}">
+<div style="font:400 22px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-bottom:12px">How will you pay?</div>
+<div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ payCards }}" as="p" hint-placeholder-count="2"><button onClick="{{ p.go }}" style="display:flex;gap:12px;align-items:center;text-align:left;padding:16px 14px;border-radius:18px;border:1.5px solid {{ p.bd }};background:var(--card);cursor:pointer"><span style="flex:none;width:44px;height:44px;border-radius:13px;background:{{ p.mbg }};color:{{ p.mfg }};display:flex;align-items:center;justify-content:center;font:400 13px/1 Anton,sans-serif">{{ p.m }}</span><span style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font:700 14px/1.2 Archivo,sans-serif;color:var(--ink)">{{ p.t }}</span><span style="font:400 12px/1.45 Archivo,sans-serif;color:var(--mute)">{{ p.n }}</span></span><span style="flex:none;width:20px;height:20px;border-radius:50%;border:2px solid {{ p.ring }};display:flex;align-items:center;justify-content:center"><span style="width:10px;height:10px;border-radius:50%;background:{{ p.dot }}"></span></span></button></sc-for></div>
+</sc-if>
+<sc-if value="{{ step3 }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ multiShop }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:10px;padding:12px 14px;border-radius:14px;background:var(--accSoft);margin-bottom:14px"><span style="font:700 13px/1.3 Archivo,sans-serif;color:var(--accText)">ⓘ</span><span style="font:500 12px/1.45 Archivo,sans-serif;color:var(--accText)">{{ splitT }}</span></div></sc-if>
+<div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ review }}" as="g" hint-placeholder-count="2"><div style="border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden"><button onClick="{{ g.toggle }}" style="width:100%;display:flex;align-items:center;gap:10px;padding:13px 14px;border:0;background:transparent;cursor:pointer;text-align:left"><span style="width:30px;height:30px;border-radius:50%;background:{{ g.bg }};display:flex;align-items:center;justify-content:center;font:400 11px/1 Anton,sans-serif;color:{{ g.fg }}">{{ g.mark }}</span><span style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font:700 13px/1.2 Archivo,sans-serif;color:var(--ink)">{{ g.name }}</span><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.1em;color:var(--faint)">{{ g.count }} ITEMS · {{ g.subT }}</span></span><span style="font:500 18px/1 Archivo,sans-serif;color:var(--mute)">{{ g.chev }}</span></button><sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}"><div style="border-top:1px solid var(--line);padding:4px 14px"><sc-for list="{{ g.items }}" as="i" hint-placeholder-count="1"><div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0"><span style="font:500 12px/1.3 Archivo,sans-serif;color:var(--mute)">{{ i.title }} × {{ i.qty }}</span><span style="font:600 12px/1.3 Archivo,sans-serif;color:var(--ink)">{{ i.lineT }}</span></div></sc-for></div></sc-if></div></sc-for></div>
+<div style="margin-top:14px;border:1px solid var(--line);border-radius:18px;background:var(--card)"><div style="display:flex;justify-content:space-between;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line)"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">DELIVER TO</span><span style="font:500 12px/1.4 Archivo,sans-serif;color:var(--ink);text-align:right">{{ selA.label }} · {{ selA.city }} {{ selA.pin }}</span></div><div style="display:flex;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--line)"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">PAYMENT</span><span style="font:500 12px/1.4 Archivo,sans-serif;color:var(--ink)">{{ payRecap }}</span></div><div style="display:flex;justify-content:space-between;align-items:baseline;padding:14px"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">GRAND TOTAL</span><span style="font:400 24px/1 Anton,sans-serif;color:var(--ink)">{{ cartTotalT }}</span></div></div>
+</sc-if>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;z-index:40;padding:12px 16px 26px;background:var(--raised);border-top:1px solid var(--line)"><button onClick="{{ ckNext }}" style="width:100%;height:56px;border:0;border-radius:16px;background:#FFA51F;color:#0A0A0B;font:700 15px/1 Archivo,sans-serif;cursor:pointer;box-shadow:0 10px 24px -12px rgba(255,165,31,.8)">{{ ckBtn }}</button></div>
+</sc-if>
+
+<sc-if value="{{ isPayment }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="08 Payment" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 24px 40px;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:12px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button><span style="flex:1;font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)">{{ pay.no }}</span><sc-if value="{{ pay.hasIdx }}" hint-placeholder-val="{{ false }}"><span style="font:600 11px/1 Archivo,sans-serif;color:var(--accText);background:var(--accSoft);padding:6px 10px;border-radius:99px">Order {{ pay.idx }}</span></sc-if></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:20px 0">
+<div style="position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center">
+<sc-if value="{{ pay.pulsing }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FFA51F;animation:cydPulse 1.8s ease-out infinite"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FFA51F;animation:cydPulse 1.8s ease-out .9s infinite"></span></sc-if>
+<span style="width:112px;height:112px;border-radius:50%;border:3px solid {{ pay.ring }};background:{{ pay.gbg }};color:{{ pay.gfg }};display:flex;align-items:center;justify-content:center;font:400 30px/1 Anton,sans-serif">{{ pay.glyph }}</span>
+</div>
+<div style="font:400 44px/1 Anton,sans-serif;color:var(--ink)">{{ pay.amount }}</div>
+<div style="font:500 12px/1 Archivo,sans-serif;color:var(--mute);margin-top:-6px">to {{ pay.shop }}</div>
+<sc-if value="{{ pay.starting }}" hint-placeholder-val="{{ true }}"><div style="font:400 24px/1.05 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-top:10px">Opening UPI checkout…</div><div style="font:400 13px/1.5 Archivo,sans-serif;color:var(--mute);max-width:280px">Loading the secure payment page.</div></sc-if>
+<sc-if value="{{ pay.waiting }}" hint-placeholder-val="{{ false }}"><div style="font:400 24px/1.05 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-top:10px">Complete payment<br>in your UPI app</div><div style="font:400 13px/1.5 Archivo,sans-serif;color:var(--mute);max-width:290px">Approve the request in GPay, PhonePe or Paytm. Keep this screen open; it updates on its own once your bank confirms.</div><div style="font:500 10px/1 'DM Mono',monospace;letter-spacing:.08em;color:var(--faint);display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#FFA51F;animation:cydShim 1s infinite"></span>{{ pay.checks }}</div></sc-if>
+<sc-if value="{{ pay.unavailable }}" hint-placeholder-val="{{ false }}"><div style="font:400 24px/1.05 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-top:10px">Payment page<br>didn't open</div><div style="font:400 13px/1.5 Archivo,sans-serif;color:var(--mute);max-width:290px">The UPI gateway isn't responding right now. Your order is saved. If you already paid, we'll still pick it up; otherwise retry or switch to cash on delivery.</div><div style="font:500 10px/1 'DM Mono',monospace;letter-spacing:.08em;color:var(--faint)">{{ pay.checks }}</div></sc-if>
+<sc-if value="{{ pay.timeout }}" hint-placeholder-val="{{ false }}"><div style="font:400 24px/1.05 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-top:10px">Still waiting for<br>confirmation</div><div style="font:400 13px/1.5 Archivo,sans-serif;color:var(--mute);max-width:290px">Bank confirmations sometimes take a few minutes. If money left your account, don't pay again. The order updates by itself once it arrives.</div></sc-if>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-if value="{{ pay.waiting }}" hint-placeholder-val="{{ false }}"><button onClick="{{ checkNow }}" style="height:54px;border-radius:16px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:700 14px/1 Archivo,sans-serif;cursor:pointer">I've paid, check now</button></sc-if>
+<sc-if value="{{ pay.unavailable }}" hint-placeholder-val="{{ false }}"><button onClick="{{ retryPay }}" style="height:54px;border-radius:16px;border:0;background:#FFA51F;color:#0A0A0B;font:700 14px/1 Archivo,sans-serif;cursor:pointer">Try UPI again</button><button onClick="{{ switchCod }}" style="height:50px;border-radius:16px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 13px/1 Archivo,sans-serif;cursor:pointer">Switch to cash on delivery</button></sc-if>
+<sc-if value="{{ pay.timeout }}" hint-placeholder-val="{{ false }}"><button onClick="{{ keepChecking }}" style="height:54px;border-radius:16px;border:0;background:#FFA51F;color:#0A0A0B;font:700 14px/1 Archivo,sans-serif;cursor:pointer">Keep checking</button><button onClick="{{ goOrders }}" style="height:50px;border-radius:16px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 13px/1 Archivo,sans-serif;cursor:pointer">Go to my orders</button></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isConfirm }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="09 Confirmation" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:90px 22px 40px;display:flex;flex-direction:column;align-items:center;text-align:center">
+<div style="width:104px;height:104px;border-radius:50%;background:#FFA51F;color:#0A0A0B;display:flex;align-items:center;justify-content:center;font:400 48px/1 Anton,sans-serif;animation:cydPop .6s cubic-bezier(.19,1,.22,1);box-shadow:0 20px 40px -18px rgba(255,165,31,.9)">✓</div>
+<div style="font:400 42px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-top:24px">{{ confirmTitle }}</div>
+<div style="font:400 13px/1.5 Archivo,sans-serif;color:var(--mute);margin-top:10px;max-width:290px">Each shop has been told. You'll get updates here as they accept, pack and ship.</div>
+<div style="width:100%;display:flex;flex-direction:column;gap:8px;margin-top:26px;text-align:left"><sc-for list="{{ placed }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.go }}" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;border:1px solid var(--line);background:var(--card);cursor:pointer;text-align:left"><span style="flex:1;display:flex;flex-direction:column;gap:5px"><span style="font:500 10px/1 'DM Mono',monospace;letter-spacing:.08em;color:var(--accText)">{{ o.no }}</span><span style="font:700 13px/1.2 Archivo,sans-serif;color:var(--ink)">{{ o.shop }}</span><span style="font:400 11px/1 Archivo,sans-serif;color:var(--faint)">{{ o.method }}</span></span><span style="font:700 14px/1 Archivo,sans-serif;color:var(--ink)">{{ o.total }}</span><span style="color:var(--faint)">→</span></button></sc-for></div>
+<div style="flex:1"></div>
+<div style="width:100%;display:flex;flex-direction:column;gap:8px;margin-top:24px"><button onClick="{{ goOrders }}" style="height:56px;border:0;border-radius:16px;background:#FFA51F;color:#0A0A0B;font:700 15px/1 Archivo,sans-serif;cursor:pointer">View my orders</button><button onClick="{{ goHome }}" style="height:50px;border-radius:16px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 13px/1 Archivo,sans-serif;cursor:pointer">Continue shopping</button></div>
+</div>
+</sc-if>
+<sc-if value="{{ isOrders }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="10 Orders" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:66px 0 130px">
+<div style="padding:0 20px;font:400 40px/.95 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-bottom:16px">My orders</div>
+<div style="display:flex;gap:6px;overflow-x:auto;padding:0 20px 16px"><sc-for list="{{ ofilters }}" as="f" hint-placeholder-count="6"><button onClick="{{ f.go }}" style="flex:none;height:36px;padding:0 13px;border-radius:99px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.fg }};font:600 12px/1 Archivo,sans-serif;cursor:pointer;white-space:nowrap">{{ f.label }} · {{ f.n }}</button></sc-for></div>
+<div style="padding:0 20px">
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ skel3 }}" as="k" hint-placeholder-count="3"><div style="height:112px;border-radius:20px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div></sc-for></div></sc-if>
+<sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:36px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">Couldn't load your orders</div><button onClick="{{ retry }}" style="height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Tap to retry</button></div></sc-if>
+<sc-if value="{{ ordersEmpty }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:36px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="width:56px;height:56px;border-radius:16px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:400 22px/1 Anton,sans-serif;color:var(--ink)">O</div><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">{{ ordersEmptyT }}</div><button onClick="{{ goHome }}" style="height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Browse the marketplace</button></div></sc-if>
+<sc-if value="{{ ordersLive }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ orderCards }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" style="display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:20px;border:1px solid var(--line);background:var(--card);cursor:pointer;text-align:left"><div style="display:flex;align-items:center;gap:8px"><span style="flex:1;font:500 10px/1 'DM Mono',monospace;letter-spacing:.08em;color:var(--faint)">{{ o.no }} · {{ o.date }}</span><span style="height:24px;padding:0 9px;border-radius:99px;background:{{ o.chip.bg }};color:{{ o.chip.fg }};font:700 10px/24px Archivo,sans-serif;white-space:nowrap">{{ o.chip.g }} {{ o.chip.label }}</span></div><div style="display:flex;align-items:center;gap:12px"><div style="display:flex"><sc-for list="{{ o.thumbs }}" as="t" hint-placeholder-count="2"><span style="width:44px;height:44px;margin-left:{{ t.ml }};border-radius:12px;border:2px solid var(--card);background:{{ t.bg }};display:flex;align-items:center;justify-content:center;font:400 16px/1 Anton,sans-serif;color:{{ t.fg }}">{{ t.mark }}</span></sc-for></div><span style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font:700 13px/1.2 Archivo,sans-serif;color:var(--ink)">{{ o.shopName }}</span><span style="font:400 11px/1 Archivo,sans-serif;color:var(--faint)">{{ o.itemsT }}</span></span><span style="font:700 14px/1 Archivo,sans-serif;color:var(--ink)">{{ o.totalT }}</span></div></button></sc-for></div></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOrder }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="11 Order detail" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 20px 40px">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button><span style="flex:1;font:500 10px/1 'DM Mono',monospace;letter-spacing:.1em;color:var(--faint)">{{ ordV.no }}</span><span style="height:26px;padding:0 10px;border-radius:99px;background:{{ ordV.chip.bg }};color:{{ ordV.chip.fg }};font:700 11px/26px Archivo,sans-serif">{{ ordV.chip.g }} {{ ordV.chip.label }}</span></div>
+<div style="font:400 34px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">{{ ordV.shopName }}</div>
+<div style="font:400 12px/1 Archivo,sans-serif;color:var(--faint);margin-top:8px">Ordered {{ ordV.date }}</div>
+<sc-if value="{{ ordV.flow }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:flex-start;margin:24px 0 6px"><sc-for list="{{ timeline }}" as="t" hint-placeholder-count="5"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative"><sc-if value="{{ t.bar }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;top:13px;left:50%;width:100%;height:2px;background:{{ t.barBg }}"></span></sc-if><span style="position:relative;width:28px;height:28px;border-radius:50%;border:2px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }};display:flex;align-items:center;justify-content:center;font:700 11px/1 Archivo,sans-serif">{{ t.g }}</span><span style="font:600 10px/1.2 Archivo,sans-serif;color:{{ t.lbl }}">{{ t.label }}</span></div></sc-for></div></sc-if>
+<sc-if value="{{ ordV.awaiting }}" hint-placeholder-val="{{ false }}"><div style="margin-top:20px;padding:16px;border-radius:18px;background:var(--accSoft);display:flex;flex-direction:column;gap:10px"><span style="font:700 14px/1.3 Archivo,sans-serif;color:var(--accText)">Payment not confirmed yet</span><span style="font:400 12px/1.5 Archivo,sans-serif;color:var(--accText)">The shop sees this order once UPI confirms. If you already paid, it updates by itself.</span><button onClick="{{ ordV.payNow }}" style="height:46px;border:0;border-radius:13px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Pay now</button></div></sc-if>
+<sc-if value="{{ ordV.ended }}" hint-placeholder-val="{{ false }}"><div style="margin-top:20px;padding:16px;border-radius:18px;border:1px solid var(--line);background:var(--sunk);display:flex;flex-direction:column;gap:6px"><span style="font:700 14px/1.3 Archivo,sans-serif;color:var(--ink)">{{ ordV.endTitle }}</span><span style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute)">{{ ordV.endBody }}</span></div></sc-if>
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:24px 0 10px">Items</div>
+<div style="border:1px solid var(--line);border-radius:18px;background:var(--card)"><sc-for list="{{ ordV.items }}" as="i" hint-placeholder-count="2"><div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)"><span style="width:44px;height:44px;border-radius:12px;background:{{ i.tileBg }};display:flex;align-items:center;justify-content:center;font:400 16px/1 Anton,sans-serif;color:{{ i.markFg }}">{{ i.mark }}</span><span style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font:600 13px/1.25 Archivo,sans-serif;color:var(--ink)">{{ i.title }}</span><span style="font:400 11px/1 Archivo,sans-serif;color:var(--faint)">{{ i.priceT }} {{ i.qty }}</span></span><span style="font:700 13px/1 Archivo,sans-serif;color:var(--ink)">{{ i.lineT }}</span></div></sc-for><div style="display:flex;justify-content:space-between;align-items:baseline;padding:14px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">TOTAL</span><span style="font:400 22px/1 Anton,sans-serif;color:var(--ink)">{{ ordV.totalT }}</span></div></div>
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:22px 0 10px">Payment &amp; delivery</div>
+<div style="border:1px solid var(--line);border-radius:18px;background:var(--card)"><div style="display:flex;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--line)"><span style="font:500 12px/1 Archivo,sans-serif;color:var(--mute)">{{ ordV.method }}</span><span style="font:600 12px/1 Archivo,sans-serif;color:var(--ink)">{{ ordV.payStatus }}</span></div><sc-if value="{{ ordV.hasUtr }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--line)"><span style="font:500 12px/1 Archivo,sans-serif;color:var(--mute)">UTR</span><span style="font:500 11px/1 'DM Mono',monospace;color:var(--ink)">{{ ordV.utr }}</span></div></sc-if><div style="padding:13px 14px;display:flex;flex-direction:column;gap:4px"><span style="font:700 13px/1.2 Archivo,sans-serif;color:var(--ink)">{{ ordV.addr.name }} · {{ ordV.addr.phone }}</span><span style="font:400 12px/1.45 Archivo,sans-serif;color:var(--mute)">{{ ordV.addr.line1 }}, {{ ordV.addr.city }} {{ ordV.addr.pin }}</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:20px"><button onClick="{{ ordV.goShop }}" style="height:50px;border-radius:16px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 13px/1 Archivo,sans-serif;cursor:pointer">Visit {{ ordV.shopName }}</button><sc-if value="{{ ordV.canCancel }}" hint-placeholder-val="{{ false }}"><button onClick="{{ ordV.cancel }}" style="height:50px;border-radius:16px;border:1px solid var(--danger);background:transparent;color:var(--danger);font:700 13px/1 Archivo,sans-serif;cursor:pointer">Cancel order</button></sc-if></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAddresses }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="12 Addresses" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 20px 130px">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button><span style="font:400 26px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">Addresses</span></div>
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ skel3 }}" as="k" hint-placeholder-count="2"><div style="height:120px;border-radius:20px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div></sc-for></div></sc-if>
+<sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">Couldn't load addresses</div><button onClick="{{ retry }}" style="height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Tap to retry</button></div></sc-if>
+<sc-if value="{{ addrEmpty }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk);margin-bottom:12px"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">No saved addresses</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute)">Add one so checkout is quicker.</div></div></sc-if>
+<sc-if value="{{ addrLive }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px"><sc-for list="{{ addrList }}" as="a" hint-placeholder-count="2"><div style="border:1px solid var(--line);border-radius:20px;background:var(--card);padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font:700 14px/1 Archivo,sans-serif;color:var(--ink)">{{ a.label }}</span><sc-if value="{{ a.def }}" hint-placeholder-val="{{ false }}"><span style="font:700 9px/1 Archivo,sans-serif;letter-spacing:.06em;color:#0A0A0B;background:#FFA51F;padding:4px 7px;border-radius:99px">DEFAULT</span></sc-if></div><div style="font:500 12px/1.5 Archivo,sans-serif;color:var(--ink)">{{ a.name }} · {{ a.phone }}</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute)">{{ a.line1 }}</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute)">{{ a.l2 }}</div><div style="display:flex;gap:6px;margin-top:12px"><button onClick="{{ a.edit }}" style="height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 12px/1 Archivo,sans-serif;cursor:pointer">Edit</button><sc-if value="{{ a.notDef }}" hint-placeholder-val="{{ false }}"><button onClick="{{ a.mkDef }}" style="height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 12px/1 Archivo,sans-serif;cursor:pointer">Set default</button></sc-if><span style="flex:1"></span><button onClick="{{ a.del }}" style="height:36px;padding:0 12px;border-radius:10px;border:0;background:transparent;color:var(--danger);font:600 12px/1 Archivo,sans-serif;cursor:pointer">Delete</button></div></div></sc-for></div></sc-if>
+<button onClick="{{ addNewAddr }}" style="width:100%;height:52px;border-radius:16px;border:0;background:#FFA51F;color:#0A0A0B;font:700 14px/1 Archivo,sans-serif;cursor:pointer">+ Add address</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAddressForm }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="12b Address form" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 20px 120px">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button><span style="font:400 26px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">{{ afTitle }}</span></div>
+<div style="display:flex;gap:6px;margin-bottom:16px"><sc-for list="{{ afLabels }}" as="l" hint-placeholder-count="4"><button onClick="{{ l.go }}" style="height:36px;padding:0 14px;border-radius:99px;border:1px solid {{ l.bd }};background:{{ l.bg }};color:{{ l.fg }};font:600 12px/1 Archivo,sans-serif;cursor:pointer">{{ l.l }}</button></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">RECEIVER NAME</span><input value="{{ af.name.value }}" onChange="{{ af.name.set }}" style="height:50px;border-radius:14px;border:1px solid {{ af.name.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ af.name.err }}</span></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">MOBILE</span><input value="{{ af.phone.value }}" onChange="{{ af.phone.set }}" inputMode="tel" placeholder="98765 43210" style="height:50px;border-radius:14px;border:1px solid {{ af.phone.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ af.phone.err }}</span></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">HOUSE, STREET OR HOSTEL</span><input value="{{ af.line1.value }}" onChange="{{ af.line1.set }}" style="height:50px;border-radius:14px;border:1px solid {{ af.line1.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ af.line1.err }}</span></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">LANDMARK (OPTIONAL)</span><input value="{{ af.line2.value }}" onChange="{{ af.line2.set }}" style="height:50px;border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">CITY</span><input value="{{ af.city.value }}" onChange="{{ af.city.set }}" style="height:50px;border-radius:14px;border:1px solid {{ af.city.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink);min-width:0"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ af.city.err }}</span></label><label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">PINCODE</span><input value="{{ af.pin.value }}" onChange="{{ af.pin.set }}" inputMode="numeric" style="height:50px;border-radius:14px;border:1px solid {{ af.pin.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink);min-width:0"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ af.pin.err }}</span></label></div>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">STATE</span><input value="{{ af.state.value }}" onChange="{{ af.state.set }}" style="height:50px;border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"></label>
+<button onClick="{{ afDef.go }}" style="display:flex;align-items:center;justify-content:space-between;height:54px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);cursor:pointer"><span style="font:600 13px/1 Archivo,sans-serif;color:var(--ink)">Use as default address</span><span style="position:relative;width:44px;height:26px;border-radius:99px;background:{{ afDef.bg }};transition:background .2s"><span style="position:absolute;top:2px;left:{{ afDef.x }};width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s"></span></span></button>
+</div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;z-index:40;padding:12px 16px 26px;background:var(--raised);border-top:1px solid var(--line)"><button onClick="{{ saveAddr }}" style="width:100%;height:56px;border:0;border-radius:16px;background:#FFA51F;color:#0A0A0B;font:700 15px/1 Archivo,sans-serif;cursor:pointer">Save address</button></div>
+</sc-if>
+
+<sc-if value="{{ isSeller }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="13 Become a seller" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 20px 130px">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">SELL ON CYD SHOP</span></div>
+<sc-if value="{{ sellerV.none }}" hint-placeholder-val="{{ true }}">
+<div style="font:400 40px/.95 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">Open your<br>parish shop</div>
+<div style="font:400 13px/1.55 Archivo,sans-serif;color:var(--mute);margin:12px 0 20px;text-wrap:pretty">Youth groups and individual members can apply. The diocesan office reviews every application, usually within a few days.</div>
+<label style="display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;border:1.5px dashed var(--line2);background:var(--card);cursor:pointer;margin-bottom:14px"><input type="file" accept="image/*" onChange="{{ sellerV.onLogo }}" style="display:none"><span style="position:relative;flex:none;width:60px;height:60px;border-radius:50%;background:var(--sunk);display:flex;align-items:center;justify-content:center;font:400 20px/1 Anton,sans-serif;color:var(--faint);overflow:hidden">+<sc-if value="{{ sellerV.hasLogo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:0;background-image:url({{ sellerV.logo }});background-size:cover;background-position:center"></span></sc-if></span><span style="display:flex;flex-direction:column;gap:4px"><span style="font:700 13px/1 Archivo,sans-serif;color:var(--ink)">Shop logo</span><span style="font:400 11px/1.4 Archivo,sans-serif;color:var(--faint)">Optional · square image works best</span></span></label>
+<div style="display:flex;flex-direction:column;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">SHOP NAME *</span><input value="{{ sf.name.value }}" onChange="{{ sf.name.set }}" placeholder="e.g. Holy Family Candles" style="height:50px;border-radius:14px;border:1px solid {{ sf.name.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ sf.name.err }}</span></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">WHAT WILL YOU SELL?</span><textarea value="{{ sf.description.value }}" onChange="{{ sf.description.set }}" rows="3" style="border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:12px 14px;font:500 14px/1.45 Archivo,sans-serif;color:var(--ink);resize:none"></textarea></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">PARISH</span><input value="{{ sf.parish.value }}" onChange="{{ sf.parish.set }}" style="height:50px;border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink);min-width:0"></label><label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">DEANERY</span><input value="{{ sf.deanery.value }}" onChange="{{ sf.deanery.set }}" style="height:50px;border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink);min-width:0"></label></div>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">CONTACT PHONE *</span><input value="{{ sf.contact_phone.value }}" onChange="{{ sf.contact_phone.set }}" inputMode="tel" style="height:50px;border-radius:14px;border:1px solid {{ sf.contact_phone.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ sf.contact_phone.err }}</span></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">UPI ID (OPTIONAL)</span><input value="{{ sf.upi_id.value }}" onChange="{{ sf.upi_id.set }}" placeholder="name@bank" style="height:50px;border-radius:14px;border:1px solid {{ sf.upi_id.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ sf.upi_id.err }}</span></label>
+<button onClick="{{ submitSeller }}" style="height:56px;border:0;border-radius:16px;background:#FFA51F;color:#0A0A0B;font:700 15px/1 Archivo,sans-serif;cursor:pointer;margin-top:6px">Submit application</button>
+</div>
+</sc-if>
+<sc-if value="{{ sellerV.pending }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-top:30px"><div style="width:96px;height:96px;border-radius:50%;background:var(--accSoft);color:var(--accText);display:flex;align-items:center;justify-content:center;font:400 40px/1 Anton,sans-serif">◔</div><div style="font:400 34px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">Application<br>in review</div><div style="font:400 13px/1.55 Archivo,sans-serif;color:var(--mute);max-width:290px">The diocesan office is checking your details. You'll be able to add products as soon as it's approved.</div></div></sc-if>
+<sc-if value="{{ sellerV.rejected }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-top:30px"><div style="width:96px;height:96px;border-radius:50%;background:var(--sunk);color:var(--danger);display:flex;align-items:center;justify-content:center;font:400 40px/1 Anton,sans-serif">!</div><div style="font:400 34px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">Not approved</div><div style="padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--card);font:400 13px/1.5 Archivo,sans-serif;color:var(--mute);text-align:left;width:100%">“Products are unrelated to parish or youth ministry.” · CYD office</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--faint);max-width:290px">Questions? Contact the Youth Directorate office at the Bishop's House.</div></div></sc-if>
+<sc-if value="{{ sellerV.suspended }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-top:30px"><div style="width:96px;height:96px;border-radius:50%;background:var(--sunk);color:var(--ink);display:flex;align-items:center;justify-content:center;font:400 40px/1 Anton,sans-serif">‖</div><div style="font:400 34px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">Shop suspended</div><div style="font:400 13px/1.55 Archivo,sans-serif;color:var(--mute);max-width:290px">Your products are hidden from the marketplace. Open orders can still be completed. Contact the CYD office to reinstate the shop.</div></div></sc-if>
+<sc-if value="{{ sellerV.approved }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-top:30px"><div style="width:96px;height:96px;border-radius:50%;background:#FFA51F;color:#0A0A0B;display:flex;align-items:center;justify-content:center;font:400 40px/1 Anton,sans-serif">✓</div><div style="font:400 34px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">You're approved</div><button onClick="{{ goSeller }}" style="height:50px;padding:0 24px;border:0;border-radius:14px;background:#FFA51F;color:#0A0A0B;font:700 14px/1 Archivo,sans-serif;cursor:pointer">Open my shop</button></div></sc-if>
+<sc-if value="{{ sellerV.pending }}" hint-placeholder-val="{{ false }}"><div style="margin-top:22px;border:1px solid var(--line);border-radius:18px;background:var(--card)"><div style="display:flex;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--line)"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">SHOP</span><span style="font:600 12px/1.4 Archivo,sans-serif;color:var(--ink)">{{ sellerV.name }}</span></div><div style="display:flex;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--line)"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">PARISH</span><span style="font:500 12px/1.4 Archivo,sans-serif;color:var(--ink)">{{ sellerV.parish }}</span></div><div style="display:flex;justify-content:space-between;padding:13px 14px"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">PHONE</span><span style="font:500 12px/1.4 Archivo,sans-serif;color:var(--ink)">{{ sellerV.phone }}</span></div></div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAccount }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="14 Account" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:66px 20px 130px">
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:24px"><div style="width:64px;height:64px;border-radius:50%;background:#FFA51F;color:#0A0A0B;display:flex;align-items:center;justify-content:center;font:400 24px/1 Anton,sans-serif">{{ me.ini }}</div><div><div style="font:400 26px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">{{ me.name }}</div><div style="font:500 10px/1 'DM Mono',monospace;letter-spacing:.06em;color:var(--faint);margin-top:6px">{{ me.handle }} · {{ me.where }}</div></div></div>
+<div style="border:1px solid var(--line);border-radius:20px;background:var(--card);overflow:hidden">
+<button onClick="{{ goOrders }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:16px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;cursor:pointer;text-align:left"><span style="flex:1;font:600 14px/1 Archivo,sans-serif;color:var(--ink)">My orders</span><span style="color:var(--faint)">→</span></button>
+<button onClick="{{ goAddresses }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:16px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;cursor:pointer;text-align:left"><span style="flex:1;font:600 14px/1 Archivo,sans-serif;color:var(--ink)">Saved addresses</span><span style="color:var(--faint)">→</span></button>
+<button onClick="{{ goSeller }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:16px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;cursor:pointer;text-align:left"><span style="flex:1;font:600 14px/1 Archivo,sans-serif;color:var(--ink)">{{ sellerRowT }}</span><span style="font:600 11px/1 Archivo,sans-serif;color:var(--accText)">{{ sellerRowHint }}</span><span style="color:var(--faint)">→</span></button>
+<sc-if value="{{ isAdminP }}" hint-placeholder-val="{{ false }}"><button onClick="{{ goAdmin }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:16px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;cursor:pointer;text-align:left"><span style="flex:1;font:600 14px/1 Archivo,sans-serif;color:var(--ink)">Shop applications</span><span style="font:600 11px/1 Archivo,sans-serif;color:var(--accText)">{{ pendingApps }}</span><span style="color:var(--faint)">→</span></button></sc-if>
+<button onClick="{{ toggleTheme }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:16px 14px;border:0;background:transparent;cursor:pointer;text-align:left"><span style="flex:1;font:600 14px/1 Archivo,sans-serif;color:var(--ink)">Appearance</span><span style="font:600 12px/1 Archivo,sans-serif;color:var(--mute)">{{ themeT }}</span></button>
+</div>
+<button onClick="{{ signOut }}" style="width:100%;margin-top:14px;height:50px;border-radius:16px;border:1px solid var(--line2);background:transparent;color:var(--danger);font:600 13px/1 Archivo,sans-serif;cursor:pointer">Sign out</button>
+</div>
+</sc-if>
+<sc-if value="{{ isMyshop }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="15 My shop" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:62px 0 130px">
+<div style="padding:0 20px;display:flex;align-items:center;gap:12px"><span style="width:52px;height:52px;border-radius:50%;background:{{ shopMe.bg }};display:flex;align-items:center;justify-content:center;font:400 18px/1 Anton,sans-serif;color:{{ shopMe.fg }}">{{ shopMe.mark }}</span><div style="flex:1;min-width:0"><div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--ok)">● APPROVED SHOP</div><div style="font:400 24px/1.05 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-top:5px">{{ shopMe.name }}</div></div></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:18px 20px 0"><sc-for list="{{ stats }}" as="t" hint-placeholder-count="3"><div style="padding:12px;border-radius:16px;border:1px solid var(--line);background:var(--card)"><div style="font:400 28px/1 Anton,sans-serif;color:var(--ink)">{{ t.n }}</div><div style="font:500 9px/1.2 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:6px">{{ t.l }}</div></div></sc-for></div>
+<div style="display:flex;gap:6px;padding:18px 20px 16px"><sc-for list="{{ ownerTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.go }}" style="flex:1;height:40px;border-radius:12px;border:1px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }};font:700 12px/1 Archivo,sans-serif;cursor:pointer">{{ t.label }}</button></sc-for></div>
+<div style="padding:0 20px">
+<sc-if value="{{ tabProducts }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ addProduct }}" style="width:100%;height:52px;border-radius:16px;border:0;background:#FFA51F;color:#0A0A0B;font:700 14px/1 Archivo,sans-serif;cursor:pointer;margin-bottom:12px">+ Add product</button>
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ skel3 }}" as="k" hint-placeholder-count="3"><div style="height:88px;border-radius:18px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div></sc-for></div></sc-if>
+<sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">Couldn't load your products</div><button onClick="{{ retry }}" style="height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Tap to retry</button></div></sc-if>
+<sc-if value="{{ ownerProductsEmpty }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">No products yet</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute)">Add your first product to open the shop.</div></div></sc-if>
+<sc-if value="{{ ownerProductsLive }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ ownerProducts }}" as="p" hint-placeholder-count="3"><div style="display:flex;gap:12px;align-items:center;padding:12px;border-radius:18px;border:1px solid var(--line);background:var(--card);opacity:{{ p.op }}"><span style="flex:none;width:60px;height:60px;border-radius:12px;background:{{ p.tileBg }};display:flex;align-items:center;justify-content:center;font:400 22px/1 Anton,sans-serif;color:{{ p.markFg }}">{{ p.mark }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px"><span style="font:600 13px/1.25 Archivo,sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.title }}</span><span style="font:400 11px/1 Archivo,sans-serif;color:var(--faint)">{{ p.priceT }} · {{ p.stockT }}</span><span style="align-self:flex-start;height:22px;padding:0 8px;border-radius:99px;background:{{ p.chip.bg }};color:{{ p.chip.fg }};font:700 10px/22px Archivo,sans-serif">{{ p.chip.g }} {{ p.chip.label }}</span></div><div style="display:flex;flex-direction:column;gap:4px"><button onClick="{{ p.edit }}" style="height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 11px/1 Archivo,sans-serif;cursor:pointer">Edit</button><sc-if value="{{ p.notArchived }}" hint-placeholder-val="{{ true }}"><button onClick="{{ p.arch }}" style="height:34px;padding:0 12px;border-radius:10px;border:0;background:transparent;color:var(--danger);font:600 11px/1 Archivo,sans-serif;cursor:pointer">Archive</button></sc-if></div></div></sc-for></div></sc-if>
+</sc-if>
+<sc-if value="{{ tabOrders }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ skel3 }}" as="k" hint-placeholder-count="3"><div style="height:104px;border-radius:18px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div></sc-for></div></sc-if>
+<sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">Couldn't load shop orders</div><button onClick="{{ retry }}" style="height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Tap to retry</button></div></sc-if>
+<sc-if value="{{ ownerOrdersEmpty }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">No orders yet</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute)">New orders appear here as soon as they're placed.</div></div></sc-if>
+<sc-if value="{{ ownerOrdersLive }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ ownerOrderCards }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" style="display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:18px;border:1px solid var(--line);background:var(--card);cursor:pointer;text-align:left"><div style="display:flex;align-items:center;gap:8px"><span style="flex:1;font:500 10px/1 'DM Mono',monospace;letter-spacing:.06em;color:var(--faint)">{{ o.no }} · {{ o.date }}</span><span style="height:24px;padding:0 9px;border-radius:99px;background:{{ o.chip.bg }};color:{{ o.chip.fg }};font:700 10px/24px Archivo,sans-serif">{{ o.chip.g }} {{ o.chip.label }}</span></div><div style="display:flex;align-items:center;gap:10px"><span style="flex:1;font:700 14px/1.2 Archivo,sans-serif;color:var(--ink)">{{ o.customer }}</span><span style="font:400 11px/1 Archivo,sans-serif;color:var(--faint)">{{ o.itemsT }}</span><span style="font:700 14px/1 Archivo,sans-serif;color:var(--ink)">{{ o.totalT }}</span></div><sc-if value="{{ o.needs }}" hint-placeholder-val="{{ false }}"><span style="font:700 11px/1 Archivo,sans-serif;color:var(--accText)">Needs your response →</span></sc-if></button></sc-for></div></sc-if>
+</sc-if>
+<sc-if value="{{ tabProfile }}" hint-placeholder-val="{{ false }}">
+<label style="position:relative;display:flex;align-items:center;justify-content:center;height:130px;border-radius:18px;border:1.5px dashed var(--line2);background:var(--card);cursor:pointer;overflow:hidden;margin-bottom:12px"><input type="file" accept="image/*" onChange="{{ shopImg.onBanner }}" style="display:none"><sc-if value="{{ shopImg.hasBanner }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:0;background-image:url({{ shopImg.banner }});background-size:cover;background-position:center"></span></sc-if><span style="position:relative;font:600 12px/1 Archivo,sans-serif;color:var(--ink);background:var(--raised);padding:8px 12px;border-radius:99px">Change banner</span></label>
+<label style="display:flex;align-items:center;gap:12px;margin-bottom:16px;cursor:pointer"><input type="file" accept="image/*" onChange="{{ shopImg.onLogo }}" style="display:none"><span style="position:relative;width:64px;height:64px;border-radius:50%;background:{{ shopMe.bg }};display:flex;align-items:center;justify-content:center;font:400 22px/1 Anton,sans-serif;color:{{ shopMe.fg }};overflow:hidden">{{ shopMe.mark }}<sc-if value="{{ shopImg.hasLogo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:0;background-image:url({{ shopImg.logo }});background-size:cover;background-position:center"></span></sc-if></span><span style="font:600 13px/1 Archivo,sans-serif;color:var(--accText)">Change logo</span></label>
+<div style="display:flex;flex-direction:column;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">SHOP NAME</span><input value="{{ shf.name.value }}" onChange="{{ shf.name.set }}" style="height:50px;border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">DESCRIPTION</span><textarea value="{{ shf.description.value }}" onChange="{{ shf.description.set }}" rows="3" style="border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:12px 14px;font:500 14px/1.45 Archivo,sans-serif;color:var(--ink);resize:none"></textarea></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">PARISH</span><input value="{{ shf.parish.value }}" onChange="{{ shf.parish.set }}" style="height:50px;border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink);min-width:0"></label><label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">DEANERY</span><input value="{{ shf.deanery.value }}" onChange="{{ shf.deanery.set }}" style="height:50px;border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink);min-width:0"></label></div>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">CONTACT PHONE</span><input value="{{ shf.contact_phone.value }}" onChange="{{ shf.contact_phone.set }}" style="height:50px;border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">UPI ID</span><input value="{{ shf.upi_id.value }}" onChange="{{ shf.upi_id.set }}" style="height:50px;border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"></label>
+<button onClick="{{ shopImg.save }}" style="height:54px;border:0;border-radius:16px;background:#FFA51F;color:#0A0A0B;font:700 14px/1 Archivo,sans-serif;cursor:pointer">Save changes</button>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnerOrder }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="16 Shop order" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 20px 170px">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button><span style="flex:1;font:500 10px/1 'DM Mono',monospace;letter-spacing:.1em;color:var(--faint)">{{ ooV.no }}</span><span style="height:26px;padding:0 10px;border-radius:99px;background:{{ ooV.chip.bg }};color:{{ ooV.chip.fg }};font:700 11px/26px Archivo,sans-serif">{{ ooV.chip.g }} {{ ooV.chip.label }}</span></div>
+<div style="font:400 34px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">{{ ooV.customer }}</div>
+<div style="font:400 12px/1 Archivo,sans-serif;color:var(--faint);margin-top:8px">{{ ooV.date }}</div>
+<div style="border:1px solid var(--line);border-radius:18px;background:var(--card);margin-top:20px"><sc-for list="{{ ooV.items }}" as="i" hint-placeholder-count="1"><div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)"><span style="width:44px;height:44px;border-radius:12px;background:{{ i.tileBg }};display:flex;align-items:center;justify-content:center;font:400 16px/1 Anton,sans-serif;color:{{ i.markFg }}">{{ i.mark }}</span><span style="flex:1;font:600 13px/1.25 Archivo,sans-serif;color:var(--ink)">{{ i.title }} <span style="color:var(--faint);font-weight:500">{{ i.qty }}</span></span><span style="font:700 13px/1 Archivo,sans-serif;color:var(--ink)">{{ i.lineT }}</span></div></sc-for><div style="display:flex;justify-content:space-between;align-items:baseline;padding:14px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">TOTAL</span><span style="font:400 22px/1 Anton,sans-serif;color:var(--ink)">{{ ooV.totalT }}</span></div></div>
+<div style="border:1px solid var(--line);border-radius:18px;background:var(--card);margin-top:12px"><div style="display:flex;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--line)"><span style="font:500 12px/1 Archivo,sans-serif;color:var(--mute)">{{ ooV.method }}</span><span style="font:600 12px/1 Archivo,sans-serif;color:var(--ink)">{{ ooV.payStatus }}</span></div><sc-if value="{{ ooV.hasUtr }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--line)"><span style="font:500 12px/1 Archivo,sans-serif;color:var(--mute)">UTR</span><span style="font:500 11px/1 'DM Mono',monospace;color:var(--ink)">{{ ooV.utr }}</span></div></sc-if><div style="padding:13px 14px;display:flex;flex-direction:column;gap:4px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">DELIVER TO</span><span style="font:500 12px/1.45 Archivo,sans-serif;color:var(--ink)">{{ ooV.addr.line }}, {{ ooV.addr.city }}</span><span style="font:500 11px/1 'DM Mono',monospace;color:var(--mute)">{{ ooV.addr.phone }}</span></div></div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;z-index:40;padding:14px 16px 26px;background:var(--raised);border-top:1px solid var(--line)">
+<sc-if value="{{ ooV.hasActs }}" hint-placeholder-val="{{ true }}"><div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:10px">{{ ooV.stage }}</div><div style="display:flex;flex-wrap:wrap;gap:8px;flex-direction:row-reverse"><sc-for list="{{ ooActs }}" as="a" hint-placeholder-count="2"><button onClick="{{ a.go }}" style="flex:{{ a.flex }};height:{{ a.h }};border-radius:16px;border:1px solid {{ a.bd }};background:{{ a.bg }};color:{{ a.fg }};font:700 14px/1 Archivo,sans-serif;cursor:pointer;box-shadow:{{ a.sh }}">{{ a.label }}</button></sc-for></div></sc-if>
+<sc-if value="{{ ooV.done }}" hint-placeholder-val="{{ false }}"><div style="font:500 13px/1.45 Archivo,sans-serif;color:var(--mute);text-align:center;padding:8px 0">{{ ooV.done }}</div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProductForm }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="17 Product form" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:60px 20px 120px">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--ink);font:400 16px/1 Archivo,sans-serif;cursor:pointer">←</button><span style="font:400 26px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">{{ pfV.title }}</span></div>
+<div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">PHOTOS · FIRST IS THE COVER</span><span style="font:500 9px/1 'DM Mono',monospace;color:var(--faint)">{{ pfV.count }}</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px"><sc-for list="{{ pImgs }}" as="m" hint-placeholder-count="3"><div style="position:relative;aspect-ratio:1;border-radius:14px;background:{{ m.bg }};border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center"><sc-if value="{{ m.ph }}" hint-placeholder-val="{{ true }}"><span style="font:400 26px/1 Anton,sans-serif;color:{{ m.fg }}">{{ m.mark }}</span></sc-if><sc-if value="{{ m.has }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:0;background-image:url({{ m.url }});background-size:cover;background-position:center"></span></sc-if><sc-if value="{{ m.primary }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:6px;bottom:6px;font:700 9px/1 Archivo,sans-serif;color:#0A0A0B;background:#FFA51F;padding:4px 6px;border-radius:99px">COVER</span></sc-if><sc-if value="{{ m.notPrimary }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.mkPrimary }}" style="position:absolute;left:4px;bottom:4px;border:0;background:var(--card);color:var(--ink);font:600 9px/1 Archivo,sans-serif;padding:5px 7px;border-radius:99px;cursor:pointer">Set cover</button></sc-if><button onClick="{{ m.rm }}" style="position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:var(--card);color:var(--ink);font:400 13px/1 Archivo,sans-serif;cursor:pointer">×</button></div></sc-for><sc-if value="{{ pfV.canAdd }}" hint-placeholder-val="{{ true }}"><label style="aspect-ratio:1;border-radius:14px;border:1.5px dashed var(--line2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;background:var(--card)"><input type="file" accept="image/*" multiple="" onChange="{{ pfV.onImgs }}" style="display:none"><span style="font:400 22px/1 Anton,sans-serif;color:var(--ink)">+</span><span style="font:600 10px/1 Archivo,sans-serif;color:var(--faint)">Add photo</span></label></sc-if></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">TITLE *</span><input value="{{ pf.title.value }}" onChange="{{ pf.title.set }}" style="height:50px;border-radius:14px;border:1px solid {{ pf.title.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ pf.title.err }}</span></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">DESCRIPTION</span><textarea value="{{ pf.description.value }}" onChange="{{ pf.description.set }}" rows="3" style="border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:12px 14px;font:500 14px/1.45 Archivo,sans-serif;color:var(--ink);resize:none"></textarea></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">PRICE (₹) *</span><input value="{{ pf.price.value }}" onChange="{{ pf.price.set }}" inputMode="decimal" placeholder="249" style="height:50px;border-radius:14px;border:1px solid {{ pf.price.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink);min-width:0"><span style="font:500 11px/1.3 Archivo,sans-serif;color:var(--danger)">{{ pf.price.err }}</span></label><label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">MRP (₹)</span><input value="{{ pf.compare_at_price.value }}" onChange="{{ pf.compare_at_price.set }}" inputMode="decimal" placeholder="Optional" style="height:50px;border-radius:14px;border:1px solid {{ pf.compare_at_price.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink);min-width:0"><span style="font:500 11px/1.3 Archivo,sans-serif;color:var(--danger)">{{ pf.compare_at_price.err }}</span></label></div>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">STOCK QUANTITY *</span><input value="{{ pf.stock_quantity.value }}" onChange="{{ pf.stock_quantity.set }}" inputMode="numeric" style="height:50px;border-radius:14px;border:1px solid {{ pf.stock_quantity.bd }};background:var(--card);padding:0 14px;font:500 14px/1 Archivo,sans-serif;color:var(--ink)"><span style="font:500 11px/1 Archivo,sans-serif;color:var(--danger)">{{ pf.stock_quantity.err }}</span></label>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:var(--faint)">CATEGORY</span><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ pfCats }}" as="c" hint-placeholder-count="7"><button onClick="{{ c.go }}" style="height:34px;padding:0 12px;border-radius:99px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:600 12px/1 Archivo,sans-serif;cursor:pointer">{{ c.l }}</button></sc-for></div></div>
+<button onClick="{{ pfV.toggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;height:56px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);cursor:pointer;text-align:left"><span style="font:600 13px/1.3 Archivo,sans-serif;color:var(--ink)">{{ pfV.statusT }}</span><span style="position:relative;flex:none;width:44px;height:26px;border-radius:99px;background:{{ pfV.tgBg }};transition:background .2s"><span style="position:absolute;top:2px;left:{{ pfV.tgX }};width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s"></span></span></button>
+<sc-if value="{{ pfV.isEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ pfV.archive }}" style="height:48px;border-radius:14px;border:0;background:transparent;color:var(--danger);font:600 13px/1 Archivo,sans-serif;cursor:pointer">Archive this product</button></sc-if>
+</div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;z-index:40;padding:12px 16px 26px;background:var(--raised);border-top:1px solid var(--line)"><button onClick="{{ savePform }}" style="width:100%;height:56px;border:0;border-radius:16px;background:#FFA51F;color:#0A0A0B;font:700 15px/1 Archivo,sans-serif;cursor:pointer">Save product</button></div>
+</sc-if>
+
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="18 Shop applications" style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:66px 0 130px">
+<div style="padding:0 20px;font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;color:var(--accText);margin-bottom:8px">ADMIN</div>
+<div style="padding:0 20px;font:400 40px/.95 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-bottom:16px">Shop<br>applications</div>
+<div style="display:flex;gap:6px;overflow-x:auto;padding:0 20px 16px"><sc-for list="{{ appFilters }}" as="f" hint-placeholder-count="5"><button onClick="{{ f.go }}" style="flex:none;height:36px;padding:0 13px;border-radius:99px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.fg }};font:600 12px/1 Archivo,sans-serif;cursor:pointer">{{ f.label }} · {{ f.n }}</button></sc-for></div>
+<div style="padding:0 20px">
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ skel3 }}" as="k" hint-placeholder-count="3"><div style="height:84px;border-radius:18px;background:var(--skel);animation:cydShim 1.4s ease-in-out infinite"></div></sc-for></div></sc-if>
+<sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">Couldn't load applications</div><button onClick="{{ retry }}" style="height:44px;padding:0 22px;border:0;border-radius:12px;background:#FFA51F;color:#0A0A0B;font:700 13px/1 Archivo,sans-serif;cursor:pointer">Tap to retry</button></div></sc-if>
+<sc-if value="{{ appsEmpty }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:32px 20px;border:1.5px dashed var(--line2);border-radius:20px;background:var(--sunk)"><div style="font:700 15px/1.3 Archivo,sans-serif;color:var(--ink)">{{ appsEmptyT }}</div><div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--mute)">New applications land here for review.</div></div></sc-if>
+<sc-if value="{{ appsLive }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ appRows }}" as="a" hint-placeholder-count="3"><button onClick="{{ a.go }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;border:1px solid var(--line);background:var(--card);cursor:pointer;text-align:left"><span style="flex:none;width:44px;height:44px;border-radius:50%;background:{{ a.bg }};display:flex;align-items:center;justify-content:center;font:400 15px/1 Anton,sans-serif;color:{{ a.fg }}">{{ a.mark }}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font:700 13px/1.2 Archivo,sans-serif;color:var(--ink)">{{ a.name }}</span><span style="font:400 11px/1.2 Archivo,sans-serif;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">@{{ a.owner }} · {{ a.deanery }} · {{ a.date }}</span></span><span style="flex:none;height:24px;padding:0 9px;border-radius:99px;background:{{ a.chip.bg }};color:{{ a.chip.fg }};font:700 10px/24px Archivo,sans-serif">{{ a.chip.label }}</span></button></sc-for></div></sc-if>
+</div>
+</div>
+<sc-if value="{{ rvOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeReview }}" style="position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:70;animation:cydVeil .25s"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;z-index:71;background:var(--raised);border-radius:28px 28px 0 0;border-top:1px solid var(--line2);padding:12px 20px 30px;max-height:86%;overflow-y:auto;animation:cydSheet .42s cubic-bezier(.19,1,.22,1)">
+<div style="width:40px;height:4px;border-radius:2px;background:var(--line2);margin:0 auto 16px"></div>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><span style="width:56px;height:56px;border-radius:50%;background:{{ rvV.bg }};display:flex;align-items:center;justify-content:center;font:400 18px/1 Anton,sans-serif;color:{{ rvV.fg }}">{{ rvV.mark }}</span><div style="flex:1"><div style="font:400 24px/1.05 Anton,sans-serif;text-transform:uppercase;color:var(--ink)">{{ rvV.name }}</div><span style="display:inline-block;margin-top:6px;height:22px;padding:0 8px;border-radius:99px;background:{{ rvV.chip.bg }};color:{{ rvV.chip.fg }};font:700 10px/22px Archivo,sans-serif">{{ rvV.chip.g }} {{ rvV.chip.label }}</span></div></div>
+<div style="font:400 13px/1.5 Archivo,sans-serif;color:var(--mute);margin-bottom:14px">{{ rvV.desc }}</div>
+<div style="border:1px solid var(--line);border-radius:16px;background:var(--card);margin-bottom:14px"><div style="display:flex;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">APPLICANT</span><span style="font:500 12px/1.4 Archivo,sans-serif;color:var(--ink)">@{{ rvV.owner }} · {{ rvV.email }}</span></div><div style="display:flex;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">PARISH</span><span style="font:500 12px/1.4 Archivo,sans-serif;color:var(--ink)">{{ rvV.parish }} · {{ rvV.deanery }}</span></div><div style="display:flex;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">PHONE</span><span style="font:500 12px/1.4 Archivo,sans-serif;color:var(--ink)">{{ rvV.phone }}</span></div><div style="display:flex;justify-content:space-between;gap:10px;padding:11px 14px"><span style="font:500 9px/1.4 'DM Mono',monospace;letter-spacing:.12em;color:var(--faint)">UPI</span><span style="font:500 11px/1.4 'DM Mono',monospace;color:var(--ink)">{{ rvV.upi }}</span></div></div>
+<sc-if value="{{ rvV.hasReason }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 14px;border-radius:14px;background:var(--sunk);font:400 12px/1.5 Archivo,sans-serif;color:var(--mute);margin-bottom:14px">Reason given: “{{ rvV.reason }}”</div></sc-if>
+<sc-if value="{{ rvV.choosing }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:8px">
+<sc-if value="{{ rvV.canApprove }}" hint-placeholder-val="{{ true }}"><button onClick="{{ rvV.approve }}" style="height:54px;border:0;border-radius:16px;background:#FFA51F;color:#0A0A0B;font:700 14px/1 Archivo,sans-serif;cursor:pointer">{{ rvV.approveT }}</button></sc-if>
+<sc-if value="{{ rvV.canReject }}" hint-placeholder-val="{{ true }}"><button onClick="{{ rvV.startReject }}" style="height:50px;border-radius:16px;border:1px solid var(--danger);background:transparent;color:var(--danger);font:700 13px/1 Archivo,sans-serif;cursor:pointer">Reject with reason</button></sc-if>
+<sc-if value="{{ rvV.canSuspend }}" hint-placeholder-val="{{ false }}"><button onClick="{{ rvV.startSuspend }}" style="height:50px;border-radius:16px;border:1px solid var(--danger);background:transparent;color:var(--danger);font:700 13px/1 Archivo,sans-serif;cursor:pointer">Suspend shop</button></sc-if>
+<sc-if value="{{ rvV.noActions }}" hint-placeholder-val="{{ false }}"><div style="font:500 12px/1.5 Archivo,sans-serif;color:var(--faint);text-align:center;padding:6px 0">Rejected applications are closed. The applicant can apply again.</div></sc-if>
+</div></sc-if>
+<sc-if value="{{ rvV.reasoning }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:8px"><span style="font:700 14px/1.3 Archivo,sans-serif;color:var(--ink)">{{ rvV.reasonTitle }}</span><span style="font:400 12px/1.4 Archivo,sans-serif;color:var(--faint)">{{ rvV.reasonHint }}</span><textarea value="{{ reason }}" onChange="{{ setReason }}" rows="3" placeholder="At least 5 characters" style="border-radius:14px;border:1px solid var(--line2);background:var(--card);padding:12px 14px;font:500 14px/1.45 Archivo,sans-serif;color:var(--ink);resize:none"></textarea><div style="display:flex;gap:8px"><button onClick="{{ rvV.cancelReason }}" style="flex:1;height:50px;border-radius:14px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 13px/1 Archivo,sans-serif;cursor:pointer">Back</button><button onClick="{{ rvV.confirm }}" style="flex:1.4;height:50px;border-radius:14px;border:0;background:var(--danger);color:#fff;opacity:{{ rvV.confOp }};font:700 13px/1 Archivo,sans-serif;cursor:pointer">{{ rvV.confirmT }}</button></div></div></sc-if>
+</div>
+</sc-if>
+</sc-if>
+</div>
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:0;right:0;bottom:0;z-index:50;padding:10px 14px 18px;background:linear-gradient(to top,var(--bg) 60%,transparent)"><div style="display:flex;gap:4px;padding:8px;border-radius:22px;background:var(--tabbg);border:1px solid var(--line);backdrop-filter:blur(20px)"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5"><button onClick="{{ t.go }}" style="position:relative;flex:1;border:0;cursor:pointer;padding:11px 4px 9px;border-radius:15px;background:{{ t.bg }};color:{{ t.fg }};display:flex;flex-direction:column;align-items:center;gap:5px;transition:background .3s"><span style="font:400 14px/1 Anton,sans-serif">{{ t.mark }}</span><span style="font:600 9px/1 Archivo,sans-serif">{{ t.label }}</span><sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:4px;right:14px;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--danger);color:#fff;font:700 9px/16px Archivo,sans-serif">{{ t.count }}</span></sc-if></button></sc-for></div></div></sc-if>
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;bottom:{{ toastBottom }};z-index:80;display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:16px;background:var(--ink);color:var(--bg);animation:cydIn .3s"><span style="flex:1;font:600 13px/1.3 Archivo,sans-serif">{{ toast.msg }}</span><sc-if value="{{ toastHasAction }}" hint-placeholder-val="{{ false }}"><button onClick="{{ toastAct }}" style="border:0;background:transparent;color:#FFA51F;font:700 13px/1 Archivo,sans-serif;cursor:pointer;padding:6px 0">{{ toast.action.label }}</button></sc-if></div></sc-if>
+<sc-if value="{{ hasDialog }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeDialog }}" style="position:absolute;inset:0;z-index:90;background:rgba(0,0,0,.6);animation:cydVeil .2s"></div><div style="position:absolute;left:24px;right:24px;top:50%;transform:translateY(-50%);z-index:91;background:var(--raised);border:1px solid var(--line2);border-radius:24px;padding:22px;animation:cydPop .3s"><div style="font:400 24px/1 Anton,sans-serif;text-transform:uppercase;color:var(--ink);margin-bottom:10px">{{ dialog.title }}</div><div style="font:400 13px/1.5 Archivo,sans-serif;color:var(--mute);margin-bottom:20px">{{ dialog.body }}</div><div style="display:flex;gap:8px"><button onClick="{{ closeDialog }}" style="flex:1;height:48px;border-radius:14px;border:1px solid var(--line2);background:transparent;color:var(--ink);font:600 13px/1 Archivo,sans-serif;cursor:pointer">Keep it</button><button onClick="{{ dialogGo }}" style="flex:1;height:48px;border-radius:14px;border:0;background:{{ dialogBtnBg }};color:{{ dialogBtnFg }};font:700 13px/1 Archivo,sans-serif;cursor:pointer">{{ dialog.confirm }}</button></div></div></sc-if>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const fmt = p => '₹' + (p / 100).toFixed(2);
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const CATS = [
+  { id: 1, name: 'Devotional Items', short: 'Devotional', mark: 'D', h: 28 },
+  { id: 2, name: 'Books & Booklets', short: 'Books', mark: 'B', h: 205 },
+  { id: 3, name: 'Apparel & Merchandise', short: 'Apparel', mark: 'A', h: 345 },
+  { id: 4, name: 'Event Tickets', short: 'Tickets', mark: 'T', h: 265 },
+  { id: 5, name: 'Handmade & Crafts', short: 'Handmade', mark: 'H', h: 150 },
+  { id: 6, name: 'Food & Snacks', short: 'Food', mark: 'F', h: 12 },
+  { id: 7, name: 'Other', short: 'Other', mark: 'O', h: 45 },
+];
+const SHOPS = [
+  { id: 1, name: "St. Mary's Youth Crafts", parish: "St. Mary's Cathedral", deanery: 'Jalandhar', mark: 'SM', h: 28, desc: 'Rosaries, candles and cards made by our parish youth group. Every sale goes toward the summer camp.' },
+  { id: 2, name: 'Good Shepherd Books', parish: 'Good Shepherd Church', deanery: 'Ludhiana', mark: 'GS', h: 205, desc: 'Bibles, prayer booklets and youth catechism in Punjabi, Hindi and English.' },
+  { id: 3, name: 'CYD Merch Desk', parish: 'Diocesan Youth Centre', deanery: 'Jalandhar', mark: 'CY', h: 345, desc: 'Official Catholic Youth Directorate apparel and event passes.' },
+  { id: 4, name: 'Sacred Heart Kitchen', parish: 'Sacred Heart Church', deanery: 'Amritsar', mark: 'SH', h: 12, desc: 'Home-made pinni, plum cake and festive sweets from our youth kitchen.' },
+  { id: 5, name: "Anil's Print Studio", parish: "St. Joseph's Church", deanery: 'Kapurthala', mark: 'AP', h: 265, desc: 'Hand-painted frames, greeting cards and sticker sets by Anil Masih.' },
+];
+const PRODUCTS = [
+  { id: 1, title: 'Olive-wood Rosary', shop: 1, cat: 1, price: 24900, compare: 34900, stock: 3, imgs: 4, status: 'active', desc: 'Hand-strung olive-wood beads with a metal crucifix and centrepiece. Each rosary is blessed at St. Mary\'s before it ships. Comes in a small cotton pouch, ready to gift for a First Communion or Confirmation.' },
+  { id: 2, title: 'Advent Candle Set (4)', shop: 1, cat: 1, price: 39900, compare: null, stock: 12, imgs: 3, status: 'active', desc: 'Three purple candles and one rose candle, 20 cm, hand-poured soy wax.' },
+  { id: 3, title: 'Youth Bible (Punjabi–English)', shop: 2, cat: 2, price: 45000, compare: 52000, stock: 20, imgs: 2, status: 'active', desc: 'Parallel-text Bible with youth study notes.' },
+  { id: 4, title: 'Daily Prayer Booklet', shop: 2, cat: 2, price: 6000, compare: null, stock: 40, imgs: 1, status: 'active', desc: 'Pocket-size morning and evening prayers.' },
+  { id: 5, title: 'CYD Hoodie, Maroon', shop: 3, cat: 3, price: 89900, compare: 109900, stock: 8, imgs: 5, status: 'active', desc: 'Heavyweight cotton hoodie with the CYD crest. Sizes S–XXL.' },
+  { id: 6, title: 'Diocesan Youth Day Pass', shop: 3, cat: 4, price: 15000, compare: null, stock: 0, imgs: 1, status: 'active', desc: 'Entry for one to Youth Day 2026 at the Cathedral grounds.' },
+  { id: 7, title: 'Hand-painted Cross Frame', shop: 5, cat: 5, price: 29900, compare: null, stock: 5, imgs: 3, status: 'active', desc: 'A5 wooden frame, painted by hand.' },
+  { id: 8, title: 'Pinni, 500 g', shop: 4, cat: 6, price: 22000, compare: null, stock: 15, imgs: 2, status: 'active', desc: 'Desi-ghee pinni made in the parish kitchen.' },
+  { id: 9, title: 'Christmas Card Pack (10)', shop: 5, cat: 5, price: 12000, compare: 15000, stock: 30, imgs: 2, status: 'active', desc: 'Ten illustrated cards with envelopes.' },
+  { id: 10, title: 'CYD Cap', shop: 3, cat: 3, price: 34900, compare: null, stock: 2, imgs: 2, status: 'active', desc: 'Embroidered six-panel cap.' },
+  { id: 11, title: 'Saints Sticker Set', shop: 5, cat: 7, price: 9900, compare: null, stock: 50, imgs: 1, status: 'active', desc: 'Twelve vinyl stickers.' },
+  { id: 12, title: 'Plum Cake, 1 kg', shop: 4, cat: 6, price: 48000, compare: null, stock: 6, imgs: 2, status: 'active', desc: 'Rich Christmas plum cake.' },
+  { id: 13, title: 'Palm Cross Bookmark', shop: 1, cat: 5, price: 4900, compare: null, stock: 25, imgs: 1, status: 'draft', desc: 'Woven palm bookmark.' },
+  { id: 14, title: 'Lenten Prayer Card', shop: 1, cat: 1, price: 2000, compare: null, stock: 0, imgs: 1, status: 'archived', desc: 'Last season\'s card.' },
+];
+const ADDR = [
+  { id: 1, label: 'Home', name: 'Anil Masih', phone: '98765 43210', line1: 'H. No. 214, Christian Colony', line2: 'Near St. Joseph\'s Church', city: 'Kapurthala', state: 'Punjab', pin: '144601', def: true },
+  { id: 2, label: 'Hostel', name: 'Anil Masih', phone: '98765 43210', line1: 'Room 12, Boys Hostel, DAV College', line2: '', city: 'Jalandhar', state: 'Punjab', pin: '144008', def: false },
+];
+const ORDERS = [
+  { id: 1, no: 'CYD-2410-0182', shop: 4, date: '12 Oct 2026', status: 'delivered', items: [{ pid: 8, qty: 2 }, { pid: 12, qty: 1 }], method: 'cod', pay: 'collected', utr: '', addr: 1 },
+  { id: 2, no: 'CYD-2410-0231', shop: 3, date: '21 Oct 2026', status: 'shipped', items: [{ pid: 5, qty: 1 }], method: 'upi', pay: 'paid', utr: '4291 8830 1127', addr: 2 },
+  { id: 3, no: 'CYD-2410-0247', shop: 2, date: '24 Oct 2026', status: 'accepted', items: [{ pid: 3, qty: 1 }, { pid: 4, qty: 3 }], method: 'upi', pay: 'paid', utr: '4302 1188 0942', addr: 1 },
+  { id: 4, no: 'CYD-2410-0259', shop: 1, date: '27 Oct 2026', status: 'placed', items: [{ pid: 2, qty: 1 }], method: 'cod', pay: 'cod', utr: '', addr: 1 },
+  { id: 5, no: 'CYD-2410-0260', shop: 5, date: 'Today', status: 'pending_payment', items: [{ pid: 9, qty: 2 }], method: 'upi', pay: 'pending', utr: '', addr: 1 },
+  { id: 6, no: 'CYD-2409-0118', shop: 3, date: '30 Sep 2026', status: 'cancelled', items: [{ pid: 10, qty: 1 }], method: 'cod', pay: 'cod', utr: '', addr: 1 },
+  { id: 7, no: 'CYD-2409-0102', shop: 4, date: '22 Sep 2026', status: 'rejected', items: [{ pid: 12, qty: 2 }], method: 'cod', pay: 'cod', utr: '', addr: 2, reason: 'We could not bake for that weekend. Sorry!' },
+];
+const OWNER_ORDERS = [
+  { id: 101, no: 'CYD-2410-0262', customer: 'Neha Bhatti', date: 'Today, 10:42', status: 'placed', items: [{ pid: 1, qty: 2 }], method: 'upi', pay: 'paid', utr: '4310 2277 5519', addr: { line: 'Sacred Heart School Rd, Model Town', city: 'Jalandhar 144003', phone: '98140 11223' } },
+  { id: 102, no: 'CYD-2410-0259', customer: 'Anil Masih', date: '27 Oct, 18:05', status: 'placed', items: [{ pid: 2, qty: 1 }], method: 'cod', pay: 'cod', utr: '', addr: { line: 'H. No. 214, Christian Colony', city: 'Kapurthala 144601', phone: '98765 43210' } },
+  { id: 103, no: 'CYD-2410-0251', customer: 'Simran Kaur', date: '26 Oct, 09:15', status: 'accepted', items: [{ pid: 1, qty: 1 }, { pid: 2, qty: 1 }], method: 'upi', pay: 'paid', utr: '4299 6610 3381', addr: { line: '17 Green Avenue', city: 'Amritsar 143001', phone: '98720 55410' } },
+  { id: 104, no: 'CYD-2410-0240', customer: 'Peter Gill', date: '24 Oct, 16:30', status: 'packed', items: [{ pid: 2, qty: 2 }], method: 'cod', pay: 'cod', utr: '', addr: { line: 'Mission Compound', city: 'Phagwara 144401', phone: '99150 20871' } },
+  { id: 105, no: 'CYD-2410-0233', customer: 'Joel Masih', date: '22 Oct, 12:02', status: 'shipped', items: [{ pid: 1, qty: 1 }], method: 'upi', pay: 'paid', utr: '4287 0043 7712', addr: { line: 'St. Paul\'s Hostel', city: 'Ludhiana 141001', phone: '98880 44120' } },
+  { id: 106, no: 'CYD-2410-0207', customer: 'Maria Sandhu', date: '18 Oct, 11:47', status: 'delivered', items: [{ pid: 2, qty: 1 }], method: 'cod', pay: 'collected', utr: '', addr: { line: 'Near Cathedral Gate', city: 'Jalandhar 144001', phone: '98155 76230' } },
+];
+const APPS = [
+  { id: 21, name: 'Holy Family Candles', owner: 'sunita.d', email: 'sunita.d@gmail.com', parish: 'Holy Family Church', deanery: 'Phagwara', date: '27 Oct 2026', status: 'pending', mark: 'HF', h: 40, desc: 'Hand-poured prayer candles from our youth group.', phone: '98140 77881', upi: 'holyfamily@upi' },
+  { id: 22, name: "Rahul's Sketch Cards", owner: 'rahul.m', email: 'rahul.masih@gmail.com', parish: 'St. Anthony\'s Church', deanery: 'Hoshiarpur', date: '26 Oct 2026', status: 'pending', mark: 'RS', h: 205, desc: 'Pencil-sketch greeting cards of diocesan churches.', phone: '98551 20034', upi: 'rahulm@okaxis' },
+  { id: 23, name: 'St. Thomas Youth Bakery', owner: 'stthomas.youth', email: 'stthomasyouth@gmail.com', parish: 'St. Thomas Church', deanery: 'Gurdaspur', date: '25 Oct 2026', status: 'pending', mark: 'ST', h: 12, desc: 'Cakes and cookies for parish feasts.', phone: '97800 11290', upi: 'stthomas@sbi' },
+  { id: 1, name: "St. Mary's Youth Crafts", owner: 'riya.gill', email: 'riya.gill@gmail.com', parish: "St. Mary's Cathedral", deanery: 'Jalandhar', date: '04 Aug 2026', status: 'approved', mark: 'SM', h: 28, desc: SHOPS[0].desc, phone: '98140 22311', upi: 'stmarysyouth@sbi' },
+  { id: 3, name: 'CYD Merch Desk', owner: 'cyd.office', email: 'office@cydjalandhar.org', parish: 'Diocesan Youth Centre', deanery: 'Jalandhar', date: '01 Aug 2026', status: 'approved', mark: 'CY', h: 345, desc: SHOPS[2].desc, phone: '0181 222 4410', upi: 'cydjal@hdfc' },
+  { id: 24, name: 'Quick Mobile Covers', owner: 'deals4u', email: 'deals4u@gmail.com', parish: '—', deanery: 'Ludhiana', date: '10 Oct 2026', status: 'rejected', mark: 'QM', h: 200, desc: 'Phone covers and accessories.', phone: '90000 12345', upi: 'deals@ybl', reason: 'Products are unrelated to parish or youth ministry.' },
+  { id: 25, name: 'Old Book Exchange', owner: 'thomas.k', email: 'thomas.k@gmail.com', parish: 'St. Francis Church', deanery: 'Amritsar', date: '02 Sep 2026', status: 'suspended', mark: 'OB', h: 150, desc: 'Second-hand religious books.', phone: '98720 33019', upi: 'thomask@upi', reason: 'Three orders marked shipped were never received.' },
+];
+const ST = {
+  pending_payment: { label: 'Awaiting payment', g: '◔', c: ['#FFC53D', '#8A5A00'] },
+  placed: { label: 'Placed', g: '●', c: ['#7CB2FF', '#1F5FC4'] },
+  accepted: { label: 'Accepted', g: '✓', c: ['#FFB547', '#A35400'] },
+  packed: { label: 'Packed', g: '▣', c: ['#BBA2FF', '#5B3BC4'] },
+  shipped: { label: 'Shipped', g: '→', c: ['#4FD1C5', '#0F7A70'] },
+  delivered: { label: 'Delivered', g: '✓', c: ['#3DD68C', '#1B7A3A'] },
+  cancelled: { label: 'Cancelled', g: '×', c: ['#A8A8B0', '#55555C'] },
+  rejected: { label: 'Rejected', g: '!', c: ['#FF6A55', '#B82A18'] },
+  pending: { label: 'Pending review', g: '◔', c: ['#FFC53D', '#8A5A00'] },
+  approved: { label: 'Approved', g: '✓', c: ['#3DD68C', '#1B7A3A'] },
+  suspended: { label: 'Suspended', g: '‖', c: ['#A8A8B0', '#55555C'] },
+  active: { label: 'Active', g: '●', c: ['#3DD68C', '#1B7A3A'] },
+  draft: { label: 'Draft', g: '○', c: ['#A8A8B0', '#55555C'] },
+  out: { label: 'Out of stock', g: '!', c: ['#FF6A55', '#B82A18'] },
+  archived: { label: 'Archived', g: '▤', c: ['#A8A8B0', '#55555C'] },
+};
+// Mirrors ALLOWED_TRANSITIONS in controllers/orderController.js exactly.
+const ALLOWED = { placed: ['accepted', 'rejected'], accepted: ['packed', 'rejected'], packed: ['shipped'], shipped: ['delivered'] };
+const ACT_LABEL = { accepted: 'Accept order', packed: 'Mark as packed', shipped: 'Mark as shipped', delivered: 'Mark as delivered', rejected: 'Reject' };
+const FLOW = ['placed', 'accepted', 'packed', 'shipped', 'delivered'];
+const TABS = [['home', 'H', 'Home'], ['categories', 'C', 'Categories'], ['cart', '₹', 'Cart'], ['orders', 'O', 'Orders'], ['account', 'A', 'Account']];
+const TAB_OF = { home: 'home', categories: 'categories', search: 'categories', cart: 'cart', orders: 'orders', account: 'account', myshop: 'account', admin: 'account', addresses: 'account', seller: 'account' };
+const WITH_TABS = new Set(['home', 'categories', 'search', 'cart', 'orders', 'account', 'myshop', 'admin', 'seller']);
+const USERS = { customer: { name: 'Anil Masih', first: 'Anil', handle: '@anil.masih', where: "St. Joseph's · Kapurthala", ini: 'AM' }, owner: { name: 'Riya Gill', first: 'Riya', handle: '@riya.gill', where: "St. Mary's · Jalandhar", ini: 'RG' }, admin: { name: 'CYD Diocesan Office', first: 'Office', handle: '@cyd.admin', where: 'Admin · Jalandhar', ini: 'CY' } };
+const EMPTY_ADDR = { label: 'Home', name: '', phone: '', line1: '', line2: '', city: '', state: 'Punjab', pin: '', def: false };
+
+class Component extends DCLogic {
+  state = {
+    persona: 'customer', dark: true, screen: 'home', hist: [], pid: 1, sid: 1, oid: 4, ooid: 101,
+    products: PRODUCTS, cart: [{ pid: 1, qty: 1 }, { pid: 5, qty: 1 }, { pid: 8, qty: 2 }], liked: { 5: true },
+    query: '', fCat: null, fDean: null, maxPrice: 1000, sort: 'new', filterOpen: false, recent: ['rosary', 'hoodie', 'advent candles'], shopCat: null,
+    qty: 1, gIdx: 0, descOpen: false,
+    addresses: ADDR, selAddr: 1, step: 1, payMethod: 'upi', expanded: {},
+    orders: ORDERS, ofilter: 'all', lastPlaced: [4], payQueue: [], payPhase: 'starting', payChecks: 0, payOutcome: 'confirm',
+    addrForm: EMPTY_ADDR, editAid: null, addrErr: {},
+    sellerStatus: 'none', sform: { name: '', description: '', parish: '', deanery: '', contact_phone: '', upi_id: '' }, sErr: {}, sLogo: '', submitted: null,
+    ownerTab: 'products', ownerOrders: OWNER_ORDERS,
+    shopForm: { name: SHOPS[0].name, description: SHOPS[0].desc, parish: SHOPS[0].parish, deanery: 'Jalandhar', contact_phone: '98140 22311', upi_id: 'stmarysyouth@sbi' }, shopLogo: '', shopBanner: '',
+    pform: {}, pImgs: [], pErr: {}, editPid: null,
+    apps: APPS, appFilter: 'pending', reviewId: null, reviewAction: null, reason: '',
+    listState: 'live', toast: null, dialog: null,
+  };
+
+  componentWillUnmount() { this.clearPay(); clearTimeout(this.toastT); }
+
+  // ---------- navigation ----------
+  go = (screen, extra = {}) => {
+    if (this.state.screen === 'payment' && screen !== 'payment') this.clearPay();
+    this.setState(s => ({ hist: [...s.hist, s.screen], screen, ...extra }));
+    if (this.scroller) this.scroller.scrollTop = 0;
+  };
+  tab = screen => { this.clearPay(); this.setState({ hist: [], screen, filterOpen: false }); };
+  back = () => { if (this.state.screen === 'payment') this.clearPay(); this.setState(s => { const h = [...s.hist]; const prev = h.pop() || 'home'; return { hist: h, screen: prev }; }); };
+  toast = (msg, action) => { clearTimeout(this.toastT); this.setState({ toast: { msg, action } }); this.toastT = setTimeout(() => this.setState({ toast: null }), 2800); };
+  ask = d => this.setState({ dialog: d });
+
+  // ---------- helpers ----------
+  P = id => this.state.products.find(p => p.id === id);
+  tile = h => this.state.dark ? `hsla(${h},55%,55%,.16)` : `hsla(${h},70%,62%,.24)`;
+  markFg = h => this.state.dark ? `hsl(${h},70%,72%)` : `hsl(${h},55%,30%)`;
+  chip = k => { const m = ST[k] || { label: k, g: '', c: ['#999', '#555'] }; const fg = this.state.dark ? m.c[0] : m.c[1]; return { label: m.label, g: m.g, fg, bg: rgba(m.c[0], this.state.dark ? .14 : .2) }; };
+  pv = p => {
+    const c = CATS.find(x => x.id === p.cat), sh = SHOPS.find(x => x.id === p.shop), liked = !!this.state.liked[p.id];
+    return { ...p, shopName: sh.name, priceT: fmt(p.price), compT: p.compare ? fmt(p.compare) : '', hasComp: !!p.compare, soldOut: p.stock === 0, mark: c.mark, catName: c.name,
+      tileBg: this.tile(c.h), markFg: this.markFg(c.h), heart: liked ? '♥' : '♡', heartFg: liked ? '#FF5A45' : 'var(--ink)',
+      open: () => this.go('product', { pid: p.id, qty: 1, gIdx: 0, descOpen: false }),
+      like: e => { e.stopPropagation(); this.setState(s => ({ liked: { ...s.liked, [p.id]: !s.liked[p.id] } })); } };
+  };
+  thumbs = items => items.slice(0, 3).map((it, i) => { const p = this.P(it.pid); const c = CATS.find(x => x.id === p.cat); return { mark: c.mark, bg: this.tile(c.h), fg: this.markFg(c.h), ml: i ? '-10px' : '0' }; });
+  orderTotal = items => items.reduce((a, it) => a + this.P(it.pid).price * it.qty, 0);
+  fld = (form, key, errKey) => {
+    const v = this.state[form][key] ?? ''; const e = errKey ? this.state[errKey][key] : '';
+    return { value: v, err: e || '', hasErr: !!e, bd: e ? 'var(--danger)' : 'var(--line2)',
+      set: ev => { const val = ev.target.value; this.setState(s => ({ [form]: { ...s[form], [key]: val }, ...(errKey ? { [errKey]: { ...s[errKey], [key]: '' } } : {}) })); } };
+  };
+  readFile = (file, cb) => { const r = new FileReader(); r.onload = () => cb(r.result); r.readAsDataURL(file); };
+  seg = (opts, cur, set) => opts.map(([v, label]) => ({ label, go: () => set(v), bg: v === cur ? '#FFA51F' : 'transparent', fg: v === cur ? '#0A0A0B' : 'rgba(255,255,255,.6)' }));
+  pill = (opts, cur, set) => opts.map(([v, label, n]) => ({ label, n: n ?? '', go: () => set(v), on: v === cur, bg: v === cur ? 'var(--ink)' : 'transparent', fg: v === cur ? 'var(--bg)' : 'var(--mute)', bd: v === cur ? 'var(--ink)' : 'var(--line2)' }));
+
+  // ---------- cart ----------
+  addToCart = (pid, qty, toCart) => {
+    this.setState(s => { const ex = s.cart.find(c => c.pid === pid); const p = this.P(pid);
+      const cart = ex ? s.cart.map(c => c.pid === pid ? { ...c, qty: Math.min(p.stock, c.qty + qty) } : c) : [...s.cart, { pid, qty }]; return { cart }; });
+    if (toCart) this.go('cart'); else this.toast('Added to cart ✓', { label: 'View cart', go: () => this.go('cart') });
+  };
+  setQty = (pid, d) => this.setState(s => ({ cart: s.cart.map(c => c.pid === pid ? { ...c, qty: Math.max(1, Math.min(this.P(pid).stock, c.qty + d)) } : c) }));
+  removeItem = pid => { const prev = this.state.cart; this.setState(s => ({ cart: s.cart.filter(c => c.pid !== pid) })); this.toast('Removed from cart', { label: 'Undo', go: () => this.setState({ cart: prev, toast: null }) }); };
+  groups = () => {
+    const by = {}; this.state.cart.forEach(c => { const p = this.P(c.pid); (by[p.shop] = by[p.shop] || []).push({ ...c, p }); });
+    return Object.keys(by).map(k => { const sh = SHOPS.find(x => x.id === +k); const items = by[k]; return { sh, items, sub: items.reduce((a, i) => a + i.p.price * i.qty, 0) }; });
+  };
+
+  // ---------- orders ----------
+  placeOrders = () => {
+    const gs = this.groups(); const cod = this.state.payMethod === 'cod'; let n = this.state.orders.length;
+    const created = gs.map(g => ({ id: 1000 + (++n), no: 'CYD-2410-0' + (262 + n), shop: g.sh.id, date: 'Today', status: cod ? 'placed' : 'pending_payment', items: g.items.map(i => ({ pid: i.pid, qty: i.qty })), method: cod ? 'cod' : 'upi', pay: cod ? 'cod' : 'pending', utr: '', addr: this.state.selAddr }));
+    this.setState(s => ({ orders: [...created, ...s.orders], cart: [], lastPlaced: created.map(o => o.id), step: 1 }));
+    if (cod) this.go('confirm'); else { this.setState({ payQueue: created.map(o => o.id) }); this.go('payment'); setTimeout(this.startPay, 0); }
+  };
+  cancelOrder = id => this.ask({ title: 'Cancel this order?', body: 'The shop will be told straight away. Any reserved stock goes back on sale.', confirm: 'Cancel order', danger: true,
+    go: () => { this.setState(s => ({ orders: s.orders.map(o => o.id === id ? { ...o, status: 'cancelled' } : o), dialog: null })); this.toast('Order cancelled'); } });
+
+  // ---------- payment (simulated; polling is the source of truth) ----------
+  clearPay = () => { clearTimeout(this.payT); clearInterval(this.payI); };
+  startPay = () => {
+    this.clearPay(); this.setState({ payPhase: 'starting', payChecks: 0 });
+    this.payT = setTimeout(() => { this.setState({ payPhase: this.state.payOutcome === 'unreachable' ? 'unavailable' : 'waiting' }); this.poll(); }, 1400);
+  };
+  poll = () => {
+    clearInterval(this.payI);
+    this.payI = setInterval(() => {
+      const n = this.state.payChecks + 1;
+      if (this.state.payOutcome === 'confirm' && n >= 4) { this.clearPay(); this.setState({ payChecks: n }); this.paid(); return; }
+      if (n >= 7) { this.clearPay(); this.setState(s => ({ payChecks: n, payPhase: s.payPhase === 'unavailable' ? 'unavailable' : 'timeout' })); return; }
+      this.setState({ payChecks: n });
+    }, 1500);
+  };
+  checkNow = () => { if (this.state.payOutcome === 'confirm') { this.clearPay(); this.paid(); } else { this.setState(s => ({ payChecks: s.payChecks + 1 })); this.toast('Not confirmed yet. We\'ll keep checking.'); } };
+  paid = () => {
+    const [id, ...rest] = this.state.payQueue;
+    this.setState(s => ({ orders: s.orders.map(o => o.id === id ? { ...o, status: 'placed', pay: 'paid', utr: '43' + Math.floor(10 + Math.random() * 89) + ' 7781 ' + Math.floor(1000 + Math.random() * 8999) } : o), payQueue: rest }));
+    if (rest.length) { this.toast('Payment confirmed · next order'); setTimeout(this.startPay, 600); } else { this.clearPay(); this.setState(s => ({ hist: [...s.hist, 'payment'], screen: 'confirm' })); }
+  };
+  switchCod = () => this.ask({ title: 'Switch to cash on delivery?', body: 'This cancels the unpaid UPI order and places the same items again as cash on delivery. You pay the seller when it arrives.', confirm: 'Switch to COD',
+    go: () => {
+      this.clearPay(); const q = this.state.payQueue; let n = this.state.orders.length;
+      const old = this.state.orders.filter(o => q.includes(o.id));
+      const fresh = old.map(o => ({ ...o, id: 2000 + (++n), no: 'CYD-2410-0' + (262 + n), status: 'placed', method: 'cod', pay: 'cod' }));
+      this.setState(s => ({ orders: [...fresh, ...s.orders.map(o => q.includes(o.id) ? { ...o, status: 'cancelled' } : o)], payQueue: [], lastPlaced: fresh.map(o => o.id), dialog: null, hist: [...s.hist, 'payment'], screen: 'confirm' }));
+    } });
+
+  // ---------- addresses ----------
+  openAddr = a => this.go('addressForm', { addrForm: a ? { ...a } : { ...EMPTY_ADDR, name: USERS[this.state.persona].name }, editAid: a ? a.id : null, addrErr: {} });
+  saveAddr = () => {
+    const f = this.state.addrForm, e = {};
+    if (!f.name.trim()) e.name = 'Enter the receiver\'s name';
+    if (f.phone.replace(/\D/g, '').length !== 10) e.phone = 'Enter a 10-digit mobile number';
+    if (!f.line1.trim()) e.line1 = 'Enter house, street or hostel';
+    if (!f.city.trim()) e.city = 'Enter a city';
+    if (!/^\d{6}$/.test(f.pin)) e.pin = 'Pincode is 6 digits';
+    if (Object.keys(e).length) { this.setState({ addrErr: e }); return; }
+    this.setState(s => {
+      let list = s.editAid ? s.addresses.map(a => a.id === s.editAid ? { ...f, id: a.id } : a) : [...s.addresses, { ...f, id: Date.now() }];
+      const id = s.editAid || list[list.length - 1].id;
+      if (f.def || list.length === 1) list = list.map(a => ({ ...a, def: a.id === id }));
+      return { addresses: list, selAddr: id };
+    });
+    this.toast(this.state.editAid ? 'Address updated' : 'Address saved'); this.back();
+  };
+
+  // ---------- seller ----------
+  submitSeller = () => {
+    const f = this.state.sform, e = {};
+    if (!f.name.trim()) e.name = 'Shop name is required';
+    if (f.contact_phone.replace(/\D/g, '').length < 10) e.contact_phone = 'Contact phone is required';
+    if (f.upi_id && !/^[\w.-]+@[\w]+$/.test(f.upi_id)) e.upi_id = 'Looks like name@bank';
+    if (Object.keys(e).length) { this.setState({ sErr: e }); return; }
+    this.setState({ sellerStatus: 'pending', submitted: { ...f } }); this.toast('Application submitted');
+  };
+
+  // ---------- owner ----------
+  openPform = p => this.go('productForm', { editPid: p ? p.id : null, pErr: {},
+    pform: p ? { title: p.title, description: p.desc, price: String(p.price / 100), compare_at_price: p.compare ? String(p.compare / 100) : '', stock_quantity: String(p.stock), category_id: p.cat, status: p.status === 'draft' ? 'draft' : 'active' } : { title: '', description: '', price: '', compare_at_price: '', stock_quantity: '', category_id: 1, status: 'active' },
+    pImgs: p ? Array.from({ length: p.imgs }, () => null) : [] });
+  savePform = () => {
+    const f = this.state.pform, e = {}, price = parseFloat(f.price), cmp = f.compare_at_price ? parseFloat(f.compare_at_price) : null, stock = parseInt(f.stock_quantity, 10);
+    if (!f.title.trim()) e.title = 'Give it a title';
+    if (!(price > 0)) e.price = 'Price in rupees, e.g. 249';
+    if (cmp !== null && !(cmp > price)) e.compare_at_price = 'Should be higher than the price';
+    if (!(stock >= 0)) e.stock_quantity = 'How many do you have?';
+    if (Object.keys(e).length) { this.setState({ pErr: e }); return; }
+    // API body takes plain rupees (price, compare_at_price); the backend converts to paise.
+    const rec = { title: f.title, desc: f.description, price: Math.round(price * 100), compare: cmp ? Math.round(cmp * 100) : null, stock, cat: f.category_id, status: f.status, imgs: Math.max(1, this.state.pImgs.length) };
+    this.setState(s => ({ products: s.editPid ? s.products.map(p => p.id === s.editPid ? { ...p, ...rec } : p) : [{ id: Date.now(), shop: 1, ...rec }, ...s.products] }));
+    this.toast(this.state.editPid ? 'Product updated' : 'Product added'); this.back();
+  };
+  archive = p => this.ask({ title: 'Archive "' + p.title + '"?', body: 'This removes it from the marketplace, but keeps its order history.', confirm: 'Archive', danger: true,
+    go: () => { this.setState(s => ({ products: s.products.map(x => x.id === p.id ? { ...x, status: 'archived' } : x), dialog: null })); this.toast('Product archived'); } });
+  transition = (o, to) => {
+    const apply = () => { this.setState(s => ({ ownerOrders: s.ownerOrders.map(x => x.id === o.id ? { ...x, status: to } : x), dialog: null })); this.toast(to === 'rejected' ? 'Order rejected · stock restored' : 'Order marked ' + ST[to].label.toLowerCase()); };
+    if (!(ALLOWED[o.status] || []).includes(to)) return;
+    if (to === 'rejected') this.ask({ title: 'Reject this order?', body: 'The customer is notified and the reserved stock goes back into your catalogue.' + (o.pay === 'paid' ? ' This order was paid by UPI, so arrange the refund with the customer.' : ''), confirm: 'Reject order', danger: true, go: apply });
+    else apply();
+  };
+
+  renderVals() {
+    const s = this.state, d = s.dark, me = USERS[s.persona];
+    const th = d ? { bg: '#0A0A0B', card: '#141417', raised: '#1E1E22', sunk: '#101012', ink: '#F5F5F0', mute: 'rgba(255,255,255,.58)', faint: 'rgba(255,255,255,.4)', line: 'rgba(255,255,255,.08)', line2: 'rgba(255,255,255,.14)', accSoft: 'rgba(255,165,31,.14)', accText: '#FFB547', danger: '#FF6A55', ok: '#3DD68C', tabbg: 'rgba(30,30,34,.88)', skel: 'rgba(255,255,255,.07)' }
+      : { bg: '#F2F0EA', card: '#FFFFFF', raised: '#FFFFFF', sunk: '#E9E6DD', ink: '#0A0A0B', mute: 'rgba(10,10,11,.6)', faint: 'rgba(10,10,11,.45)', line: 'rgba(10,10,11,.09)', line2: 'rgba(10,10,11,.15)', accSoft: 'rgba(255,165,31,.2)', accText: '#9A5200', danger: '#C8321F', ok: '#1B7A3A', tabbg: 'rgba(255,255,255,.9)', skel: 'rgba(10,10,11,.07)' };
+    const L = s.listState, isLoading = L === 'loading', isError = L === 'error', forceEmpty = L === 'empty', live = L === 'live' || L === 'empty';
+    const retry = () => { this.setState({ listState: 'live' }); };
+    const scr = s.screen, is = k => scr === k;
+    const marketProducts = s.products.filter(p => p.status === 'active');
+
+    const controls = [
+      { label: 'Persona', opts: this.seg([['customer', 'Customer'], ['owner', 'Shop owner'], ['admin', 'Admin']], s.persona, v => this.setState({ persona: v, hist: [], screen: v === 'owner' ? 'myshop' : v === 'admin' ? 'admin' : 'home', sellerStatus: v === 'owner' ? 'approved' : (s.sellerStatus === 'approved' ? 'none' : s.sellerStatus) })) },
+      { label: 'Mode', opts: this.seg([[true, 'Dark'], [false, 'Light']], s.dark, v => this.setState({ dark: v })) },
+      { label: 'List state', opts: this.seg([['live', 'Live'], ['loading', 'Loading'], ['empty', 'Empty'], ['error', 'Error']], s.listState, v => this.setState({ listState: v })) },
+      { label: 'Seller status', opts: this.seg([['none', 'None'], ['pending', 'Pending'], ['rejected', 'Rejected'], ['suspended', 'Suspended'], ['approved', 'Approved']], s.sellerStatus, v => this.setState({ sellerStatus: v, submitted: s.submitted || { ...s.sform, name: s.sform.name || 'Holy Family Candles', parish: s.sform.parish || 'Holy Family Church', deanery: s.sform.deanery || 'Phagwara', contact_phone: s.sform.contact_phone || '98140 77881' } })) },
+      { label: 'UPI outcome', opts: this.seg([['confirm', 'Confirms'], ['unreachable', 'Gateway down'], ['timeout', 'Times out']], s.payOutcome, v => this.setState({ payOutcome: v })) },
+    ];
+    const J = [['home', 'Home'], ['categories', 'Categories'], ['search', 'Search'], ['shop', 'Storefront'], ['product', 'Product'], ['cart', 'Cart'], ['checkout', 'Checkout'], ['payment', 'Payment'], ['confirm', 'Confirmed'], ['orders', 'Orders'], ['order', 'Order detail'], ['addresses', 'Addresses'], ['seller', 'Become seller'], ['myshop', 'My shop'], ['ownerOrder', 'Shop order'], ['productForm', 'Product form'], ['admin', 'Applications']];
+    const jumps = J.map(([k, label], i) => ({ n: String(i + 1).padStart(2, '0'), label, bg: is(k) ? '#FFA51F' : 'transparent', fg: is(k) ? '#0A0A0B' : 'rgba(255,255,255,.55)', bd: is(k) ? '#FFA51F' : 'rgba(255,255,255,.14)',
+      go: () => {
+        this.clearPay();
+        const extra = {};
+        if (k === 'payment') { const pend = s.orders.find(o => o.status === 'pending_payment'); extra.payQueue = [pend ? pend.id : 5]; if (!pend) extra.orders = s.orders.map(o => o.id === 5 ? { ...o, status: 'pending_payment' } : o); }
+        if (k === 'myshop' || k === 'ownerOrder' || k === 'productForm') { extra.sellerStatus = 'approved'; }
+        if (k === 'checkout' && !s.cart.length) extra.cart = [{ pid: 1, qty: 1 }, { pid: 5, qty: 1 }];
+        this.setState({ hist: k === 'home' ? [] : ['home'], screen: k, ...extra });
+        if (k === 'payment') setTimeout(this.startPay, 0);
+        if (k === 'productForm') this.openPform(this.P(1));
+      } }));
+
+    // ----- shared -----
+    const cartCount = s.cart.reduce((a, c) => a + c.qty, 0);
+    const tabs = TABS.map(([k, mark, label]) => { const on = TAB_OF[scr] === k; return { mark, label, go: () => this.tab(k === 'account' && s.persona === 'owner' && false ? 'myshop' : k), bg: on ? '#FFA51F' : 'transparent', fg: on ? '#0A0A0B' : 'var(--mute)', badge: k === 'cart' && cartCount > 0, count: cartCount }; });
+    const cats = CATS.map(c => ({ ...c, bg: this.tile(c.h), fg: this.markFg(c.h), count: marketProducts.filter(p => p.cat === c.id).length, go: () => { this.setState({ fCat: c.id, query: '' }); this.go('search'); } }));
+    const skel4 = [1, 2, 3, 4], skel3 = [1, 2, 3];
+
+    // ----- home -----
+    const featured = SHOPS.map(sh => ({ ...sh, bg: this.tile(sh.h), fg: this.markFg(sh.h), go: () => this.go('shop', { sid: sh.id, shopCat: null }) }));
+    const homeProducts = marketProducts.map(this.pv);
+
+    // ----- search -----
+    let results = marketProducts.filter(p => {
+      const q = s.query.trim().toLowerCase(); const sh = SHOPS.find(x => x.id === p.shop); const c = CATS.find(x => x.id === p.cat);
+      return (!q || (p.title + ' ' + sh.name + ' ' + c.name).toLowerCase().includes(q)) && (!s.fCat || p.cat === s.fCat) && (!s.fDean || sh.deanery === s.fDean) && p.price <= s.maxPrice * 100;
+    });
+    if (s.sort === 'low') results = [...results].sort((a, b) => a.price - b.price);
+    if (s.sort === 'high') results = [...results].sort((a, b) => b.price - a.price);
+    if (s.sort === 'new') results = [...results].sort((a, b) => b.id - a.id);
+    const searching = !!(s.query.trim() || s.fCat || s.fDean || s.maxPrice < 1000);
+    const filterCount = (s.fCat ? 1 : 0) + (s.fDean ? 1 : 0) + (s.maxPrice < 1000 ? 1 : 0);
+    const activeFilters = [s.fCat && { label: CATS.find(c => c.id === s.fCat).short, x: () => this.setState({ fCat: null }) }, s.fDean && { label: s.fDean, x: () => this.setState({ fDean: null }) }, s.maxPrice < 1000 && { label: 'Under ₹' + s.maxPrice, x: () => this.setState({ maxPrice: 1000 }) }].filter(Boolean);
+
+    // ----- storefront -----
+    const shop = SHOPS.find(x => x.id === s.sid);
+    const shopAll = marketProducts.filter(p => p.shop === shop.id);
+    const shopCats = [{ id: null, short: 'All' }, ...CATS.filter(c => shopAll.some(p => p.cat === c.id))].map(c => ({ label: c.short, go: () => this.setState({ shopCat: c.id }), bg: s.shopCat === c.id ? 'var(--ink)' : 'transparent', fg: s.shopCat === c.id ? 'var(--bg)' : 'var(--mute)', bd: s.shopCat === c.id ? 'var(--ink)' : 'var(--line2)' }));
+    const shopProducts = shopAll.filter(p => !s.shopCat || p.cat === s.shopCat).map(this.pv);
+
+    // ----- product -----
+    const prod = this.pv(this.P(s.pid));
+    const gallery = Array.from({ length: prod.imgs }, (_, i) => ({ n: i + 1 + ' / ' + prod.imgs }));
+    const dots = gallery.map((_, i) => ({ w: i === s.gIdx ? '18px' : '6px', bg: i === s.gIdx ? 'var(--ink)' : 'var(--line2)' }));
+    const stockChip = prod.stock === 0 ? this.chip('out') : prod.stock <= 3 ? { label: 'Only ' + prod.stock + ' left', g: '!', fg: d ? '#FFC53D' : '#8A5A00', bg: rgba('#FFC53D', d ? .14 : .22) } : { label: 'In stock', g: '✓', fg: d ? '#3DD68C' : '#1B7A3A', bg: rgba('#3DD68C', d ? .14 : .2) };
+    const off = prod.compare ? Math.round((1 - prod.price / prod.compare) * 100) + '% off' : '';
+
+    // ----- cart -----
+    const groups = this.groups().map(g => ({ name: g.sh.name, deanery: g.sh.deanery, mark: g.sh.mark, bg: this.tile(g.sh.h), fg: this.markFg(g.sh.h), subT: fmt(g.sub), count: g.items.length,
+      items: g.items.map(i => { const v = this.pv(i.p); return { ...v, qty: i.qty, lineT: fmt(i.p.price * i.qty), unitT: fmt(i.p.price) + ' each', inc: () => this.setQty(i.pid, 1), dec: () => this.setQty(i.pid, -1), rm: () => this.removeItem(i.pid), decOp: i.qty <= 1 ? .35 : 1, incOp: i.qty >= i.p.stock ? .35 : 1 }; }) }));
+    const cartTotal = this.groups().reduce((a, g) => a + g.sub, 0);
+    const cartEmpty = forceEmpty || !s.cart.length;
+    const multiShop = groups.length > 1;
+
+    // ----- checkout -----
+    const steps = ['Address', 'Payment', 'Review'].map((l, i) => ({ l, n: i + 1, bg: i + 1 <= s.step ? '#FFA51F' : 'var(--line2)', fg: i + 1 === s.step ? 'var(--ink)' : 'var(--faint)' }));
+    const addrCards = s.addresses.map(a => ({ ...a, on: a.id === s.selAddr, bd: a.id === s.selAddr ? '#FFA51F' : 'var(--line)', dot: a.id === s.selAddr ? '#FFA51F' : 'transparent', ring: a.id === s.selAddr ? '#FFA51F' : 'var(--line2)', go: () => this.setState({ selAddr: a.id }), l2: [a.line2, a.city + ' ' + a.pin].filter(Boolean).join(', ') }));
+    const selA = s.addresses.find(a => a.id === s.selAddr) || s.addresses[0];
+    const payCards = [['upi', 'Pay by UPI', 'GPay, PhonePe, Paytm or any UPI app. Confirmation can take a minute or two.', 'UPI'], ['cod', 'Cash on delivery', 'Pay the seller in cash when your order arrives.', '₹']].map(([k, t, n, m]) => ({ t, n, m, bd: s.payMethod === k ? '#FFA51F' : 'var(--line)', dot: s.payMethod === k ? '#FFA51F' : 'transparent', ring: s.payMethod === k ? '#FFA51F' : 'var(--line2)', mbg: s.payMethod === k ? '#FFA51F' : 'var(--sunk)', mfg: s.payMethod === k ? '#0A0A0B' : 'var(--ink)', go: () => this.setState({ payMethod: k }) }));
+    const review = groups.map((g, i) => ({ ...g, open: s.expanded[i] !== false, chev: s.expanded[i] !== false ? '−' : '+', toggle: () => this.setState(st => ({ expanded: { ...st.expanded, [i]: st.expanded[i] === false } })) }));
+    const ckBtn = s.step === 1 ? 'Continue to payment' : s.step === 2 ? 'Review order' : (groups.length > 1 ? 'Place ' + groups.length + ' orders · ' : 'Place order · ') + fmt(cartTotal);
+    const ckNext = () => { if (s.step < 3) this.setState({ step: s.step + 1 }); else this.placeOrders(); };
+    const ckBack = () => { if (s.step > 1) this.setState({ step: s.step - 1 }); else this.back(); };
+
+    // ----- payment -----
+    const payOrder = s.orders.find(o => o.id === s.payQueue[0]) || s.orders.find(o => o.id === 5);
+    const payIdx = s.lastPlaced.length > 1 ? (s.lastPlaced.length - s.payQueue.length + 1) + ' of ' + s.lastPlaced.length : '';
+    const P = s.payPhase;
+    const payV = { amount: fmt(this.orderTotal(payOrder.items)), no: payOrder.no, shop: SHOPS.find(x => x.id === payOrder.shop).name, idx: payIdx, hasIdx: !!payIdx,
+      starting: P === 'starting', waiting: P === 'waiting', unavailable: P === 'unavailable', timeout: P === 'timeout', pulsing: P === 'starting' || P === 'waiting',
+      checks: s.payChecks ? 'Checked ' + s.payChecks + (s.payChecks === 1 ? ' time' : ' times') + ' · every 3 s' : 'Starting checks…',
+      ring: P === 'unavailable' ? 'var(--danger)' : P === 'timeout' ? '#FFC53D' : '#FFA51F', glyph: P === 'unavailable' ? '!' : P === 'timeout' ? '…' : 'UPI', gfg: P === 'unavailable' || P === 'timeout' ? 'var(--ink)' : '#0A0A0B', gbg: P === 'unavailable' ? 'var(--sunk)' : P === 'timeout' ? 'var(--sunk)' : '#FFA51F' };
+
+    // ----- confirmation -----
+    const placed = s.orders.filter(o => s.lastPlaced.includes(o.id)).map(o => ({ no: o.no, shop: SHOPS.find(x => x.id === o.shop).name, total: fmt(this.orderTotal(o.items)), method: o.method === 'cod' ? 'Cash on delivery' : 'UPI · paid', go: () => this.go('order', { oid: o.id }) }));
+    const confirmTitle = placed.length > 1 ? placed.length + ' orders placed!' : 'Order placed!';
+
+    // ----- orders -----
+    const OF = [['all', 'All'], ['pending_payment', 'Awaiting payment'], ['placed', 'Placed'], ['accepted', 'Accepted'], ['packed', 'Packed'], ['shipped', 'Shipped'], ['delivered', 'Delivered'], ['cancelled', 'Cancelled'], ['rejected', 'Rejected']];
+    const ofilters = this.pill(OF.map(([k, l]) => [k, l, k === 'all' ? s.orders.length : s.orders.filter(o => o.status === k).length]), s.ofilter, v => this.setState({ ofilter: v }));
+    const orderCards = forceEmpty ? [] : s.orders.filter(o => s.ofilter === 'all' || o.status === s.ofilter).map(o => { const sh = SHOPS.find(x => x.id === o.shop); const n = o.items.reduce((a, i) => a + i.qty, 0);
+      return { ...o, shopName: sh.name, chip: this.chip(o.status), thumbs: this.thumbs(o.items), totalT: fmt(this.orderTotal(o.items)), itemsT: n + (n === 1 ? ' item' : ' items'), go: () => this.go('order', { oid: o.id }) }; });
+    const ofLabel = (OF.find(x => x[0] === s.ofilter) || OF[0])[1].toLowerCase();
+    const ordersEmptyT = s.ofilter === 'all' ? 'No orders yet' : 'No ' + ofLabel + ' orders yet';
+
+    // ----- order detail -----
+    const ord = s.orders.find(o => o.id === s.oid) || s.orders[0];
+    const ordShop = SHOPS.find(x => x.id === ord.shop);
+    const ordAddr = s.addresses.find(a => a.id === ord.addr) || s.addresses[0];
+    const fi = FLOW.indexOf(ord.status);
+    const timeline = FLOW.map((k, i) => ({ label: ST[k].label, done: fi >= i, cur: fi === i, bg: fi >= i ? '#FFA51F' : 'var(--sunk)', fg: fi >= i ? '#0A0A0B' : 'var(--faint)', bd: fi >= i ? '#FFA51F' : 'var(--line2)', g: fi > i ? '✓' : String(i + 1), lbl: fi === i ? 'var(--ink)' : 'var(--faint)', bar: i < FLOW.length - 1, barBg: fi > i ? '#FFA51F' : 'var(--line2)' }));
+    const ordV = { ...ord, shopName: ordShop.name, chip: this.chip(ord.status), totalT: fmt(this.orderTotal(ord.items)), ended: ord.status === 'cancelled' || ord.status === 'rejected', flow: fi >= 0, awaiting: ord.status === 'pending_payment',
+      endTitle: ord.status === 'rejected' ? 'Rejected by the shop' : 'You cancelled this order', endBody: ord.status === 'rejected' ? (ord.reason ? '“' + ord.reason + '”' : 'The shop could not fulfil this order.') : 'Nothing was charged. Reserved stock went back on sale.',
+      canCancel: ['pending_payment', 'placed'].includes(ord.status), cancel: () => this.cancelOrder(ord.id), goShop: () => this.go('shop', { sid: ord.shop, shopCat: null }),
+      method: ord.method === 'cod' ? 'Cash on delivery' : 'UPI', payStatus: { paid: 'Paid', pending: 'Not paid yet', cod: 'Pay on delivery', collected: 'Collected by seller' }[ord.pay], hasUtr: !!ord.utr,
+      payNow: () => { this.setState({ payQueue: [ord.id], lastPlaced: [ord.id] }); this.go('payment'); setTimeout(this.startPay, 0); },
+      items: ord.items.map(i => { const v = this.pv(this.P(i.pid)); return { ...v, qty: '× ' + i.qty, lineT: fmt(v.price * i.qty) }; }), addr: ordAddr };
+
+    // ----- addresses -----
+    const addrList = (forceEmpty ? [] : s.addresses).map(a => ({ ...a, l2: [a.line2, a.city + ', ' + a.state + ' ' + a.pin].filter(Boolean).join(' · '), notDef: !a.def,
+      edit: () => this.openAddr(a), mkDef: () => { this.setState(st => ({ addresses: st.addresses.map(x => ({ ...x, def: x.id === a.id })) })); this.toast('Default address updated'); },
+      del: () => this.ask({ title: 'Delete this address?', body: a.label + ' · ' + a.line1 + '. Past orders keep their copy.', confirm: 'Delete', danger: true, go: () => { this.setState(st => ({ addresses: st.addresses.filter(x => x.id !== a.id), dialog: null })); this.toast('Address deleted'); } }) }));
+    const af = Object.fromEntries(['name', 'phone', 'line1', 'line2', 'city', 'state', 'pin'].map(k => [k, this.fld('addrForm', k, 'addrErr')]));
+    const afLabels = ['Home', 'Hostel', 'Work', 'Other'].map(l => ({ l, go: () => this.setState(st => ({ addrForm: { ...st.addrForm, label: l } })), bg: s.addrForm.label === l ? 'var(--ink)' : 'transparent', fg: s.addrForm.label === l ? 'var(--bg)' : 'var(--mute)', bd: s.addrForm.label === l ? 'var(--ink)' : 'var(--line2)' }));
+    const afDef = { on: !!s.addrForm.def, bg: s.addrForm.def ? '#FFA51F' : 'var(--line2)', x: s.addrForm.def ? '20px' : '2px', go: () => this.setState(st => ({ addrForm: { ...st.addrForm, def: !st.addrForm.def } })) };
+
+    // ----- seller -----
+    const sf = Object.fromEntries(['name', 'description', 'parish', 'deanery', 'contact_phone', 'upi_id'].map(k => [k, this.fld('sform', k, 'sErr')]));
+    const sub = s.submitted || s.sform;
+    const sellerV = { none: s.sellerStatus === 'none', pending: s.sellerStatus === 'pending', rejected: s.sellerStatus === 'rejected', suspended: s.sellerStatus === 'suspended', approved: s.sellerStatus === 'approved',
+      name: sub.name || 'Holy Family Candles', parish: [sub.parish, sub.deanery].filter(Boolean).join(' · ') || 'Holy Family Church · Phagwara', phone: sub.contact_phone || '98140 77881', upi: sub.upi_id || 'Not added',
+      hasLogo: !!s.sLogo, logo: s.sLogo, onLogo: e => { const f = e.target.files && e.target.files[0]; if (f) this.readFile(f, url => this.setState({ sLogo: url })); } };
+
+    // ----- account -----
+    const sellerRow = { none: ['Become a seller', 'Start a shop'], pending: ['My shop application', 'In review'], rejected: ['My shop application', 'Rejected'], suspended: ['My shop', 'Suspended'], approved: ['My shop', 'Approved'] }[s.sellerStatus];
+    const pendingApps = s.apps.filter(a => a.status === 'pending').length;
+
+    // ----- owner -----
+    const ownP = s.products.filter(p => p.shop === 1);
+    const ownerProducts = (forceEmpty ? [] : ownP).map(p => { const v = this.pv(p); const k = p.status === 'active' && p.stock === 0 ? 'out' : p.status; return { ...v, chip: this.chip(k), stockT: p.stock + ' in stock', archived: p.status === 'archived', notArchived: p.status !== 'archived', edit: () => this.openPform(p), arch: () => this.archive(p), op: p.status === 'archived' ? .55 : 1 }; });
+    const ownerOrderCards = (forceEmpty ? [] : s.ownerOrders).map(o => { const n = o.items.reduce((a, i) => a + i.qty, 0); return { ...o, chip: this.chip(o.status), thumbs: this.thumbs(o.items), totalT: fmt(this.orderTotal(o.items)), itemsT: n + (n === 1 ? ' item' : ' items'), needs: o.status === 'placed', go: () => this.go('ownerOrder', { ooid: o.id }) }; });
+    const stats = [['Products', ownP.filter(p => p.status !== 'archived').length], ['To accept', s.ownerOrders.filter(o => o.status === 'placed').length], ['This week', s.ownerOrders.filter(o => !o.date.startsWith('18')).length]].map(([l, n]) => ({ l, n }));
+    const ownerTabs = this.pill([['products', 'Products'], ['orders', 'Orders'], ['profile', 'Shop profile']], s.ownerTab, v => this.setState({ ownerTab: v }));
+    const oo = s.ownerOrders.find(o => o.id === s.ooid) || s.ownerOrders[0];
+    const ooActs = (ALLOWED[oo.status] || []).map(to => { const rej = to === 'rejected'; const lone = (ALLOWED[oo.status] || []).length === 1;
+      return { label: ACT_LABEL[to], go: () => this.transition(oo, to), bg: rej ? 'transparent' : '#FFA51F', fg: rej ? 'var(--danger)' : '#0A0A0B', bd: rej ? (oo.status === 'placed' ? 'var(--danger)' : 'transparent') : '#FFA51F', h: rej ? '50px' : '56px', flex: rej && oo.status === 'placed' ? '0 0 120px' : '1 1 100%', sh: rej ? 'none' : '0 10px 24px -12px rgba(255,165,31,.8)' }; });
+    const ooV = { ...oo, chip: this.chip(oo.status), totalT: fmt(this.orderTotal(oo.items)), hasActs: ooActs.length > 0, method: oo.method === 'cod' ? 'Cash on delivery' : 'UPI', payStatus: { paid: 'Paid', pending: 'Not paid yet', cod: 'Collect on delivery', collected: 'Collected' }[oo.pay], hasUtr: !!oo.utr,
+      done: { delivered: 'Delivered. Nothing left to do on this order.', rejected: 'You rejected this order. Stock was restored.', cancelled: 'The customer cancelled this order.' }[oo.status] || '',
+      stage: { placed: 'New order · accept or reject it', accepted: 'Accepted · pack it next', packed: 'Packed · hand it over for delivery', shipped: 'On its way · mark delivered when it arrives' }[oo.status] || '',
+      items: oo.items.map(i => { const v = this.pv(this.P(i.pid)); return { ...v, qty: '× ' + i.qty, lineT: fmt(v.price * i.qty) }; }) };
+    const shf = Object.fromEntries(['name', 'description', 'parish', 'deanery', 'contact_phone', 'upi_id'].map(k => [k, this.fld('shopForm', k)]));
+    const shopImg = { hasLogo: !!s.shopLogo, logo: s.shopLogo, hasBanner: !!s.shopBanner, banner: s.shopBanner,
+      onLogo: e => { const f = e.target.files && e.target.files[0]; if (f) this.readFile(f, u => this.setState({ shopLogo: u })); },
+      onBanner: e => { const f = e.target.files && e.target.files[0]; if (f) this.readFile(f, u => this.setState({ shopBanner: u })); },
+      save: () => this.toast('Shop profile saved') };
+
+    // ----- product form -----
+    const pf = Object.fromEntries(['title', 'description', 'price', 'compare_at_price', 'stock_quantity'].map(k => [k, this.fld('pform', k, 'pErr')]));
+    const pfCats = CATS.map(c => ({ l: c.short, go: () => this.setState(st => ({ pform: { ...st.pform, category_id: c.id } })), bg: s.pform.category_id === c.id ? 'var(--ink)' : 'transparent', fg: s.pform.category_id === c.id ? 'var(--bg)' : 'var(--mute)', bd: s.pform.category_id === c.id ? 'var(--ink)' : 'var(--line2)' }));
+    const pc = CATS.find(c => c.id === s.pform.category_id) || CATS[0];
+    const pImgs = s.pImgs.map((u, i) => ({ has: !!u, url: u || '', ph: !u, primary: i === 0, notPrimary: i > 0, mark: pc.mark, bg: this.tile(pc.h), fg: this.markFg(pc.h),
+      mkPrimary: () => this.setState(st => { const a = [...st.pImgs]; const [x] = a.splice(i, 1); return { pImgs: [x, ...a] }; }), rm: () => this.setState(st => ({ pImgs: st.pImgs.filter((_, j) => j !== i) })) }));
+    const pfV = { title: s.editPid ? 'Edit product' : 'New product', canAdd: s.pImgs.length < 6, count: s.pImgs.length + ' / 6',
+      onImgs: e => { const files = Array.from(e.target.files || []).slice(0, 6 - this.state.pImgs.length); files.forEach(f => this.readFile(f, u => this.setState(st => ({ pImgs: [...st.pImgs, u].slice(0, 6) })))); e.target.value = ''; },
+      active: s.pform.status === 'active', tgBg: s.pform.status === 'active' ? '#FFA51F' : 'var(--line2)', tgX: s.pform.status === 'active' ? '20px' : '2px', statusT: s.pform.status === 'active' ? 'Active · visible in the marketplace' : 'Draft · only you can see it',
+      toggle: () => this.setState(st => ({ pform: { ...st.pform, status: st.pform.status === 'active' ? 'draft' : 'active' } })), isEdit: !!s.editPid, archive: () => { const p = this.P(s.editPid); this.archive(p); } };
+
+    // ----- admin -----
+    const AF = [['pending', 'Pending'], ['approved', 'Approved'], ['rejected', 'Rejected'], ['suspended', 'Suspended'], ['all', 'All']];
+    const appFilters = this.pill(AF.map(([k, l]) => [k, l, k === 'all' ? s.apps.length : s.apps.filter(a => a.status === k).length]), s.appFilter, v => this.setState({ appFilter: v }));
+    const appRows = (forceEmpty ? [] : s.apps.filter(a => s.appFilter === 'all' || a.status === s.appFilter)).map(a => ({ ...a, chip: this.chip(a.status), bg: this.tile(a.h), fg: this.markFg(a.h), go: () => this.setState({ reviewId: a.id, reviewAction: null, reason: '' }) }));
+    const rv = s.apps.find(a => a.id === s.reviewId);
+    const setApp = (status, reason) => { this.setState(st => ({ apps: st.apps.map(a => a.id === rv.id ? { ...a, status, reason: reason || a.reason } : a), reviewId: null, reviewAction: null, reason: '' })); this.toast(rv.name + ' · ' + ST[status].label.toLowerCase()); };
+    const rvV = rv ? { ...rv, chip: this.chip(rv.status), bg: this.tile(rv.h), fg: this.markFg(rv.h), hasReason: !!rv.reason && (rv.status === 'rejected' || rv.status === 'suspended'),
+      canApprove: rv.status === 'pending' || rv.status === 'suspended', approveT: rv.status === 'suspended' ? 'Reinstate shop' : 'Approve shop', canReject: rv.status === 'pending', canSuspend: rv.status === 'approved',
+      approve: () => setApp('approved'), startReject: () => this.setState({ reviewAction: 'rejected', reason: '' }), startSuspend: () => this.setState({ reviewAction: 'suspended', reason: '' }),
+      choosing: !s.reviewAction, reasoning: !!s.reviewAction, reasonTitle: s.reviewAction === 'suspended' ? 'Why is this shop being suspended?' : 'Why is this application rejected?', reasonHint: 'The owner sees this reason on their shop screen.',
+      confirmT: s.reviewAction === 'suspended' ? 'Suspend shop' : 'Reject application', canConfirm: s.reason.trim().length >= 5, confOp: s.reason.trim().length >= 5 ? 1 : .4,
+      confirm: () => { if (s.reason.trim().length >= 5) setApp(s.reviewAction, s.reason.trim()); }, cancelReason: () => this.setState({ reviewAction: null }), noActions: rv.status === 'rejected' } : null;
+
+    return {
+      th, controls, jumps, tabs, showTabs: WITH_TABS.has(scr), cats, skel4, skel3, isLoading, isError, retry, me,
+      setScroller: el => { this.scroller = el; },
+      isHome: is('home'), isCategories: is('categories'), isSearch: is('search'), isShop: is('shop'), isProduct: is('product'), isCart: is('cart'), isCheckout: is('checkout'), isPayment: is('payment'), isConfirm: is('confirm'),
+      isOrders: is('orders'), isOrder: is('order'), isAddresses: is('addresses'), isAddressForm: is('addressForm'), isSeller: is('seller'), isAccount: is('account'), isMyshop: is('myshop'), isOwnerOrder: is('ownerOrder'), isProductForm: is('productForm'), isAdmin: is('admin'),
+      back: this.back, goSearch: () => this.go('search'), goCart: () => this.tab('cart'), goHome: () => this.tab('home'), goOrders: () => this.tab('orders'), goAddresses: () => this.go('addresses'), goSeller: () => this.go(s.sellerStatus === 'approved' ? 'myshop' : 'seller'), goAdmin: () => this.go('admin'),
+      goAdvent: () => { this.setState({ fCat: 1, query: 'advent' }); this.go('search'); },
+      // home
+      featured, homeProducts, homeLive: live && !forceEmpty, homeEmpty: forceEmpty,
+      // search
+      query: s.query, setQuery: e => this.setState({ query: e.target.value }), clearQuery: () => this.setState({ query: '', fCat: null, fDean: null, maxPrice: 1000 }),
+      recent: s.recent.map(r => ({ r, go: () => this.setState({ query: r }) })), clearRecent: () => this.setState({ recent: [] }), hasRecent: s.recent.length > 0,
+      searching, notSearching: !searching, results: forceEmpty ? [] : results.map(this.pv), hasResults: !forceEmpty && results.length > 0, noResults: forceEmpty || results.length === 0,
+      resultCount: (forceEmpty ? 0 : results.length) + ' results', noResultsT: s.query.trim() ? 'No results for “' + s.query.trim() + '”' : 'Nothing matches these filters',
+      filterCount, hasFilterCount: filterCount > 0, activeFilters, openFilter: () => this.setState({ filterOpen: true }), closeFilter: () => this.setState({ filterOpen: false }), filterOpen: s.filterOpen,
+      fCats: [{ id: null, short: 'Any' }, ...CATS].map(c => ({ l: c.short, go: () => this.setState({ fCat: c.id }), bg: s.fCat === c.id ? 'var(--ink)' : 'transparent', fg: s.fCat === c.id ? 'var(--bg)' : 'var(--mute)', bd: s.fCat === c.id ? 'var(--ink)' : 'var(--line2)' })),
+      fDeans: [null, 'Jalandhar', 'Ludhiana', 'Amritsar', 'Kapurthala'].map(dn => ({ l: dn || 'Any', go: () => this.setState({ fDean: dn }), bg: s.fDean === dn ? 'var(--ink)' : 'transparent', fg: s.fDean === dn ? 'var(--bg)' : 'var(--mute)', bd: s.fDean === dn ? 'var(--ink)' : 'var(--line2)' })),
+      maxPrice: s.maxPrice, maxPriceT: s.maxPrice >= 1000 ? 'Any price' : 'Up to ₹' + s.maxPrice, setMax: e => this.setState({ maxPrice: +e.target.value }),
+      sorts: [['new', 'Newest'], ['low', 'Price low → high'], ['high', 'Price high → low']].map(([k, l]) => ({ l, go: () => this.setState({ sort: k }), dot: s.sort === k ? '#FFA51F' : 'transparent', ring: s.sort === k ? '#FFA51F' : 'var(--line2)' })),
+      resetFilters: () => this.setState({ fCat: null, fDean: null, maxPrice: 1000, sort: 'new' }),
+      // shop
+      shop: { ...shop, bg: this.tile(shop.h), fg: this.markFg(shop.h), count: shopAll.length + ' products' }, shopCats, shopProducts, shopEmpty: forceEmpty || !shopProducts.length, shopLive: !forceEmpty && shopProducts.length > 0,
+      // product
+      prod, gallery, dots, stockChip, off, hasOff: !!off, qty: s.qty, descOpen: s.descOpen, descClamp: s.descOpen ? 'none' : '3', descToggle: () => this.setState({ descOpen: !s.descOpen }), descLabel: s.descOpen ? 'Show less' : 'Read more', longDesc: prod.desc.length > 120,
+      incQty: () => this.setState({ qty: Math.min(prod.stock, s.qty + 1) }), decQty: () => this.setState({ qty: Math.max(1, s.qty - 1) }), canBuy: prod.stock > 0, cantBuy: prod.stock === 0,
+      addCart: () => this.addToCart(prod.id, s.qty, false), buyNow: () => this.addToCart(prod.id, s.qty, true), goProdShop: () => this.go('shop', { sid: prod.shop, shopCat: null }),
+      onGallery: e => { const i = Math.round(e.target.scrollLeft / 390); if (i !== this.state.gIdx) this.setState({ gIdx: i }); },
+      // cart
+      groups, cartTotalT: fmt(cartTotal), cartEmpty, cartLive: !cartEmpty, multiShop, shopCountT: groups.length + ' shops', cartCount, goCheckout: () => this.go('checkout', { step: 1 }),
+      // checkout
+      steps, step1: s.step === 1, step2: s.step === 2, step3: s.step === 3, addrCards, addNewAddr: () => this.openAddr(null), payCards, review, selA, payRecap: s.payMethod === 'cod' ? 'Cash on delivery' : 'UPI · pay after placing', ckBtn, ckNext, ckBack, splitT: 'Your order will be placed as ' + groups.length + ' separate orders, one per shop.', noAddr: !s.addresses.length,
+      // payment
+      pay: payV, checkNow: this.checkNow, retryPay: this.startPay, keepChecking: () => { this.setState({ payPhase: 'waiting', payChecks: 0 }); this.poll(); }, switchCod: this.switchCod,
+      // confirm
+      placed, confirmTitle, viewFirst: () => placed[0] && placed[0].go(),
+      // orders
+      ofilters, orderCards, ordersEmpty: !orderCards.length, ordersLive: orderCards.length > 0, ordersEmptyT, ordV, timeline,
+      // addresses
+      addrList, addrEmpty: !addrList.length, addrLive: addrList.length > 0, af, afLabels, afDef, saveAddr: this.saveAddr, afTitle: s.editAid ? 'Edit address' : 'New address',
+      // seller
+      sf, sellerV, submitSeller: this.submitSeller, sellerRowT: sellerRow[0], sellerRowHint: sellerRow[1],
+      // account
+      isAdminP: s.persona === 'admin', pendingApps: pendingApps + ' pending', themeT: d ? 'Dark' : 'Light', toggleTheme: () => this.setState({ dark: !d }),
+      signOut: () => this.ask({ title: 'Sign out?', body: 'Your cart stays on this device.', confirm: 'Sign out', go: () => { this.setState({ dialog: null }); this.toast('Signed out (demo)'); } }),
+      // owner
+      ownerProducts, ownerProductsEmpty: !ownerProducts.length, ownerProductsLive: ownerProducts.length > 0, ownerOrderCards, ownerOrdersEmpty: !ownerOrderCards.length, ownerOrdersLive: ownerOrderCards.length > 0,
+      stats, ownerTabs, tabProducts: s.ownerTab === 'products', tabOrders: s.ownerTab === 'orders', tabProfile: s.ownerTab === 'profile', addProduct: () => this.openPform(null),
+      shopMe: { ...SHOPS[0], bg: this.tile(28), fg: this.markFg(28) }, ooV, ooActs, shf, shopImg,
+      pf, pfCats, pImgs, pfV, savePform: this.savePform,
+      // admin
+      appFilters, appRows, appsEmpty: !appRows.length, appsLive: appRows.length > 0, appsEmptyT: s.appFilter === 'pending' ? 'No applications waiting' : 'Nothing here yet', rvOpen: !!rv, rvV, closeReview: () => this.setState({ reviewId: null }), reason: s.reason, setReason: e => this.setState({ reason: e.target.value }),
+      // overlays
+      toast: s.toast, hasToast: !!s.toast, toastHasAction: !!(s.toast && s.toast.action), toastBottom: WITH_TABS.has(scr) ? '104px' : (['product', 'checkout', 'productForm', 'ownerOrder', 'addressForm'].includes(scr) ? '100px' : '30px'),
+      toastAct: () => { const a = s.toast && s.toast.action; this.setState({ toast: null }); a && a.go(); },
+      dialog: s.dialog, hasDialog: !!s.dialog, closeDialog: () => this.setState({ dialog: null }), dialogGo: () => s.dialog && s.dialog.go(), dialogBtnBg: s.dialog && s.dialog.danger ? 'var(--danger)' : '#FFA51F', dialogBtnFg: s.dialog && s.dialog.danger ? '#fff' : '#0A0A0B',
+    };
+  }
+}
+</script>
+</body>
+</html>

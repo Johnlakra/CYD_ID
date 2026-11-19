@@ -1,0 +1,240 @@
+{
+  "source": "cyd_id/src/pages/FormDetails.jsx (inline constant)",
+  "note": "Parish strings are verbatim. Known quirks: the first Ajnala parish is \"Ajnala \" with a trailing space; ManageProfiles.jsx has a slightly different fallback list. The backend GET /profiles/filter-options (distinct values from saved profiles) is the source of truth for FILTERING. Trim for display, but send the original string unchanged when saving so it matches existing records.",
+  "deaneries": [
+    {
+      "name": "Ajnala",
+      "parishes": [
+        "Ajnala ",
+        "Chamiyari",
+        "Chogawan",
+        "Chuchakwal",
+        "Karyal",
+        "Othian",
+        "Punga",
+        "Ramdas"
+      ]
+    },
+    {
+      "name": "Amritsar",
+      "parishes": [
+        "Amritsar Cantt.",
+        "Bharariwal",
+        "Gumtala",
+        "Khasa",
+        "Lahorigate",
+        "Majitha Road",
+        "Nai Abadi",
+        "Rajasansi"
+      ]
+    },
+    {
+      "name": "Dhariwal",
+      "parishes": [
+        "Batala",
+        "Dhariwal",
+        "Dialgarh",
+        "Kalanaur",
+        "Mastkot",
+        "Naushera Majja Singh",
+        "Qadian"
+      ]
+    },
+    {
+      "name": "Fatehgarh Churian",
+      "parishes": [
+        "Fatehgarh Churian",
+        "Dera Baba Nanak",
+        "Dharamkot Randhawa",
+        "Ghanie Ke Banger",
+        "Kotli",
+        "Machi Nangal",
+        "Majitha",
+        "Pakharpura"
+      ]
+    },
+    {
+      "name": "Ferozpur",
+      "parishes": [
+        "Faridkot",
+        "Badhni Mahafariste Wala",
+        "Ferozpur Canal Colony",
+        "Ferozpur Cantt",
+        "Ferozpur City",
+        "Gulami Wala",
+        "Guru Har Sahai",
+        "Lohgarh-Sur Singh Wala (Station)",
+        "Mamdot",
+        "Mudki (Station)",
+        "Sadiq",
+        "Talwandi Bhai",
+        "Tehna, Faridkot"
+      ]
+    },
+    {
+      "name": "Gurdaspur",
+      "parishes": [
+        "Balun (Station)",
+        "Dalhousie",
+        "Dina Nagar",
+        "Dorangala",
+        "Gurdaspur",
+        "Jandwal, Pathankot",
+        "Kahnuwan",
+        "Narot Jaimal Singh (Station)",
+        "Pathankot City",
+        "Puranashalla",
+        "Sidhwan Jamita, Joura Chitra",
+        "Sujanpur, Pathankot"
+      ]
+    },
+    {
+      "name": "Hoshiarpur",
+      "parishes": [
+        "Kakkon",
+        "Baijnath",
+        "Balachaur",
+        "Bassi Bahian",
+        "Bhunga",
+        "Gaggal",
+        "Garshankar",
+        "Jindwari",
+        "Mehtiana, Khanaura",
+        "Nandachaur",
+        "Nangal",
+        "Palampur",
+        "Una",
+        "Yol Camp"
+      ]
+    },
+    {
+      "name": "Jalandhar Cantt.",
+      "parishes": [
+        "Apra",
+        "Banga (Station)",
+        "Behram (Station)",
+        "Dhina-Chittewani",
+        "Jalandhar Cantt",
+        "Jandiala Manjki",
+        "Nawanshahar",
+        "Phagwara",
+        "Phulriwal",
+        "Rawalpindi",
+        "Sansarpur"
+      ]
+    },
+    {
+      "name": "Jalandhar City",
+      "parishes": [
+        "Adampur",
+        "Bootan",
+        "Chogitty",
+        "Gakhalan",
+        "Jalandhar City",
+        "Lambapind",
+        "Maqsudan"
+      ]
+    },
+    {
+      "name": "Kapurthala",
+      "parishes": [
+        "Hussainpur- Lodhi Bhulana",
+        "Kapurthala",
+        "Kishangarh",
+        "Kartarpur",
+        "Mehatpur",
+        "Nakodar",
+        "Shahkot",
+        "Sultanpur Lodhi"
+      ]
+    },
+    {
+      "name": "Ludhiana",
+      "parishes": [
+        "BRS Nagar",
+        "Jagraon",
+        "Jalandhar Bypass, Ludhiana",
+        "Kidwai Nagar",
+        "Phillaur",
+        "Raekot",
+        "Sarabha Nagar"
+      ]
+    },
+    {
+      "name": "Moga",
+      "parishes": [
+        "Baghapurana",
+        "Buggipura, Moga (Station)",
+        "Buttar, Moga (Station)",
+        "Dharamkot, Moga",
+        "Kot-Ise-Khan, Moga (Station)",
+        "Makhu",
+        "Moga",
+        "Nihal Singh Wala, Moga (Station)",
+        "Singhanwala, Moga",
+        "Takhtupura",
+        "Zira"
+      ]
+    },
+    {
+      "name": "Muktsar",
+      "parishes": [
+        "Abohar",
+        "Bhagsar",
+        "Danewala",
+        "Enakhera",
+        "Fazilka",
+        "Gidderbaha (Station)",
+        "Jaiton",
+        "Jalalabad",
+        "Kotkapura",
+        "Malout Pind",
+        "Malout",
+        "Muktsar, Bir Sarkar",
+        "Muktsar",
+        "Panjgaraian (Station)",
+        "Sikhwala"
+      ]
+    },
+    {
+      "name": "Sahnewal",
+      "parishes": [
+        "Bhammian Kalan (Station)",
+        "Jamalpur",
+        "Khanna",
+        "Khanpur-Jassar-Sangowal-Rania",
+        "Machhiwara",
+        "Machian Khurd",
+        "Sahnewal",
+        "Samrala"
+      ]
+    },
+    {
+      "name": "Tanda",
+      "parishes": [
+        "Bhogpur",
+        "Bholath",
+        "Dasuya",
+        "Mukerian",
+        "Tanda",
+        "Sri Hargobindpur"
+      ]
+    },
+    {
+      "name": "Tarn Taran",
+      "parishes": [
+        "Akalgarh (Station)",
+        "Beas",
+        "Bhikhiwind",
+        "Bhojian",
+        "Chabhal (Station)",
+        "Fatehabad (Station)",
+        "Harike",
+        "Jandiala Guru",
+        "Khem Karan",
+        "Patti",
+        "Tarn Taran"
+      ]
+    }
+  ]
+}
