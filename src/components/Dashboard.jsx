@@ -21,6 +21,7 @@ import {
   alpha,
   useMediaQuery,
   CircularProgress,
+  Badge,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -37,6 +38,7 @@ import {
   PhotoCamera as PhotoIcon,
   Storefront as StorefrontIcon,
   Sell as SellIcon,
+  Gavel as GavelIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { baseURL } from '../api/apiClient';
@@ -46,6 +48,8 @@ import ProfileHolderSettings from './ProfileHolderSettings';
 import ProfileHolderDashboard from './ProfileHolderDashboard';
 import ShopApp from '../pages/shop/ShopApp';
 import AdminShopModeration from '../pages/shop/AdminShopModeration';
+import AdminDisputes from '../pages/shop/AdminDisputes';
+import shopApi from '../api/shopApi';
 
 const drawerWidth = 280;
 
@@ -111,6 +115,11 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         id: 'shop-admin',
         text: 'Shop Applications',
         icon: <SellIcon />,
+      });
+      items.push({
+        id: 'shop-disputes',
+        text: 'Shop Disputes',
+        icon: <GavelIcon />,
       });
     }
 
@@ -180,6 +189,31 @@ const Dashboard = ({ authToken, user, onLogout }) => {
       fetchStats();
     }
   }, [selectedMenu, authToken]);
+
+  // Badge counts: orders waiting on this user (to pay, to confirm, to ship) and, for admins, open
+  // disputes. Refreshed every minute.
+  const [shopCounts, setShopCounts] = useState({ buyer: 0, seller: 0, admin_disputes: 0 });
+  useEffect(() => {
+    if (!authToken) return undefined;
+    let active = true;
+    const refresh = () =>
+      shopApi
+        .getActionCount()
+        .then((res) => active && setShopCounts(res.data))
+        .catch(() => {});
+    refresh();
+    const timer = setInterval(refresh, 60000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [authToken]);
+
+  const badgeFor = (id) => {
+    if (id === 'shop') return (shopCounts.buyer || 0) + (shopCounts.seller || 0);
+    if (id === 'shop-disputes') return shopCounts.admin_disputes || 0;
+    return 0;
+  };
 
   const renderStatsCards = () => {
     if (loading) {
@@ -315,6 +349,8 @@ const Dashboard = ({ authToken, user, onLogout }) => {
         return <ShopApp authToken={authToken} user={user} />;
       case 'shop-admin':
         return <AdminShopModeration authToken={authToken} user={user} />;
+      case 'shop-disputes':
+        return <AdminDisputes />;
       case 'profile':
         return <ProfileSettings authToken={authToken} user={user} onLogout={onLogout} />;
       default:
@@ -539,7 +575,9 @@ const Dashboard = ({ authToken, user, onLogout }) => {
                     color: selectedMenu === item.id ? 'primary.main' : 'inherit',
                   }}
                 >
-                  {item.icon}
+                  <Badge badgeContent={badgeFor(item.id)} color="error" max={99}>
+                    {item.icon}
+                  </Badge>
                 </ListItemIcon>
                 <ListItemText 
                   primary={item.text} 

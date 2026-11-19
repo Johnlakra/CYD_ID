@@ -18,8 +18,9 @@ the existing CYD ID Card Management System.
   internal view state; this app has no react-router anywhere and Shop doesn't introduce one.
 - `src/pages/shop/AdminShopModeration.jsx` — wired separately into `Dashboard.jsx`, gated to
   `user.role === 'admin'`, for approving/rejecting/suspending shop applications.
-- `src/components/shop/` — shared pieces (`ProductCard`, `OrderStatusChip`, `EmptyState`,
-  `MoneyText`, etc.) reused across the shop screens.
+- `src/pages/shop/AdminDisputes.jsx` is wired into `Dashboard.jsx` for admins: the payment dispute queue.
+- `src/components/shop/` holds shared pieces (`ProductCard`, `OrderStatusChip`, `PaymentStatusChip`,
+  `OrderChat`, `EvidenceUpload`, `EmptyState`, `MoneyText`, etc.).
 
 ## Conventions carried over from the rest of the app
 
@@ -40,24 +41,30 @@ All prices arrive from the API as integer **paise** in `*_paise` fields. Always 
 
 ## Cart
 
-The cart is **client-side only** (no cart API) — persisted in `localStorage`, grouped by
-`shop_id`. At checkout, a cart spanning multiple shops is split into one `POST /shop/orders`
-call per shop (see the backend doc's "one order per shop" design note).
+The cart is **client-side only** (no cart API). It is persisted in `localStorage` **per user**
+(`cyd_shop_cart:<userId>`), grouped by `shop_id`, and cleared on logout. Cart and checkout
+refresh prices, stock and UPI availability through `POST /shop/products/lookup`, so the totals
+shown are the server's. Checkout sends the whole cart in one `POST /shop/checkout` with an
+`Idempotency-Key`. The backend creates one order per shop in a single transaction, and a double
+submit returns the same orders.
 
-## UPI payment flow (YouPI-PG)
+## Payments (peer-to-peer UPI)
 
-> ⚠️ **This flow does not work as built (audit, 2026-11-17).** YouPI-PG's `Youpi.pay()` throws
-> unless the payment was first created server-side and you pass it `checkoutUrl`/`paymentId`.
-> The steps below call `Youpi.pay({orderId, amount})`, which always throws. There is also an
-> open decision on whether YouPI-PG can be used for a multi-vendor marketplace at all. See
-> [`IMPROVEMENT_PLAN.md` §5](IMPROVEMENT_PLAN.md#5-phase-1--payments-the-decision-comes-first).
+The platform never receives money. A buyer pays the **seller's own UPI ID** directly, then submits
+the 12-digit UPI Ref No (UTR), and the seller confirms receipt. Read
+`cyd_id_be/docs/PAYMENTS.md` for the full rules: timers, disputes, refunds.
 
-Read `cyd_id_be/docs/PAYMENTS.md` before touching this — YouPI-PG is explicitly an experimental,
-non-bank-certified gateway. The payment-processing screen:
-1. Calls `POST /shop/payments/initiate` with the order id.
-2. Dynamically injects the returned `checkoutScriptUrl` as a `<script>` with
-   `data-youpi-key`/`data-currency`, then calls `window.Youpi.pay(...)` once it loads.
-3. Must degrade gracefully if that script fails to load (there is usually no real YouPI-PG
-   server running) — show a retry state, never a blank crash.
-4. Polls `GET /shop/payments/:orderId/status` regardless of script load success, since that's
-   the real source of truth, not the script.
+- `PayOrder.jsx` (buyer) shows:
+  - the seller's UPI ID with a copy button (the main path, because UPI apps may block deep links to personal IDs);
+  - the exact amount, the order reference and a countdown from `pay_seconds_left`;
+  - an "Open UPI app" deep link and a QR code;
+  - the UTR form, with an optional screenshot that is resized and uploaded privately;
+  - after submitting, a "waiting for the seller" state.
+- `PayCheckout.jsx` lists the orders from a multi-shop checkout, each paid separately.
+- `OrderDetail.jsx` renders buttons **only** from the server's `allowed_actions` and
+  `dispute_reasons`, never re-deriving the rules. It also hosts the seller's confirm dialog (match
+  the amount and UTR in the bank app), the refund form, disputes, the order chat (`OrderChat.jsx`)
+  and evidence uploads.
+- `AdminDisputes.jsx` (admin menu → "Shop Disputes") is the dispute queue. Admins resolve from
+  the order view with a resolution allowed for the dispute's origin and a required note.
+- The Shop menu shows a badge from `GET /shop/orders/action-count`.

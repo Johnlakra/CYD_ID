@@ -3,6 +3,7 @@ import { Box, Typography, Card, CardContent, TextField, Button, Grid, Avatar, Ci
 import { Storefront as StorefrontIcon, PhotoCamera as PhotoIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import shopApi from '../../api/shopApi';
+import { apiErrorMessage } from '../../utils/apiError';
 import EncodeBase64 from '../../components/EncodeBase64';
 
 const EMPTY = { name: '', description: '', parish: '', deanery: '', contact_phone: '', upi_id: '' };
@@ -32,11 +33,15 @@ const BecomeSeller = ({ onApplied }) => {
     }
     setSubmitting(true);
     try {
-      await shopApi.applyForShop({ ...form, logo: logo || undefined });
+      const payload = { ...form, logo: logo || undefined };
+      const upi = form.upi_id.trim();
+      if (upi) payload.upi_id = upi;
+      else delete payload.upi_id;
+      await shopApi.applyForShop(payload);
       toast.success('Application submitted! An admin will review it shortly.');
       onApplied?.();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to submit application');
+      toast.error(apiErrorMessage(err, 'Failed to submit application'));
     } finally {
       setSubmitting(false);
     }
@@ -93,11 +98,18 @@ const BecomeSeller = ({ onApplied }) => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="UPI ID (for receiving payouts)"
+                label="UPI ID (optional)"
                 placeholder="yourname@bank"
                 value={form.upi_id}
                 onChange={set('upi_id')}
+                helperText="Buyers pay this UPI ID directly. Leave blank to accept cash on delivery only."
               />
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="caption" color="text.secondary">
+                Tip: a UPI ID made from your phone number (like 98xxxxxx@ybl) shows that number to every buyer. Use a
+                name-based UPI ID if you'd rather keep it private.
+              </Typography>
             </Grid>
             <Grid item xs={12}>
               <Button

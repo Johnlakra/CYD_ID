@@ -114,23 +114,48 @@ itself, including its active/inactive icon states and the cart badge.
 - **Address step**: list of saved addresses as selectable cards (radio-style selection, default
   address pre-selected), "+ Add new address" opens an inline form/sheet (full name, phone, line
   1, line 2, city, state, pincode, label, "set as default" toggle).
-- **Payment step**: two large selectable cards — "Pay by UPI" (with a small "Powered by UPI"
-  mark) and "Cash on Delivery" — each with a one-line description. If the cart has items from
-  multiple shops, show a clear note: "Your order will be placed as N separate orders — one per
-  shop."
+- **Payment step**: per shop, two selectable cards: "Pay the seller by UPI" ("You pay the
+  seller directly from any UPI app; CYD Shop never holds your money") and "Cash on Delivery".
+  Grey out UPI for shops that only accept cash. If the cart spans several shops, add a clear
+  note: "This becomes N separate orders, one per shop, and each is paid to that seller."
 - **Review step**: order summary per shop (collapsed/expandable), address recap, payment method
   recap, final "Place Order" button.
 
-### 3.7 Payment Processing (UPI)
-- Centered state: animated pulsing UPI/payment icon, "Waiting for payment confirmation…",
-  secondary text: "This can take a minute or two." (be honest that this can be slow — the real
-  gateway behind this detects payment via SMS reading, not an instant bank API).
-- A manual "I've paid — check again" button below the spinner.
-- **Failure/unavailable state**: if the payment service itself can't be reached — a calm error
-  illustration, "Payment service is temporarily unavailable", "Retry" + "Switch to Cash on
-  Delivery" buttons.
-- **Timeout state** (if polling runs long with no confirmation): "Still waiting — you can keep
-  this open, or we'll notify you when it's confirmed" with a "Go to My Orders" escape hatch.
+### 3.7 Pay the Seller (peer-to-peer UPI, like crypto-exchange P2P)
+The platform never touches the money: the buyer pays the seller's own UPI ID, then proves it.
+- **Pay card:**
+  - the seller's name and UPI ID in large type with a **Copy** button (the primary action);
+  - the exact amount, also copyable;
+  - the order reference to put in the payment note;
+  - a prominent **30:00 countdown**;
+  - a secondary "Open UPI app" button and a QR code (desktop/tablet) for the same payment.
+- **"I have paid" form:**
+  - a 12-digit "UPI Ref No" field, with an inline help popover showing where to find it in
+    GPay / PhonePe / Paytm and a note that it is *not* the transaction ID;
+  - an optional "Add screenshot" uploader with a privacy note ("only the seller and, in a
+    dispute, an admin can see it");
+  - a primary "I have paid" button.
+- **Waiting for seller** state, after submitting:
+  - a calm illustration, "Waiting for the seller to confirm", and the seller's deadline
+    ("by tomorrow 4:15 PM");
+  - the submitted UTR with an "Edit" link;
+  - "Message seller" opening the order chat.
+- **Expired** state: "The payment window closed and your order was cancelled", plus "Already
+  paid? Report it with your UTR" (opens a dispute sheet) and "Shop again".
+- **Confirmed** state: a success check, "Seller confirmed your payment", then "View order".
+- **Pay your orders**, for a multi-shop checkout: a list of the per-shop orders, each with its
+  own countdown and Pay button.
+
+### 3.7a Order Chat
+- A thread per order between buyer and seller, as a bottom sheet on mobile and a side panel on desktop.
+- Distinct styling for system messages ("Buyer submitted UPI Ref No 4012 3456 7890").
+- A read-only state for closed orders, and a note that an admin can read the chat if a dispute is opened.
+
+### 3.7b Disputes (buyer)
+- A sheet listing only the reasons currently available ("Seller hasn't confirmed my payment",
+  "I paid after the order was cancelled", "Refund not received", "Order not delivered",
+  "Something else"), each with the fields it needs (UTR, screenshot, description).
+- A "Dispute open — an admin is reviewing" banner on the order, with the proof deadline when relevant.
 
 ### 3.8 Order Confirmation
 - Big warm success check animation, "Order placed!", order number, estimated "the seller will
@@ -192,6 +217,12 @@ itself, including its active/inactive icon states and the cart badge.
   big "Accept Order" (primary) and "Reject" (destructive/text) buttons; "Accepted" shows "Mark
   as Packed"; "Packed" shows "Mark as Shipped"; "Shipped" shows "Mark as Delivered". Design each
   of these 4 button-states distinctly so it's obvious only one stage's actions are ever visible.
+- An **"Action needed"** filter at the top: payments to confirm, refunds due, orders to ship.
+- **Confirm payment** card (UPI orders in "Buyer says paid"):
+  - "Open your bank or UPI app and check for a credit of **₹501.00** with UPI Ref No **4012 3456 7890**";
+  - **"Payment received"** (primary) and **"Not received"** (secondary; opens a dispute).
+- **Refund** form (after rejecting a paid order): the amount to refund to the buyer's UPI, plus a "Refund UPI Ref No" field.
+- The order chat panel, the same as the buyer's.
 
 ### 4.4 My Shop — Profile tab
 - Editable shop name/description/parish/deanery/contact/UPI ID, logo + banner upload.
@@ -207,12 +238,26 @@ itself, including its active/inactive icon states and the cart badge.
   accent), **Reject** (opens a reason text field, required before confirming), **Suspend**
   (for already-approved shops, with its own reason field) actions.
 
+### 5.2 Payment Disputes (admin)
+- A queue with Open / Resolved tabs. Each row shows the order number, amount, buyer, seller,
+  reason and age.
+- The detail view shows:
+  - the order summary and the buyer's UTR;
+  - both parties' screenshots, opened through short-lived links;
+  - the full order chat.
+- The resolution options shown depend on the dispute, e.g. "Payment confirmed", "Reject claim",
+  "Seller must refund", "Refund confirmed", "Close as unrecoverable". A note is required before
+  confirming.
+- A gentle reminder: "CYD Shop never holds funds; for a seller who won't refund, suspend the shop
+  and follow up through the parish."
+
 ---
 
 ## 6. Deliverable format
 
-Produce high-fidelity screens for all of the above (customer: 12, shop owner: 4, admin: 1 = 17
-screens minimum, each with light + dark mode = 34 total surfaces), plus the design-system sheet
+Produce high-fidelity screens for all of the above (customer: 14 including Pay the Seller, Order
+Chat and Disputes; shop owner: 4; admin: 2 = 20 screens minimum, each with light + dark mode = 40
+total surfaces), plus the design-system sheet
 from Section 1. Show key states (loading/empty/error/success) inline next to their screen,
 not as an afterthought. Keep every screen consistent with the shared design system — same
 corner radii, same card anatomy, same button styles, same status-chip colors — so this reads as

@@ -32,11 +32,12 @@ you're ready to build the native app.
 > for the JWT, `cached_network_image` for product/shop images):
 >
 > Customer: Marketplace Home, Search & Filter, Shop Storefront, Product Detail, Cart, Checkout
-> (address + payment method, splitting a multi-shop cart into one order per shop), Payment
-> Processing (UPI via the gateway described in `docs/PAYMENTS.md` — degrade gracefully if its
-> checkout step is unreachable, and poll `GET /shop/payments/:orderId/status` as the real source
-> of truth), Order Confirmation, My Orders (list + status-filtered tabs), Order Detail (with a
-> status timeline and a conditional Cancel action), Addresses (CRUD), Become a Seller
+> (address + per-shop payment method; one `POST /shop/checkout` with an `Idempotency-Key`), Pay
+> Seller (seller's UPI ID to copy, exact amount, order reference, countdown, Open-UPI-app + QR, UTR
+> form with optional screenshot, then "waiting for the seller"), Pay Your Orders (multi-shop
+> checkout), Order Confirmation, My Orders (list + status-filtered tabs), Order Detail (status
+> timeline, payment banner, actions from `allowed_actions`, order chat, evidence, disputes),
+> Addresses (CRUD), Become a Seller
 > (application form + pending/rejected/suspended states).
 >
 > Shop Owner: My Shop dashboard (Products tab with add/edit/archive + image upload, Orders tab
@@ -57,9 +58,14 @@ you're ready to build the native app.
 >   existing web app's `photo`/`logo`/`banner`/`images` fields) — not multipart.
 > - Respect the order status state machine exactly as documented; don't let the UI offer an
 >   action the backend will reject.
-> - Treat the YouPI-PG payment integration as experimental (per `docs/PAYMENTS.md`) — never let
->   a slow/failed payment-gateway script load block the rest of the app; the polling endpoint is
->   the real truth.
+> - Payments are **peer-to-peer** (read `docs/PAYMENTS.md`). The app never takes money: the buyer
+>   pays the seller's own UPI ID and submits the 12-digit UPI Ref No (UTR), and the seller confirms.
+>   - Build the pay screen around copying the UPI ID and the exact amount. Use a `upi://` intent
+>     for "Open UPI app" via `url_launcher`, plus a QR code.
+>   - Show the server's countdown (`pay_seconds_left`).
+>   - Render every order action and dispute option ONLY from the API's `allowed_actions` /
+>     `dispute_reasons`.
+>   - Include the order chat and private screenshot uploads.
 >
 > Start by reading `docs/SHOP_MODULE.md`, `docs/PAYMENTS.md`, and the attached design images in
 > full, then propose the project structure (folder layout, state-management approach per

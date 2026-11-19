@@ -21,6 +21,7 @@ import { Storefront as StorefrontIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import shopApi from '../../api/shopApi';
 import EmptyState from '../../components/shop/EmptyState';
+import { apiErrorMessage } from '../../utils/apiError';
 
 const STATUS_TABS = [
   { label: 'Pending', value: 'pending' },
@@ -37,29 +38,35 @@ const AdminShopModeration = () => {
   const [tab, setTab] = useState(0);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [rejectDialog, setRejectDialog] = useState(null); // shop or null
-  const [rejectReason, setRejectReason] = useState('');
+  // { shop, status: 'rejected' | 'suspended' } while asking for a reason, otherwise null.
+  const [reasonDialog, setReasonDialog] = useState(null);
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const load = () => {
     setLoading(true);
     shopApi
       .adminGetShops({ status: STATUS_TABS[tab].value || undefined })
       .then((res) => setShops(res.data.shops || []))
-      .catch((err) => toast.error(err.response?.data?.message || 'Could not load shop applications'))
+      .catch((err) => toast.error(apiErrorMessage(err, 'Could not load shop applications')))
       .finally(() => setLoading(false));
   };
 
   useEffect(load, [tab]);
 
-  const handleReview = async (shop, status, rejection_reason) => {
+  const handleReview = async (shop, status, rejectionReason) => {
+    setBusy(true);
     try {
-      await shopApi.adminReviewShop(shop.id, { status, rejection_reason });
-      toast.success(`Shop ${status}`);
-      setRejectDialog(null);
-      setRejectReason('');
+      const res = await shopApi.adminReviewShop(shop.id, { status, rejection_reason: rejectionReason });
+      const cancelled = res.data?.cancelled_unpaid_orders;
+      toast.success(cancelled ? `Shop ${status}. ${cancelled} unpaid order(s) cancelled.` : `Shop ${status}`);
+      setReasonDialog(null);
+      setReason('');
       load();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to review shop');
+      toast.error(apiErrorMessage(err, 'Failed to review shop'));
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -69,7 +76,7 @@ const AdminShopModeration = () => {
         Shop Applications
       </Typography>
 
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
+      <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" allowScrollButtonsMobile sx={{ mb: 3 }}>
         {STATUS_TABS.map((t) => (
           <Tab key={t.label} label={t.label} />
         ))}
@@ -105,7 +112,7 @@ const AdminShopModeration = () => {
                       {shop.description}
                     </Typography>
                   )}
-                  {shop.status === 'rejected' && shop.rejection_reason && (
+                  {['rejected', 'suspended'].includes(shop.status) && shop.rejection_reason && (
                     <Typography variant="body2" color="error.main" sx={{ mt: 0.5 }}>
                       Reason: {shop.rejection_reason}
                     </Typography>
@@ -115,17 +122,17 @@ const AdminShopModeration = () => {
 
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 {shop.status !== 'approved' && (
-                  <Button size="small" variant="contained" color="success" onClick={() => handleReview(shop, 'approved')}>
+                  <Button size="small" variant="contained" color="success" disabled={busy} onClick={() => handleReview(shop, 'approved')}>
                     Approve
                   </Button>
                 )}
                 {shop.status !== 'rejected' && (
-                  <Button size="small" variant="outlined" color="error" onClick={() => setRejectDialog(shop)}>
+                  <Button size="small" variant="outlined" color="error" onClick={() => setReasonDialog({ shop, status: 'rejected' })}>
                     Reject
                   </Button>
                 )}
                 {shop.status === 'approved' && (
-                  <Button size="small" variant="outlined" onClick={() => handleReview(shop, 'suspended')}>
+                  <Button size="small" variant="outlined" onClick={() => setReasonDialog({ shop, status: 'suspended' })}>
                     Suspend
                   </Button>
                 )}
@@ -135,23 +142,40 @@ const AdminShopModeration = () => {
         ))
       )}
 
-      <Dialog open={!!rejectDialog} onClose={() => setRejectDialog(null)}>
-        <DialogTitle>Reject "{rejectDialog?.name}"</DialogTitle>
+      <Dialog open={!!reasonDialog} onClose={() => !busy && setReasonDialog(null)} fullWidth maxWidth="sm">
+        <DialogTitle>
+          {reasonDialog?.status === 'suspended' ? 'Suspend' : 'Reject'} "{reasonDialog?.shop.name}"
+        </DialogTitle>
         <DialogContent>
+          {reasonDialog?.status === 'suspended' && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              The shop disappears from the marketplace and its unpaid orders are cancelled. The owner can still ship or
+              refund orders that were already paid.
+            </Typography>
+          )}
           <TextField
             fullWidth
-            label="Reason (shown to the applicant)"
+            required
+            label="Reason (shown to the shop owner)"
             multiline
             rows={3}
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            inputProps={{ maxLength: 500 }}
             sx={{ mt: 1 }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRejectDialog(null)}>Cancel</Button>
-          <Button color="error" variant="contained" onClick={() => handleReview(rejectDialog, 'rejected', rejectReason)}>
-            Reject
+          <Button onClick={() => setReasonDialog(null)} disabled={busy}>
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            disabled={busy || !reason.trim()}
+            onClick={() => handleReview(reasonDialog.shop, reasonDialog.status, reason.trim())}
+          >
+            {reasonDialog?.status === 'suspended' ? 'Suspend' : 'Reject'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -9,6 +9,7 @@ import {
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import shopApi from '../../api/shopApi';
+import { apiErrorMessage } from '../../utils/apiError';
 import { getCartCount } from '../../utils/cart';
 
 import Marketplace from './Marketplace';
@@ -16,7 +17,8 @@ import ShopStorefront from './ShopStorefront';
 import ProductDetail from './ProductDetail';
 import Cart from './Cart';
 import Checkout from './Checkout';
-import PaymentProcessing from './PaymentProcessing';
+import PayOrder from './PayOrder';
+import PayCheckout from './PayCheckout';
 import OrderConfirmation from './OrderConfirmation';
 import MyOrders from './MyOrders';
 import OrderDetail from './OrderDetail';
@@ -36,7 +38,7 @@ const TOP_TABS = [
 ];
 
 // Views reachable only by drilling in from a tab (not shown in the tab bar itself).
-const SUB_VIEWS = new Set(['shop', 'product', 'checkout', 'payment', 'order-confirmation', 'order-detail']);
+const SUB_VIEWS = new Set(['shop', 'product', 'checkout', 'pay', 'pay-checkout', 'order-confirmation', 'order-detail']);
 
 const ShopApp = ({ authToken, user }) => {
   const [view, setView] = useState({ name: 'marketplace', params: {} });
@@ -59,22 +61,21 @@ const ShopApp = ({ authToken, user }) => {
     shopApi
       .getMyShop()
       .then((res) => setMyShop(res.data.shop))
-      .catch((err) => toast.error(err.response?.data?.message || 'Could not load your shop'))
+      .catch((err) => toast.error(apiErrorMessage(err, 'Could not load your shop')))
       .finally(() => setLoadingShop(false));
   }, []);
 
+  // Re-check every time "My Shop" is opened, so an approval or suspension shows up without a reload.
   useEffect(() => {
-    if (view.name === 'my-shop' && myShop === undefined) {
-      loadMyShop();
-    }
-  }, [view.name, myShop, loadMyShop]);
+    if (view.name === 'my-shop') loadMyShop();
+  }, [view.name, loadMyShop]);
 
   const activeTabIndex = SUB_VIEWS.has(view.name)
     ? -1
     : TOP_TABS.findIndex((t) => t.name === view.name);
 
   const renderMyShop = () => {
-    if (loadingShop || myShop === undefined) {
+    if (myShop === undefined || (loadingShop && myShop === null)) {
       return (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
@@ -106,11 +107,16 @@ const ShopApp = ({ authToken, user }) => {
     }
 
     if (myShop.status === 'suspended') {
+      // A suspended shop can't sell, but must still ship or refund the orders it already took.
       return (
-        <Alert severity="warning" sx={{ borderRadius: 2 }}>
-          Your shop "<strong>{myShop.name}</strong>" has been suspended. Please contact an admin
-          for details.
-        </Alert>
+        <Box>
+          <Alert severity="warning" sx={{ borderRadius: 2, mb: 3 }}>
+            Your shop "<strong>{myShop.name}</strong>" has been suspended
+            {myShop.rejection_reason ? <>: {myShop.rejection_reason}</> : ''}. It is hidden from the marketplace and its
+            unpaid orders were cancelled. Please finish (or refund) the orders below and contact an admin.
+          </Alert>
+          <MyShopDashboard shop={myShop} onShopUpdated={setMyShop} navigate={navigate} ordersOnly />
+        </Box>
       );
     }
 
@@ -127,8 +133,10 @@ const ShopApp = ({ authToken, user }) => {
         return <Cart navigate={navigate} />;
       case 'checkout':
         return <Checkout navigate={navigate} />;
-      case 'payment':
-        return <PaymentProcessing orderId={view.params.orderId} navigate={navigate} />;
+      case 'pay':
+        return <PayOrder orderId={view.params.orderId} navigate={navigate} />;
+      case 'pay-checkout':
+        return <PayCheckout checkoutId={view.params.checkoutId} navigate={navigate} />;
       case 'order-confirmation':
         return <OrderConfirmation orderId={view.params.orderId} navigate={navigate} />;
       case 'orders':
@@ -156,6 +164,9 @@ const ShopApp = ({ authToken, user }) => {
       <Tabs
         value={activeTabIndex === -1 ? false : activeTabIndex}
         onChange={(_, idx) => navigate(TOP_TABS[idx].name)}
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
         sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
       >
         {TOP_TABS.map((t) => (

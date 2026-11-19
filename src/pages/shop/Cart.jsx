@@ -5,6 +5,7 @@ import {
   IconButton,
   Button,
   Divider,
+  Alert,
   useTheme,
 } from '@mui/material';
 import {
@@ -15,7 +16,11 @@ import {
 } from '@mui/icons-material';
 import MoneyText from '../../components/shop/MoneyText';
 import EmptyState from '../../components/shop/EmptyState';
+import shopApi from '../../api/shopApi';
+import { formatMoney } from '../../utils/money';
 import {
+  getCart,
+  applyLookup,
   getCartGroupedByShop,
   getGroupSubtotal,
   getCartTotal,
@@ -29,9 +34,21 @@ const Cart = ({ navigate }) => {
 
   const refresh = () => setGroups(getCartGroupedByShop());
 
+  const [changes, setChanges] = useState([]);
+
   useEffect(() => {
     window.addEventListener('cyd-cart-updated', refresh);
     return () => window.removeEventListener('cyd-cart-updated', refresh);
+  }, []);
+
+  // Prices in the cart were saved when items were added; refresh them from the server.
+  useEffect(() => {
+    const ids = getCart().map((i) => i.product_id);
+    if (ids.length === 0) return;
+    shopApi
+      .lookupProducts(ids)
+      .then((res) => setChanges(applyLookup(res.data.products || []).changes))
+      .catch(() => {});
   }, []);
 
   const isEmpty = groups.length === 0;
@@ -41,6 +58,20 @@ const Cart = ({ navigate }) => {
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
         Your Cart
       </Typography>
+
+      {changes.length > 0 && (
+        <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }} onClose={() => setChanges([])}>
+          {changes
+            .map((c) =>
+              c.type === 'removed'
+                ? `"${c.title}" is no longer available and was removed.`
+                : c.type === 'price'
+                  ? `"${c.title}" now costs ${formatMoney(c.to)} (was ${formatMoney(c.from)}).`
+                  : `Only ${c.to} of "${c.title}" are available.`
+            )
+            .join(' ')}
+        </Alert>
+      )}
 
       {isEmpty ? (
         <EmptyState
@@ -86,17 +117,18 @@ const Cart = ({ navigate }) => {
                     <MoneyText paise={item.price_paise} variant="body2" />
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
-                    <IconButton size="small" onClick={() => updateCartQuantity(item.product_id, item.quantity - 1) && refresh()}>
+                    <IconButton size="small" aria-label={`Decrease quantity of ${item.title}`} onClick={() => updateCartQuantity(item.product_id, item.quantity - 1) && refresh()}>
                       <RemoveIcon fontSize="small" />
                     </IconButton>
                     <Typography sx={{ px: 1.5 }}>{item.quantity}</Typography>
-                    <IconButton size="small" onClick={() => updateCartQuantity(item.product_id, item.quantity + 1) && refresh()}>
+                    <IconButton size="small" aria-label={`Increase quantity of ${item.title}`} onClick={() => updateCartQuantity(item.product_id, item.quantity + 1) && refresh()}>
                       <AddIcon fontSize="small" />
                     </IconButton>
                   </Box>
                   <IconButton
                     size="small"
                     color="error"
+                    aria-label={`Remove ${item.title} from cart`}
                     onClick={() => {
                       removeFromCart(item.product_id);
                       refresh();

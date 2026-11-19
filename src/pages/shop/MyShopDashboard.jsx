@@ -13,6 +13,9 @@ import {
   CircularProgress,
   Chip,
   Avatar,
+  Alert,
+  ToggleButton,
+  ToggleButtonGroup,
   useTheme,
 } from '@mui/material';
 import {
@@ -26,13 +29,19 @@ import { toast } from 'react-toastify';
 import shopApi from '../../api/shopApi';
 import MoneyText from '../../components/shop/MoneyText';
 import OrderStatusChip from '../../components/shop/OrderStatusChip';
+import PaymentStatusChip from '../../components/shop/PaymentStatusChip';
+import { apiErrorMessage } from '../../utils/apiError';
 import EmptyState from '../../components/shop/EmptyState';
 import ProductFormDialog from '../../components/shop/ProductFormDialog';
 import EncodeBase64 from '../../components/EncodeBase64';
 
-const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
+const ORDERS_TAB = 2;
+
+// `ordersOnly` is used for suspended shops: they can't edit products or their profile, but must
+// still ship or refund the orders they already accepted.
+const MyShopDashboard = ({ shop, onShopUpdated, navigate, ordersOnly = false }) => {
   const theme = useTheme();
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(ordersOnly ? ORDERS_TAB : 0);
 
   // --- Profile tab state ---
   const [profileForm, setProfileForm] = useState({
@@ -44,15 +53,28 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
     upi_id: shop.upi_id || '',
   });
   const [savingProfile, setSavingProfile] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const upiChanged = profileForm.upi_id.trim() !== (shop.upi_id || '');
 
   const saveProfile = async () => {
+    if (upiChanged && !currentPassword) {
+      toast.error('Enter your current password to change the UPI ID');
+      return;
+    }
     setSavingProfile(true);
     try {
-      const res = await shopApi.updateMyShop(profileForm);
+      const { upi_id: upiId, ...rest } = profileForm;
+      const payload = { ...rest };
+      if (upiChanged) {
+        payload.upi_id = upiId.trim();
+        payload.current_password = currentPassword;
+      }
+      const res = await shopApi.updateMyShop(payload);
       toast.success('Shop profile updated');
+      setCurrentPassword('');
       onShopUpdated?.(res.data.shop);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update shop');
+      toast.error(apiErrorMessage(err, 'Failed to update shop'));
     } finally {
       setSavingProfile(false);
     }
@@ -83,14 +105,16 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
     shopApi
       .getMyProducts()
       .then((res) => setProducts(res.data.products || []))
-      .catch((err) => toast.error(err.response?.data?.message || 'Could not load products'))
+      .catch((err) => toast.error(apiErrorMessage(err, 'Could not load products')))
       .finally(() => setLoadingProducts(false));
   };
 
   useEffect(() => {
+    if (ordersOnly) return;
     loadProducts();
     shopApi.getCategories().then((res) => setCategories(res.data.categories || [])).catch(() => {});
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ordersOnly]);
 
   const handleProductSubmit = async (payload) => {
     try {
@@ -103,7 +127,7 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
       }
       loadProducts();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save product');
+      toast.error(apiErrorMessage(err, 'Failed to save product'));
       throw err;
     }
   };
@@ -114,23 +138,31 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
       toast.success('Product archived');
       loadProducts();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to archive product');
+      toast.error(apiErrorMessage(err, 'Failed to archive product'));
     }
   };
 
   // --- Orders tab state ---
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [ordersError, setOrdersError] = useState(null);
+  const [orderFilter, setOrderFilter] = useState('action');
 
   useEffect(() => {
-    if (tab !== 2) return;
+    if (tab !== ORDERS_TAB) return;
     setLoadingOrders(true);
     shopApi
       .getShopOrders()
-      .then((res) => setOrders(res.data.orders || []))
-      .catch((err) => toast.error(err.response?.data?.message || 'Could not load orders'))
+      .then((res) => {
+        setOrders(res.data.orders || []);
+        setOrdersError(null);
+      })
+      .catch((err) => setOrdersError(apiErrorMessage(err, 'Could not load orders')))
       .finally(() => setLoadingOrders(false));
   }, [tab]);
+
+  const actionCount = orders.filter((o) => o.needs_action).length;
+  const visibleOrders = orderFilter === 'action' ? orders.filter((o) => o.needs_action) : orders;
 
   return (
     <Box>
@@ -142,14 +174,18 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
             {shop.name}
           </Typography>
-          <Chip label="Approved" color="success" size="small" />
+          <Chip
+            label={shop.status === 'approved' ? 'Approved' : shop.status}
+            color={shop.status === 'approved' ? 'success' : 'warning'}
+            size="small"
+          />
         </Box>
       </Box>
 
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
-        <Tab label="Shop Profile" />
-        <Tab label="Products" />
-        <Tab label="Orders" />
+      <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" allowScrollButtonsMobile sx={{ mb: 3 }}>
+        <Tab label="Shop Profile" value={0} disabled={ordersOnly} />
+        <Tab label="Products" value={1} disabled={ordersOnly} />
+        <Tab label={actionCount ? `Orders (${actionCount})` : 'Orders'} value={ORDERS_TAB} />
       </Tabs>
 
       {tab === 0 && (
@@ -180,7 +216,7 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
                   onChange={(e) => setProfileForm((p) => ({ ...p, description: e.target.value }))}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Parish"
@@ -188,7 +224,7 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
                   onChange={(e) => setProfileForm((p) => ({ ...p, parish: e.target.value }))}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Deanery"
@@ -196,7 +232,7 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
                   onChange={(e) => setProfileForm((p) => ({ ...p, deanery: e.target.value }))}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Contact Phone"
@@ -204,13 +240,33 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
                   onChange={(e) => setProfileForm((p) => ({ ...p, contact_phone: e.target.value }))}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="UPI ID"
+                  placeholder="yourname@bank"
                   value={profileForm.upi_id}
                   onChange={(e) => setProfileForm((p) => ({ ...p, upi_id: e.target.value }))}
+                  helperText="Buyers pay this UPI ID directly. Blank = cash on delivery only."
                 />
+              </Grid>
+              {upiChanged && (
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type="password"
+                    label="Current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    helperText="Needed to change where buyers send money. Existing orders keep the old UPI ID."
+                    autoComplete="current-password"
+                  />
+                </Grid>
+              )}
+              <Grid item xs={12}>
+                <Typography variant="caption" color="text.secondary">
+                  A UPI ID made from your phone number (like 98xxxxxx@ybl) shows that number to buyers.
+                </Typography>
               </Grid>
               <Grid item xs={12}>
                 <Button
@@ -295,18 +351,38 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
         </Box>
       )}
 
-      {tab === 2 && (
+      {tab === ORDERS_TAB && (
         <Box>
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={orderFilter}
+            onChange={(_, v) => v && setOrderFilter(v)}
+            sx={{ mb: 2 }}
+          >
+            <ToggleButton value="action">Action needed{actionCount ? ` (${actionCount})` : ''}</ToggleButton>
+            <ToggleButton value="all">All orders</ToggleButton>
+          </ToggleButtonGroup>
           {loadingOrders ? (
             <CircularProgress size={24} />
-          ) : orders.length === 0 ? (
-            <EmptyState title="No orders yet" />
+          ) : ordersError ? (
+            <Alert severity="error">{ordersError}</Alert>
+          ) : visibleOrders.length === 0 ? (
+            <EmptyState
+              title={orderFilter === 'action' ? 'Nothing needs your attention' : 'No orders yet'}
+              subtitle={orderFilter === 'action' ? 'New payments to confirm and orders to ship will appear here.' : undefined}
+            />
           ) : (
-            orders.map((order) => (
+            visibleOrders.map((order) => (
               <Card
                 key={order.id}
                 onClick={() => navigate('order-detail', { orderId: order.id, backView: 'my-shop' })}
-                sx={{ borderRadius: 3, mb: 2, cursor: 'pointer', border: `1px solid ${theme.palette.divider}` }}
+                sx={{
+                  borderRadius: 3,
+                  mb: 2,
+                  cursor: 'pointer',
+                  border: `1px solid ${order.needs_action ? theme.palette.warning.main : theme.palette.divider}`,
+                }}
               >
                 <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                   <Box>
@@ -317,9 +393,10 @@ const MyShopDashboard = ({ shop, onShopUpdated, navigate }) => {
                       {order.customer_username} · {order.items?.length || 0} item(s)
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                     <MoneyText paise={order.total_paise} variant="subtitle1" />
                     <OrderStatusChip status={order.status} />
+                    <PaymentStatusChip status={order.payment_status} />
                   </Box>
                 </CardContent>
               </Card>

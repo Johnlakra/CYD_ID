@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
+import { clearCartForUser } from "./utils/cart";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -30,6 +31,8 @@ function App() {
 
   // Handle logout
   const handleLogout = () => {
+    // The cart is per user; remove this user's so nobody else on this browser sees it.
+    clearCartForUser(user?.id);
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     setAuthToken('');
