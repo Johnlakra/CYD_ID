@@ -158,7 +158,7 @@ M3–M5 (ID cards) and M6–M8 (shop) are independent after M2 and may run in pa
 
 | Milestone | Status | Owner agent(s) | Notes |
 |---|---|---|---|
-| M0 Scaffold | ☐ not started | app-architect | |
+| M0 Scaffold | ◐ code done 2026-11-20, awaiting device + backend check | app-architect | analyze/format clean, 89 tests green, debug APK + iOS sim/release builds OK, code review passed (fixes applied). Pending: `flutter run` on emulator, live `GET /health` against local backend. |
 | M1 Design system & shell | ☐ | design-system-engineer | |
 | M2 Session & auth | ☐ | auth-network-engineer | |
 | M3 Profiles | ☐ | idcard-engineer | |
