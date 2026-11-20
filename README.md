@@ -47,6 +47,7 @@ You can also paste `docs/CYD-APP-SPEC-FULL.md` (all docs in one file) into a nor
 | `.claude/agents/` | 11 specialist agents (architect, design system, auth/network, ID card, shop customer, seller/admin, contract verifier, UI reviewer, code reviewer, tester, release) |
 | `.claude/commands/` | `/milestone`, `/verify-contract`, `/review-ui`, `/status`, `/ship-check` |
 | `prompts/` | Master prompt + one kickoff prompt per milestone (M00–M10) |
+| `prompts/claude-design/` | Paste-ready prompts that make Claude Design draw the 29 screens the mockup lacks (read its README) |
 | `design/` | Reference mockup (HTML), `tokens.json` (dark/light), `SCREEN-MAP.md` (mockup screen → spec → route) |
 | `assets/idcard/` | Card backgrounds for Parish, Deanery, Dexco (full resolution) and the login overlay |
 | `assets/fonts/` | `Gafata-Regular.ttf` (other fonts come from `google_fonts`) |

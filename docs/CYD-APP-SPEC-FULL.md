@@ -5794,6 +5794,8 @@ Every mockup screen (ids from `CYD Shop Mobile.dc.html`, attribute `data-screen-
 Shop specs are in `docs/03-SCREENS-SHOP.md` (section numbers match the mockup ids; `E1…F5` are the new screens). ID-card-area specs are in `docs/04-SCREENS-IDCARD.md` (no mockup exists for them; titles are given so the section can be found).
 Routes come from `docs/01-ARCHITECTURE.md` §6 (no additions were needed beyond the table there). Feature folders are under `lib/features/`. Tab = position in the floating pill bar: 1 `[My ID | Profiles]`, 2 Shop, 3 Cart, 4 Orders, 5 Account.
 
+To generate the *Designed* screens in Claude Design, use the prompts in `prompts/claude-design/` (README there gives the paste order).
+
 Legend — **Origin**: *Mockup* = rebuilt from the mockup · *Replaced* = mockup screen whose behaviour was replaced by the real backend · *Designed* = not in the mockup, designed in the same language (needs the owner's visual sign-off).
 
 ## 1. Mockup screens (19)
