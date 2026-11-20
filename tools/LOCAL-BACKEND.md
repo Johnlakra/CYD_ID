@@ -94,3 +94,11 @@ Security for the dev host. Never ship either in a release build. CORS does not a
 - **Photos fail locally** until Cloudinary is configured. Profile creation works without a photo through the API, but the app's form requires one.
 - **Stats include deleted profiles** (`/profiles/stats` does not filter by status) — a backend quirk, documented in docs/05-API-CONTRACT.md.
 - **Backend tests** (optional): `npm test` needs a throwaway database and `TEST_DB_HOST/PORT/USER/PASSWORD/NAME` variables (see the backend's `tests/setup/env.js`).
+
+## Running the app on a physical Android phone (USB)
+`10.0.2.2` is the **emulator's** alias for the host machine; on a real phone it reaches nothing. Forward the port over USB and point the app at `localhost`:
+```bash
+adb reverse tcp:3000 tcp:3000          # repeat after each reconnect / reboot
+flutter run --dart-define=API_BASE_URL=http://localhost:3000 --dart-define=FLAVOR=dev
+```
+Verified at M0 (2026-11-20) on an Android 14 phone: the debug "Backend health" screen shows `OK: Server is running`.
