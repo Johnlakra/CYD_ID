@@ -2,7 +2,11 @@ name: CI
 
 on:
   push:
+    branches: [master, 'claude/**']
   pull_request:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -25,7 +29,7 @@ jobs:
         run: flutter --version
 
       - name: Get packages
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       - name: Analyze
         run: flutter analyze

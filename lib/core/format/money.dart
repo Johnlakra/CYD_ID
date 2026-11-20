@@ -26,7 +26,8 @@ String paiseToRupeesString(int paise) {
   return '${negative ? '-' : ''}${abs ~/ 100}.$frac';
 }
 
-final RegExp _rupeesPattern = RegExp(r'^\d+(\.\d{1,2})?$|^\.\d{1,2}$');
+// At most 9 whole digits keeps whole*100 far inside int range.
+final RegExp _rupeesPattern = RegExp(r'^\d{1,9}(\.\d{1,2})?$|^\.\d{1,2}$');
 
 /// Parses a user-entered rupee amount into paise by string split, or `null`
 /// if invalid (commas, letters, negatives, more than 2 decimals, empty).

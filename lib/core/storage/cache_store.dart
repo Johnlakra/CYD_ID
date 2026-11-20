@@ -67,7 +67,7 @@ class CacheStore {
 
 final cacheStoreProvider = Provider<CacheStore>((ref) {
   return CacheStore(() async {
-    final base = await getApplicationDocumentsDirectory();
+    final base = await getApplicationSupportDirectory();
     return Directory('${base.path}/cyd_cache');
   });
 });

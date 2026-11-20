@@ -23,16 +23,31 @@ class Env {
 
   static bool get isDev => flavor == 'dev';
 
-  /// Release builds must talk HTTPS only (doc 01 §4, §11).
-  static bool isSecureUrl(String url) =>
-      Uri.tryParse(url)?.scheme.toLowerCase() == 'https';
+  static const _flavors = {'dev', 'prod'};
 
-  /// Throws in release mode when [apiBaseUrl] is not HTTPS.
+  /// HTTPS with a non-empty host (doc 01 §4, §11).
+  static bool isSecureUrl(String url) {
+    final uri = Uri.tryParse(url);
+    return uri != null &&
+        uri.scheme.toLowerCase() == 'https' &&
+        uri.host.isNotEmpty;
+  }
+
+  /// Throws on an unknown flavor (any mode), and in release mode unless the
+  /// flavor is `prod` and [url] is HTTPS.
   static void assertReleaseConfig({
     String url = apiBaseUrl,
+    String flavor = Env.flavor,
     bool releaseMode = kReleaseMode,
   }) {
-    if (releaseMode && !isSecureUrl(url)) {
+    if (!_flavors.contains(flavor)) {
+      throw StateError('FLAVOR must be dev or prod (got "$flavor").');
+    }
+    if (!releaseMode) return;
+    if (flavor != 'prod') {
+      throw StateError('Release builds require FLAVOR=prod (got "$flavor").');
+    }
+    if (!isSecureUrl(url)) {
       throw StateError(
         'Release builds require an https API_BASE_URL (got "$url").',
       );

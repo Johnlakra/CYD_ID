@@ -27,7 +27,7 @@ class SplashPlaceholder extends StatelessWidget {
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: () => context.push(Routes.debugHealth),
-                child: const Text('Backend health (debug)'),
+                child: const Text(Strings.debugHealthLink),
               ),
             ],
           ],

@@ -2,9 +2,14 @@ import 'package:cyd_app/core/network/api_envelope.dart';
 import 'package:cyd_app/core/network/api_exception.dart';
 import 'package:cyd_app/core/network/dio_provider.dart';
 import 'package:cyd_app/core/network/health_repository.dart';
+import 'package:cyd_app/core/strings.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
+
+import '../../support/scope.dart';
 
 void main() {
   late Dio dio;
@@ -182,10 +187,86 @@ void main() {
       expect(h.version, '1.0.0');
     });
 
-    test('a redirect-style failure surfaces as ApiException', () async {
-      adapter.onGet('/health', (s) => s.reply(308, ''));
-      final e = await failure(() => HealthRepository(dio).check());
-      expect(e, isA<ApiException>());
+    test(
+      'a 308 (wrong server on the port) is an unknown ApiException',
+      () async {
+        adapter.onGet('/health', (s) => s.reply(308, ''));
+        final e = await failure(() => HealthRepository(dio).check());
+        expect(e.kind, ApiErrorKind.unknown);
+        expect(e.status, 308);
+      },
+    );
+
+    test(
+      'a wrong-typed field surfaces as ApiException, not TypeError',
+      () async {
+        adapter.onGet(
+          '/health',
+          (s) => s.reply(200, {'success': true, 'message': 42}),
+        );
+        final e = await failure(() => HealthRepository(dio).check());
+        expect(e.kind, ApiErrorKind.unknown);
+        expect(e.message, Strings.unknownError);
+      },
+    );
+  });
+
+  group('no automatic retry (Riverpod 3 default is 10 retries)', () {
+    test('a 403 through a FutureProvider issues exactly one request', () async {
+      var calls = 0;
+      adapter.onGet('/forbidden', (s) {
+        calls++;
+        s.reply(403, {'success': false, 'message': 'Admin access required'});
+      });
+      final provider = FutureProvider.autoDispose<void>(
+        (ref) => guardApi(() => dio.get<dynamic>('/forbidden')),
+      );
+      final container = testContainer();
+      addTearDown(container.dispose);
+      final sub = container.listen(provider, (_, _) {});
+      addTearDown(sub.close);
+
+      await expectLater(
+        container.read(provider.future),
+        throwsA(isA<ApiException>()),
+      );
+      await Future<void>.delayed(const Duration(seconds: 1));
+      expect(calls, 1);
+      expect(container.read(provider), isA<AsyncError<void>>());
+    });
+  });
+
+  group('MinimalLogInterceptor', () {
+    test('logs only method, path and status', () async {
+      final lines = <String>[];
+      final old = debugPrint;
+      debugPrint = (String? m, {int? wrapWidth}) => lines.add(m ?? '');
+      addTearDown(() => debugPrint = old);
+
+      final logged = buildDio(baseUrl: 'http://test.local', logging: true);
+      DioAdapter(dio: logged)
+        ..onGet(
+          '/profiles',
+          (s) => s.reply(200, {'success': true, 'data': 'secret-body'}),
+          headers: {'Authorization': 'Bearer abc'},
+          queryParameters: {'q': 'utr123'},
+        )
+        ..onPost(
+          '/pay',
+          (s) => s.reply(400, {'success': false, 'message': 'bad'}),
+          data: {'utr': '429188301127'},
+        );
+      await logged.get<dynamic>(
+        '/profiles',
+        queryParameters: {'q': 'utr123'},
+        options: Options(headers: {'Authorization': 'Bearer abc'}),
+      );
+      await expectLater(
+        logged.post<dynamic>('/pay', data: {'utr': '429188301127'}),
+        throwsA(isA<DioException>()),
+      );
+
+      expect(lines, ['[http] GET /profiles -> 200', '[http] POST /pay -> 400']);
     });
   });
 }

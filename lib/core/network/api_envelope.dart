@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../strings.dart';
 import 'api_exception.dart';
 import 'error_mapper.dart';
 
@@ -32,7 +33,18 @@ String? envelopeMessage(Response<dynamic> response) {
 Future<T> guardApi<T>(Future<T> Function() call) async {
   try {
     return await call();
+  } on ApiException {
+    rethrow;
   } on DioException catch (e) {
     throw mapDioException(e);
+  } on Object catch (_, st) {
+    // Parse/cast failures (TypeError, FormatException) must not escape raw.
+    Error.throwWithStackTrace(
+      const ApiException(
+        kind: ApiErrorKind.unknown,
+        message: Strings.unknownError,
+      ),
+      st,
+    );
   }
 }

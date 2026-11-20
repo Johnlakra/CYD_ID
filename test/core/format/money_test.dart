@@ -43,9 +43,20 @@ void main() {
       expect(parseRupees('.5'), 50);
       expect(parseRupees('150'), 15000);
       expect(parseRupees(' 150 '), 15000);
+      expect(parseRupees('999999999.99'), 99999999999);
     });
     test('invalid', () {
-      for (final s in ['', 'abc', '1,250', '-5', '1.234', '.', '1.']) {
+      for (final s in [
+        '',
+        'abc',
+        '1,250',
+        '-5',
+        '1.234',
+        '.',
+        '1.',
+        '1234567890',
+        '99999999999999999999',
+      ]) {
         expect(parseRupees(s), isNull, reason: 'input "$s"');
       }
     });

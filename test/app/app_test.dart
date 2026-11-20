@@ -1,13 +1,15 @@
 import 'package:cyd_app/app/app.dart';
+import 'package:cyd_app/app/placeholder_screens.dart';
 import 'package:cyd_app/core/network/dio_provider.dart';
 import 'package:cyd_app/core/strings.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 
-Widget _app(Dio dio) => ProviderScope(
+import '../support/scope.dart';
+
+Widget _app(Dio dio) => testScope(
   overrides: [dioProvider.overrideWithValue(dio)],
   child: const CydApp(),
 );
@@ -24,7 +26,8 @@ void main() {
 
     await tester.tap(find.text(Strings.loginTitle));
     await tester.pumpAndSettle();
-    expect(find.byType(AppBar), findsOneWidget);
+    expect(find.byType(LoginPlaceholder), findsOneWidget);
+    expect(find.byType(SplashPlaceholder), findsNothing);
   });
 
   testWidgets('/debug/health shows OK from GET /health', (tester) async {
@@ -40,7 +43,7 @@ void main() {
     await tester.pumpWidget(_app(dio));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Backend health (debug)'));
+    await tester.tap(find.text(Strings.debugHealthLink));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('health-ok')), findsOneWidget);
@@ -58,10 +61,10 @@ void main() {
     await tester.pumpWidget(_app(dio));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Backend health (debug)'));
+    await tester.tap(find.text(Strings.debugHealthLink));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('health-error')), findsOneWidget);
-    expect(find.text('Retry'), findsOneWidget);
+    expect(find.text(Strings.tapToRetry), findsOneWidget);
   });
 }
