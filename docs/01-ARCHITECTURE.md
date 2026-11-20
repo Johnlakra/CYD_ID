@@ -101,7 +101,7 @@ screens and feature widgets. **Widgets never call `dio`.** Repositories never im
 - **Error mapping**: every failure becomes an `ApiException`:
   `ValidationFailed(fieldMessages)` (400 with `errors[]`), `Unauthorized` (401), `Forbidden` (403), `NotFound` (404), `Conflict` (409), `RateLimited` (429), `PayloadTooLarge` (413), `ServerError` (5xx), `Offline`/`Timeout`, `Unknown`. Keep the server `message` verbatim for display (it is already user-facing English).
 - **Envelope**: success = `{success:true, message, data}`; failure = `{success:false, message, errors?[]}`. Repositories return `data` only. Validation `errors` is a list of plain strings, not keyed by field: show them as a list under the form or map by keyword.
-- **Logging**: `LogInterceptor` only in debug, with `Authorization`, request/response bodies containing `photo`, `image`, `screenshot`, `password`, `utr` **redacted**. Never log tokens or base64.
+- **Logging**: dev flavor only, and only `METHOD path → status` (no headers, no bodies — stricter than redaction; see `docs/DECISIONS.md`). Never log tokens, passwords, UTRs or base64.
 - **Uploads**: images are base64 data URLs inside JSON (not multipart). Backend limits: body ≤ 10 MB, image ≤ 5 MB. Resize on a background isolate before encoding (`image_data_url.dart`).
 - **Idempotency**: `POST /shop/checkout` requires `Idempotency-Key` (8–64 chars `[\w-]`): generate one per checkout *attempt*, keep it across network retries, rotate it when the cart or choices change (doc 03/06).
 - **Base URL**: `--dart-define=API_BASE_URL=...` (dev defaults in `tools/LOCAL-BACKEND.md`). Release builds must be HTTPS.

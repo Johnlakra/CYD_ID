@@ -21,7 +21,7 @@
 
 ## 3. Android
 - Min SDK per Flutter default (or 26); target SDK = the current Play requirement at submission time (check Play Console).
-- Permissions (keep minimal): `INTERNET`; `CAMERA` only if the picker uses it directly (prefer the system picker/intent, which needs none); media access for **saving** the card — use the scoped-storage/MediaStore path (no broad storage permissions).
+- Permissions (keep minimal): `INTERNET` — **must be declared in `android/app/src/main/AndroidManifest.xml`** (`flutter create` puts it only in the debug/profile manifests; added at M0); `CAMERA` only if the picker uses it directly (prefer the system picker/intent, which needs none); media access for **saving** the card — use the scoped-storage/MediaStore path (no broad storage permissions).
 - `<queries>` entry for the `upi` scheme so `url_launcher` can detect UPI apps (Android 11+).
 - Signing: create an upload keystore (kept out of git, backed up in two places), enable **Play App Signing**; `key.properties` ignored by git; CI uses encrypted secrets.
 - Build: `flutter build appbundle --release --dart-define=...`; enable R8/shrink; verify ProGuard keeps nothing app-specific.

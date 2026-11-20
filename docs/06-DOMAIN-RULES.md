@@ -446,7 +446,7 @@ Behaviours the app must know (all verified in `profileController`):
 | Orders, chat, disputes (detail/timestamps) | `d MMM yyyy, h:mm a` (local time) | `5 Mar 2026, 4:07 PM` | same |
 | Missing / unparsable | `—` (em dash) | | never throw |
 
-- Use explicit patterns with `DateFormat(pattern, 'en_IN')`/fixed digits; never `yMd(locale)`.
+- Use explicit patterns with `DateFormat(pattern, 'en_US')` (month names are English either way; `en_IN` would need async locale initialisation — see `docs/DECISIONS.md`); never `yMd(locale)`. Indian money grouping is implemented by hand in `core/format/money.dart`.
 - API date strings: follow `parseApiDate` in doc 07 §7.4 (plain `YYYY-MM-DD` = that calendar date; ISO instants → `toLocal()`). The **server time zone is unverified** (see doc 07); verify against the live backend once (create a profile with DOB `2000-01-01`, read the raw JSON).
 - Order timestamps (`created_at`, `confirmed_at`, …) are MySQL `DATETIME` serialised by `mysql2`; whether they carry a `Z` is *unverified*. **Never** derive deadlines from them: use `pay_seconds_left`, `confirm_seconds_left`, `proof_seconds_left` (computed by the database clock). Use timestamps for display only.
 
