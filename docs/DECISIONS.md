@@ -8,7 +8,7 @@ One line per non-obvious decision. Newest at the bottom of each section. Owner: 
 - Launcher name is `CYD` on both platforms (doc 01 §13), set in `AndroidManifest.xml` and `Info.plist` (`CFBundleDisplayName`).
 
 ## Repository layout and CI
-- **The git root is the parent directory; the Flutter project is the `cyd-app-kit/` subfolder.** The workflow therefore lives in the repo-root `.github/workflows/ci.yml`, uses `defaults.run.working-directory: cyd-app-kit`, and has `paths` filters (`cyd-app-kit/**`) so unrelated changes do not trigger it. If the project is ever moved to the repo root, drop the `working-directory` and the path prefix.
+- **Two nested git repos exist on disk.** The project repo (`Johnlakra/CYD_ID`, branch `claude/cyd-app-kit`, where all work is committed) is the Flutter project folder itself; its parent folder is a *separate* repo (`Johnlakra/cyd-app-kit`, one empty `Initial commit`, the project folder untracked inside it). The brief assumed the parent was the root; `git rev-parse --show-toplevel` in the project folder says otherwise. The workflow therefore lives in the project repo's `.github/workflows/ci.yml` with no `working-directory`. Owner: confirm which remote is the real one; if the parent repo is meant to be the root, the project folder must be added to it (or the nested `.git` removed) and the workflow moved with a `working-directory` and path filters.
 - CI steps: `flutter pub get`, `flutter analyze`, `dart format --output=none --set-exit-if-changed .`, `flutter test`. `analysis_options.yaml` excludes `android/**` and `ios/**` from analysis.
 
 ## Packages (resolved by `flutter pub add`; `pubspec.lock` committed)
