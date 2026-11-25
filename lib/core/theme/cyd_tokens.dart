@@ -36,6 +36,8 @@ class CydTokens extends ThemeExtension<CydTokens> {
     required this.toastBg,
     required this.toastFg,
     required this.tabActiveFg,
+    required this.toastAction,
+    required this.onDanger,
     required this.bannerDanger,
     required this.bannerOk,
     required this.bannerCod,
@@ -47,8 +49,6 @@ class CydTokens extends ThemeExtension<CydTokens> {
   static const Color accent = Color(0xFFE8B04B);
   static const Color onAccent = Color(0xFF0A0A0B);
   static const Color white = Color(0xFFFFFFFF);
-  static const Color badgeFg = Color(0xFFFFFFFF);
-  static const Color toastAction = Color(0xFFE8B04B);
 
   /// `0 16px 30px -12px rgba(232,176,75,.8)`: the one primary CTA per screen.
   static const List<BoxShadow> accentGlow = [
@@ -107,6 +107,13 @@ class CydTokens extends ThemeExtension<CydTokens> {
   final Color toastBg;
   final Color toastFg;
   final Color tabActiveFg;
+
+  /// Action text on the toast (gold on the dark toast, deep gold on the
+  /// light dark-theme toast).
+  final Color toastAction;
+
+  /// Text / glyphs on a `danger` fill (count badge, destructive buttons).
+  final Color onDanger;
   final Color bannerDanger;
   final Color bannerOk;
   final Color bannerCod;
@@ -140,7 +147,7 @@ class CydTokens extends ThemeExtension<CydTokens> {
     sunk: Color(0xFF101013),
     ink: Color(0xFFF4F1EA),
     mute: Color.fromRGBO(244, 241, 234, .6),
-    faint: Color.fromRGBO(244, 241, 234, .42),
+    faint: Color.fromRGBO(244, 241, 234, .5),
     line: Color.fromRGBO(255, 255, 255, .07),
     line2: Color.fromRGBO(255, 255, 255, .13),
     accSoft: Color.fromRGBO(232, 176, 75, .13),
@@ -164,6 +171,8 @@ class CydTokens extends ThemeExtension<CydTokens> {
     toastBg: Color(0xFFF4F1EA),
     toastFg: Color(0xFF0C0C0E),
     tabActiveFg: Color(0xFF141416),
+    toastAction: Color(0xFF7E5410),
+    onDanger: Color(0xFF0A0A0B),
     bannerDanger: Color.fromRGBO(255, 106, 85, .14),
     bannerOk: Color.fromRGBO(61, 214, 140, .14),
     bannerCod: Color.fromRGBO(187, 162, 255, .14),
@@ -196,7 +205,7 @@ class CydTokens extends ThemeExtension<CydTokens> {
     sunk: Color(0xFFF4F3F0),
     ink: Color(0xFF141416),
     mute: Color.fromRGBO(20, 20, 22, .6),
-    faint: Color.fromRGBO(20, 20, 22, .46),
+    faint: Color.fromRGBO(20, 20, 22, .6),
     line: Color.fromRGBO(20, 20, 22, .08),
     line2: Color.fromRGBO(20, 20, 22, .14),
     accSoft: Color.fromRGBO(232, 176, 75, .2),
@@ -225,6 +234,8 @@ class CydTokens extends ThemeExtension<CydTokens> {
     toastBg: Color(0xFF141416),
     toastFg: Color(0xFFFFFFFF),
     tabActiveFg: Color(0xFF141416),
+    toastAction: Color(0xFFE8B04B),
+    onDanger: Color(0xFFFFFFFF),
     bannerDanger: Color.fromRGBO(255, 106, 85, .12),
     bannerOk: Color.fromRGBO(61, 214, 140, .16),
     bannerCod: Color.fromRGBO(187, 162, 255, .2),
@@ -302,6 +313,8 @@ class CydTokens extends ThemeExtension<CydTokens> {
     toastBg: toastBg,
     toastFg: toastFg,
     tabActiveFg: tabActiveFg,
+    toastAction: toastAction,
+    onDanger: onDanger,
     bannerDanger: bannerDanger,
     bannerOk: bannerOk,
     bannerCod: bannerCod,

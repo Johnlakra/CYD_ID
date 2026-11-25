@@ -6,7 +6,7 @@ Read this first when resuming. Then read `CLAUDE.md`, `docs/09-IMPLEMENTATION-PL
 | Milestone | State |
 |---|---|
 | M0 Scaffold | ☑ done (2026-11-20, verified on device) |
-| M1 Design system & shell | ◐ **code complete, both reviews' fixes applied; three steps left** (below) |
+| M1 Design system & shell | ◐ **code complete, review fixes and contrast fixes committed; two steps left** (below) |
 | M2–M10 | not started |
 
 Branch `claude/cyd-app-kit`, pushed to `origin`. See `git log` for the head commit.
@@ -28,12 +28,7 @@ The owner directed the build to follow a new prototype, **design v2** (a Claude 
 - 46 goldens (dark/light, 390/360) tagged `golden`. CI: the ubuntu job runs `--exclude-tags golden`; a macOS job runs `--tags golden`. CI has not yet run on these commits.
 
 ## Left to finish M1
-1. **Contrast fixes (owner-approved, in progress, UNCOMMITTED in the working tree).** Files: `design/tokens.json`, `lib/core/theme/cyd_tokens.dart`, `lib/core/widgets/{app_bars,cyd_button,cyd_toast}.dart`, `test/core/theme/tokens_json_test.dart`, new `test/core/theme/contrast_test.dart`. Scope:
-   - The dark toast action uses `#7E5410`, via a `toastAction` token.
-   - Text on the dark red (badge, destructiveFilled, dialog destructive) is `#0A0A0B`, via an `onDanger` token. Light keeps white if it passes 4.5:1.
-   - Raise the `faint` alpha so 9–10 px labels pass 4.5:1 on bg and card in both themes.
-   - Add a contrast test, regenerate the goldens (`flutter test --tags golden --update-goldens`), and commit as `M1: contrast fixes per owner`.
-   - The work was interrupted part-way, so review the diff, finish it, and check it with analyze, format and test.
+1. ~~Contrast fixes~~: **done and pushed** (`M1: contrast fixes per owner`). New tokens `toastAction` and `onDanger`. `faint` is .5 in dark and .6 in light, so light faint equals mute (the only value that passes). `test/core/theme/contrast_test.dart` enforces 4.5:1 for these pairs, and the goldens are regenerated.
 2. **Re-run both reviewers** (`ui-fidelity-reviewer`, `flutter-code-reviewer`) on the fix commits. Every blocking and major finding from the first round was addressed in `35ed774`.
 3. **Owner visual sign-off** of the gallery on the phone, in both themes. Then tick M1 in the tracker.
 

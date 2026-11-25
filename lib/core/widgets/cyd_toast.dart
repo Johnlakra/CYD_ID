@@ -189,7 +189,7 @@ class _ToastViewState extends State<_ToastView>
                                 style: type.ui(
                                   13,
                                   weight: FontWeight.w700,
-                                  color: CydTokens.toastAction,
+                                  color: t.toastAction,
                                 ),
                               ),
                             ),
@@ -236,11 +236,7 @@ class CydToastBody extends StatelessWidget {
           if (actionLabel != null)
             Text(
               actionLabel!,
-              style: type.ui(
-                13,
-                weight: FontWeight.w700,
-                color: CydTokens.toastAction,
-              ),
+              style: type.ui(13, weight: FontWeight.w700, color: t.toastAction),
             ),
         ],
       ),

@@ -53,6 +53,8 @@ void main() {
       'toastBg': t.toastBg,
       'toastFg': t.toastFg,
       'tabActiveFg': t.tabActiveFg,
+      'toastAction': t.toastAction,
+      'onDanger': t.onDanger,
       'bannerDanger': t.bannerDanger,
       'bannerOk': t.bannerOk,
       'bannerCod': t.bannerCod,

@@ -117,10 +117,7 @@ class CydCountBadge extends StatelessWidget {
           widthFactor: 1,
           child: Text(
             count > 99 ? '99+' : '$count',
-            style: context.type.badge.copyWith(
-              color: CydTokens.badgeFg,
-              height: 1,
-            ),
+            style: context.type.badge.copyWith(color: t.onDanger, height: 1),
           ),
         ),
       ),

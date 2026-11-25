@@ -167,7 +167,7 @@ class _CydButtonState extends State<CydButton> {
       CydButtonVariant.primary => CydTokens.onAccent,
       CydButtonVariant.secondary => t.ink,
       CydButtonVariant.destructive => t.danger,
-      CydButtonVariant.destructiveFilled => CydTokens.white,
+      CydButtonVariant.destructiveFilled => t.onDanger,
       CydButtonVariant.text => t.accText,
     };
     final Color? fill = switch (v) {
