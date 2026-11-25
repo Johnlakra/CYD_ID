@@ -1,0 +1,31 @@
+/// Design-system widgets (doc 02 §9). Import this one file in features.
+library;
+
+export '../theme/cyd_layout.dart';
+export '../theme/cyd_tokens.dart';
+export '../theme/cyd_type.dart';
+export '../theme/status_styles.dart';
+export 'app_bars.dart';
+export 'async_list_view.dart';
+export 'copy_row.dart';
+export 'countdown_pill.dart';
+export 'cyd_avatar.dart';
+export 'cyd_banner.dart';
+export 'cyd_button.dart';
+export 'cyd_card.dart';
+export 'cyd_chip.dart';
+export 'cyd_chrome.dart';
+export 'cyd_controls.dart';
+export 'cyd_dialog.dart';
+export 'cyd_icons.dart';
+export 'cyd_pressable.dart';
+export 'cyd_scaffold.dart';
+export 'cyd_sheet.dart';
+export 'cyd_text_field.dart';
+export 'cyd_toast.dart';
+export 'photo_placeholder.dart';
+export 'price_text.dart';
+export 'section_label.dart';
+export 'skeleton.dart';
+export 'state_cards.dart';
+export 'status_chip.dart';

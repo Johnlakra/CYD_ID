@@ -18,6 +18,8 @@ class Strings {
   static const debugHealthTitle = 'Backend health';
   static const debugHealthLink = 'Backend health (debug)';
   static const debugBaseUrl = 'Base URL';
+  static const debugGalleryLink = 'Design gallery (debug)';
+  static const debugShellLink = 'Open app shell (debug)';
 
   // Placeholders (M0)
   static const splashTitle = 'CYD';
