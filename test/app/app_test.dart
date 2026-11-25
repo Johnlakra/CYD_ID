@@ -1,24 +1,33 @@
 import 'package:cyd_app/app/app.dart';
 import 'package:cyd_app/app/placeholder_screens.dart';
 import 'package:cyd_app/core/network/dio_provider.dart';
+import 'package:cyd_app/core/storage/prefs.dart';
 import 'package:cyd_app/core/strings.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/scope.dart';
 
-Widget _app(Dio dio) => testScope(
-  overrides: [dioProvider.overrideWithValue(dio)],
-  child: const CydApp(),
-);
+Future<Widget> _app(Dio dio) async {
+  SharedPreferences.setMockInitialValues({});
+  final prefs = await SharedPreferences.getInstance();
+  return testScope(
+    overrides: [
+      dioProvider.overrideWithValue(dio),
+      sharedPreferencesProvider.overrideWithValue(prefs),
+    ],
+    child: const CydApp(),
+  );
+}
 
 void main() {
   testWidgets('starts on splash, shows the DEV ribbon, opens login', (
     tester,
   ) async {
-    await tester.pumpWidget(_app(buildDio(baseUrl: 'http://test.local')));
+    await tester.pumpWidget(await _app(buildDio(baseUrl: 'http://test.local')));
     await tester.pumpAndSettle();
 
     expect(find.text(Strings.splashTitle), findsOneWidget);
@@ -40,7 +49,7 @@ void main() {
         'version': '1.0.0',
       }),
     );
-    await tester.pumpWidget(_app(dio));
+    await tester.pumpWidget(await _app(dio));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(Strings.debugHealthLink));
@@ -58,7 +67,7 @@ void main() {
       '/health',
       (s) => s.reply(500, {'success': false, 'message': 'boom'}),
     );
-    await tester.pumpWidget(_app(dio));
+    await tester.pumpWidget(await _app(dio));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(Strings.debugHealthLink));

@@ -3,16 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/config/env.dart';
 import '../core/strings.dart';
+import '../core/theme/cyd_layout.dart';
+import '../core/theme/theme_mode_controller.dart';
 import 'router.dart';
-
-/// Temporary theme: the real `CydTokens` ThemeExtension replaces it in M1.
-ThemeData _theme(Brightness b) => ThemeData(
-  useMaterial3: true,
-  colorScheme: ColorScheme.fromSeed(
-    seedColor: const Color(0xFFFFA51F), // saffron accent
-    brightness: b,
-  ),
-);
+import 'theme.dart';
 
 class CydApp extends ConsumerWidget {
   const CydApp({super.key});
@@ -22,16 +16,24 @@ class CydApp extends ConsumerWidget {
     return MaterialApp.router(
       title: Strings.appName,
       debugShowCheckedModeBanner: false,
-      theme: _theme(Brightness.light),
-      darkTheme: _theme(Brightness.dark),
+      theme: cydTheme(Brightness.light),
+      darkTheme: cydTheme(Brightness.dark),
+      themeMode: ref.watch(themeModeProvider),
       routerConfig: ref.watch(routerProvider),
-      builder: (context, child) => Env.isDev
-          ? Banner(
-              message: 'DEV',
-              location: BannerLocation.topEnd,
-              child: child ?? const SizedBox.shrink(),
-            )
-          : child ?? const SizedBox.shrink(),
+      builder: (context, child) {
+        // Honour the user's text size up to 1.3x without overflow (doc 02 §8).
+        final body = MediaQuery.withClampedTextScaling(
+          maxScaleFactor: CydLayout.maxTextScale,
+          child: child ?? const SizedBox.shrink(),
+        );
+        return Env.isDev
+            ? Banner(
+                message: 'DEV',
+                location: BannerLocation.topEnd,
+                child: body,
+              )
+            : body;
+      },
     );
   }
 }
