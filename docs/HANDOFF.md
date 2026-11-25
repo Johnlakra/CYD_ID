@@ -9,7 +9,7 @@ Read this first when resuming. Then read `CLAUDE.md`, `docs/09-IMPLEMENTATION-PL
 | M1 Design system & shell | ◐ **code complete, both reviews' fixes applied; three steps left** (below) |
 | M2–M10 | not started |
 
-Branch `claude/cyd-app-kit`, pushed to `origin`. Head commit `03d2bf9` (M1: doc 02 and CLAUDE.md follow design v2).
+Branch `claude/cyd-app-kit`, pushed to `origin`. See `git log` for the head commit.
 
 ## Big change this session: design v2
 The owner directed the build to follow a new prototype, **design v2** (a Claude Design canvas, 42 artboards):
@@ -34,7 +34,7 @@ The owner directed the build to follow a new prototype, **design v2** (a Claude 
    - Raise the `faint` alpha so 9–10 px labels pass 4.5:1 on bg and card in both themes.
    - Add a contrast test, regenerate the goldens (`flutter test --tags golden --update-goldens`), and commit as `M1: contrast fixes per owner`.
    - The work was interrupted part-way, so review the diff, finish it, and check it with analyze, format and test.
-2. **Re-run both reviewers** (`ui-fidelity-reviewer`, `flutter-code-reviewer`) on the fix commits. Every blocking and major finding from the first round was addressed in `3c7c811`.
+2. **Re-run both reviewers** (`ui-fidelity-reviewer`, `flutter-code-reviewer`) on the fix commits. Every blocking and major finding from the first round was addressed in `35ed774`.
 3. **Owner visual sign-off** of the gallery on the phone, in both themes. Then tick M1 in the tracker.
 
 ## Backend
