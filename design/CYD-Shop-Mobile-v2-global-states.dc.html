@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>ID-18 Global states</title>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Manrope:wght@400;500;600;700;800&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet"><style>body{margin:0}*{box-sizing:border-box}</style></helmet>
+<div style="width:390px;height:844px;overflow:hidden;background:{{ bg }};color:{{ ink }};font-family:Manrope,system-ui,sans-serif;padding:56px 20px 24px;display:flex;flex-direction:column;gap:18px">
+<div style="font:400 32px/1 Instrument Serif,Georgia,serif;letter-spacing:-.01em">Global states</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;color:{{ faint }}">1 · LOGIN BANNERS</div>
+<div role="alert" style="padding:12px 14px;border-radius:14px;border:1px solid {{ danger }};background:{{ dangerSoft }};font:600 13px/1.4 Manrope,system-ui,sans-serif;color:{{ danger }}">! Session expired. Please login again.</div>
+<div role="alert" style="padding:12px 14px;border-radius:14px;border:1px solid {{ danger }};background:{{ dangerSoft }};font:600 13px/1.4 Manrope,system-ui,sans-serif;color:{{ danger }}">! Your account is no longer active. Please contact CYD Office.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;color:{{ faint }}">2 · OFFLINE STRIP</div>
+<div style="height:28px;margin:0 -20px;display:flex;align-items:center;justify-content:center;background:{{ sunk }};border-top:1px solid {{ line }};border-bottom:1px solid {{ line }};font:500 10px/1 'DM Mono',monospace;letter-spacing:.1em;color:{{ mute }}">OFFLINE — SHOWING SAVED DATA</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;color:{{ faint }}">3 · ERROR CARD</div>
+<div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:24px 20px;border-radius:20px;border:1px solid {{ line }};background:{{ card }}"><div style="width:48px;height:48px;border-radius:50%;background:{{ dangerSoft }};display:flex;align-items:center;justify-content:center;font:400 22px/1 Instrument Serif,Georgia,serif;color:{{ danger }}">!</div><div style="font:700 15px/1.3 Manrope,system-ui,sans-serif">You're offline</div><div style="font:400 13px/1.5 Manrope,system-ui,sans-serif;color:{{ mute }}">Check your connection and try again.</div><button style="height:44px;padding:0 20px;border-radius:99px;border:1px solid {{ line2 }};background:transparent;color:{{ ink }};font:600 13px/1 Manrope,system-ui,sans-serif;cursor:pointer">Tap to retry</button></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font:500 9px/1 'DM Mono',monospace;letter-spacing:.16em;color:{{ faint }}">4 · TOAST</div>
+<div role="status" style="padding:14px 16px;border-radius:16px;background:{{ toastBg }};color:{{ toastFg }};font:600 13px/1.3 Manrope,system-ui,sans-serif">You don't have access to that screen.</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const d = this.props.dark ?? false;
+    return d
+      ? { bg: '#0C0C0E', card: '#151518', sunk: '#101012', ink: '#F5F5F0', mute: 'rgba(255,255,255,.58)', faint: 'rgba(255,255,255,.4)', line: 'rgba(255,255,255,.08)', line2: 'rgba(255,255,255,.14)', danger: '#FF6A55', dangerSoft: 'rgba(255,106,85,.12)', toastBg: '#F5F5F0', toastFg: '#0A0A0B' }
+      : { bg: '#FFFFFF', card: '#FFFFFF', sunk: '#E9E6DD', ink: '#0A0A0B', mute: 'rgba(10,10,11,.6)', faint: 'rgba(10,10,11,.45)', line: 'rgba(10,10,11,.09)', line2: 'rgba(10,10,11,.15)', danger: '#C8321F', dangerSoft: 'rgba(200,50,31,.1)', toastBg: '#0A0A0B', toastFg: '#F2F0EA' };
+  }
+}
+</script>
+</body>
+</html>
