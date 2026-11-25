@@ -328,12 +328,12 @@ final List<GallerySection> gallerySections = [
           onChanged: (_) {},
         ),
         _gap(),
-        Row(
+        Wrap(
+          spacing: 16,
+          runSpacing: 8,
           children: [
             QuantityStepper(value: 2, onChanged: (_) {}),
-            const SizedBox(width: 16),
             QuantityStepper(value: 1, compact: true, onChanged: (_) {}),
-            const SizedBox(width: 16),
             QuantityStepper(value: 5, max: 5, compact: true, onChanged: (_) {}),
           ],
         ),
@@ -417,13 +417,13 @@ final List<GallerySection> gallerySections = [
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SectionLabel('Avatars', trailing: '3 shown'),
-        Row(
+        const Row(
           children: [
-            const CydAvatar(initials: 'AJ'),
-            const SizedBox(width: 12),
-            const CydAvatar(initials: 'MS', size: 56, gold: true),
-            const SizedBox(width: 12),
-            const CydAvatar(initials: 'D', size: 52, hue: 28),
+            CydAvatar(initials: 'AJ'),
+            SizedBox(width: 12),
+            CydAvatar(initials: 'MS', size: 56, gold: true),
+            SizedBox(width: 12),
+            CydAvatar(initials: 'D', size: 52, hue: 28),
           ],
         ),
         _gap(20),

@@ -14,7 +14,6 @@ class CydToast {
   const CydToast._();
 
   static OverlayEntry? _entry;
-  static Timer? _timer;
 
   /// [stickyBar] raises it above a screen's sticky bottom bar. Without it the
   /// offset is 104 when the tab bar is on screen (see `CydChrome`) else 30.
@@ -39,6 +38,10 @@ class CydToast {
         actionLabel: actionLabel,
         bottom: bottom + MediaQuery.of(ctx).padding.bottom,
         tokens: tokens,
+        duration: actionLabel != null
+            ? const Duration(seconds: 5)
+            : const Duration(milliseconds: 2800),
+        onDismiss: dismiss,
         onAction: () {
           dismiss();
           onAction?.call();
@@ -47,20 +50,15 @@ class CydToast {
     );
     _entry = entry;
     overlay.insert(entry);
-    _timer = Timer(
-      actionLabel != null
-          ? const Duration(seconds: 5)
-          : const Duration(milliseconds: 2800),
-      dismiss,
-    );
   }
 
+  /// Removes the current toast, if any.
   static void dismiss() {
-    _timer?.cancel();
-    _timer = null;
-    _entry?.remove();
-    _entry?.dispose();
+    final e = _entry;
     _entry = null;
+    if (e == null) return;
+    e.remove();
+    e.dispose();
   }
 }
 
@@ -70,9 +68,13 @@ class _ToastView extends StatefulWidget {
     required this.actionLabel,
     required this.bottom,
     required this.tokens,
+    required this.duration,
+    required this.onDismiss,
     required this.onAction,
   });
 
+  final Duration duration;
+  final VoidCallback onDismiss;
   final String message;
   final String? actionLabel;
   final double bottom;
@@ -90,6 +92,14 @@ class _ToastViewState extends State<_ToastView>
     duration: const Duration(milliseconds: 300),
   );
   bool _started = false;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Owned by the view so it dies with the overlay (no stray timers).
+    _timer = Timer(widget.duration, widget.onDismiss);
+  }
 
   @override
   void didChangeDependencies() {
@@ -106,6 +116,7 @@ class _ToastViewState extends State<_ToastView>
 
   @override
   void dispose() {
+    _timer?.cancel();
     _c.dispose();
     super.dispose();
   }

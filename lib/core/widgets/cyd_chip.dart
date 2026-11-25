@@ -67,16 +67,18 @@ class CydFilterChip extends StatelessWidget {
       child: Container(
         height: height,
         padding: const EdgeInsets.symmetric(horizontal: 13),
-        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(99),
           border: bd == null ? null : Border.all(color: bd),
         ),
-        child: Text(
-          text,
-          maxLines: 1,
-          style: context.type.chip.copyWith(color: fg),
+        child: Center(
+          widthFactor: 1,
+          child: Text(
+            text,
+            maxLines: 1,
+            style: context.type.chip.copyWith(color: fg),
+          ),
         ),
       ),
     );

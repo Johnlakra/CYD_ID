@@ -76,7 +76,7 @@ class _CydPressableState extends State<CydPressable> {
             minWidth: widget.minSize,
             minHeight: widget.minSize,
           ),
-          child: body,
+          child: Center(widthFactor: 1, heightFactor: 1, child: body),
         ),
       ),
     );

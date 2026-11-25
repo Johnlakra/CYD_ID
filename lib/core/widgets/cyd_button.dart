@@ -225,7 +225,7 @@ class _CydButtonState extends State<CydButton> {
       height: isText ? null : s.height,
       constraints: BoxConstraints(minHeight: isText ? 44 : s.height),
       padding: EdgeInsets.symmetric(horizontal: isText ? 12 : widget.padding),
-      alignment: Alignment.center,
+      alignment: widget.expand ? Alignment.center : null,
       decoration: isText
           ? null
           : BoxDecoration(
@@ -249,7 +249,7 @@ class _CydButtonState extends State<CydButton> {
               ),
             )
           : null,
-      child: content,
+      child: widget.expand ? content : Center(widthFactor: 1, child: content),
     );
 
     return CydPressable(

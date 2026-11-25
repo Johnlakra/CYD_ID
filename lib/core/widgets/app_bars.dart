@@ -107,17 +107,19 @@ class CydCountBadge extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: t.danger,
           borderRadius: BorderRadius.circular(99),
           border: Border.all(color: ringColor ?? t.raised, width: 2),
         ),
-        child: Text(
-          count > 99 ? '99+' : '$count',
-          style: context.type.badge.copyWith(
-            color: CydTokens.badgeFg,
-            height: 1,
+        child: Center(
+          widthFactor: 1,
+          child: Text(
+            count > 99 ? '99+' : '$count',
+            style: context.type.badge.copyWith(
+              color: CydTokens.badgeFg,
+              height: 1,
+            ),
           ),
         ),
       ),
