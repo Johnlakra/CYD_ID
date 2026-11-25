@@ -39,7 +39,7 @@ Auth failures (all `401`, all `success:false`): `Access token required` (no/blan
 
 **Limits.** JSON/urlencoded body ≤ **10 MB** (`express.json({limit:'10mb'})`). Images are sent as base64 data URLs inside JSON (`data:image/(jpeg|jpg|png|gif|bmp|webp);base64,…`); per-image size limits are enforced in `utils/fileUpload.js` (see §3/§12 for the exact messages); the project documents **5 MB per image**. Resize on the client to ≤1600 px / ≤1 MB.
 
-**Rate limiting.** Only login endpoints (`POST /auth/login`, `POST /profile-holder/login`) are limited: **10 failed attempts per 15 min per `IP|lowercased username`**; successful logins do not count (any response ≥400, including 400 validation failures, does). The two login endpoints share **one** counter per `IP|username`. On exceed → `429 {success:false, message:'Too many failed login attempts. Please try again in 15 minutes.'}` (headers `RateLimit-*` draft-7). Other shop write endpoints have **no** HTTP rate limiting but have business limits (e.g. max open UPI orders).
+**Rate limiting.** Login endpoints (`POST /auth/login`, `POST /profile-holder/login`) and order chat `POST /shop/orders/:id/messages` (20/min per user, §11) are limited. Login: **10 failed attempts per 15 min per `IP|lowercased username`**; successful logins do not count (any response ≥400, including 400 validation failures, does). The two login endpoints share **one** counter per `IP|username`. On exceed → `429 {success:false, message:'Too many failed login attempts. Please try again in 15 minutes.'}` (draft-7 headers `RateLimit: limit=10, remaining=N, reset=S` and `RateLimit-Policy: 10;w=900`). Other endpoints have **no** HTTP rate limiting but have business limits (e.g. max open UPI orders).
 
 **Pagination** (where present): `?page=1&limit=…`; response `data.pagination` — shape per endpoint below.
 
@@ -57,7 +57,8 @@ Body `{ "username": string, "password": string }` — `username` may be a userna
 - 400 `Validation failed` + `errors:['Username or email is required','Password is required']` (either/both).
 - 401 `Invalid credentials` (unknown user, wrong password, or inactive user — indistinguishable).
 - 429 as §1.
-- 500 `Login failed`.
+- 500 `Login failed` (in development the body also carries `error`; never display it).
+- `username` is matched as sent (no trim; whitespace-only passes validation and returns 401). The app trims before sending. The 401 session-expiry handler must skip both login endpoints, because a wrong password is also a 401.
 
 ### POST /auth/register — admin only
 Creates any user (the old public registration was closed; there is no self sign-up). Body: `username` (3–50, `[a-zA-Z0-9_-]`), `email` (valid; the server **normalizes** it, e.g. lowercases), `password` (**min 6, must contain a lowercase, an uppercase and a digit**), optional `role` (`admin|user|profile_holder`, default `user`).
@@ -408,7 +409,7 @@ Query `after` (int message id; optional). Returns messages with `id > after`, ol
 ### POST /shop/orders/:id/messages
 Body `{ body: string }` (`Message is required` if not a string). The server **strips HTML tags** (`<…>`), trims, then: empty → `400 Message cannot be empty`; > 1000 chars → `400 Message is too long (max 1000 characters)`; read-only → `409 This conversation is closed`.
 201 → `data:{ message:{ id, sender_role, sender_user_id, sender_username, body, created_at } }`, message `Message sent`.
-**Rate limit:** 20 messages per minute per user (all orders) → `429 You are sending messages too quickly. Please wait a minute.` (`RateLimit-*` headers).
+**Rate limit:** 20 messages per minute per user (all orders) → `429 You are sending messages too quickly. Please wait a minute.` (draft-7 `RateLimit` and `RateLimit-Policy` headers).
 
 ### GET /shop/orders/:id/evidence
 Same access as chat. 200 → `data:{ evidence:[ { id, kind, created_at, uploader_user_id, uploader_username, url } ] }`, `kind` ∈ `payment_proof | refund_proof | other`. `url` is a **signed, private Cloudinary link valid for 10 minutes** — fetch the list when the screen opens and re-fetch if an image fails to load after ~10 min; never persist these URLs.

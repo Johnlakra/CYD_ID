@@ -102,6 +102,7 @@ Legend — **Decision**: *Backend* = follow the backend; *Mockup* = keep the moc
 | DB-78 | Cart note "Your cart stays on this device" | Doc 01: sign-out clears the user's cart | *Spec*: copy follows the sign-out rule | 01, 03 |
 | DB-79 | Product form allows removing all photos on edit | An empty `images[]` on `PUT` is ignored by the backend | *Backend*: form blocks removing the last photo on edit | 03 |
 | DB-80 | Product write uses rupees but reads return `price_paise` | Backend quirk (doc 05) | *Backend*: convert at the model boundary (paise ↔ rupees string); never float math | 05, 08 |
+| DB-81 | Doc 05 §1: only login is rate limited; headers `RateLimit-*`; doc 08: profiles page size "per backend"; login username assumed trimmed | Chat is also limited (20/min, `routes/orderRoutes.js:13-20`); draft-7 sends `RateLimit` + `RateLimit-Policy`; profiles default limit 10 (`profileController.js:217`); login does not trim the username (`middleware/validation.js:48-58`) | *Backend*: docs corrected (contract check 2026-11-25) | 05, 08 |
 
 ## How to use this file
 - Implementing a screen: read its spec section **and** the rows that cite it.

@@ -539,7 +539,7 @@ Present on `GET /profiles`, `GET /shop/shops`, `GET /shop/products` as `data.pag
 | `has_next` | `hasNext` | `bool` |
 | `has_prev` | `hasPrev` | `bool` |
 
-Query parameters: `page` (default 1), `limit` (default 20 for shops/products; profiles default per backend, app uses 25; products max 100).
+Query parameters: `page` (default 1), `limit` (default 20 for shops/products; profiles default 10 (backend), app sends 25; products max 100).
 A page holder in the app (`Paged<T> { items, pagination }`) is a client class, not a server shape.
 
 ---
