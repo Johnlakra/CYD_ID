@@ -4,15 +4,16 @@ import 'package:flutter/foundation.dart';
 /// URL may appear.
 ///
 /// ```
-/// flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 --dart-define=FLAVOR=dev
+/// flutter run --dart-define=API_BASE_URL=http://localhost:3000 --dart-define=FLAVOR=dev
 /// ```
 class Env {
   const Env._();
 
-  /// Backend base URL. Default targets the Android emulator's view of the host.
+  /// Backend base URL. Default targets the host machine. On a physical Android device run
+  /// `adb reverse tcp:3000 tcp:3000` first (emulator: use http://10.0.2.2:3000).
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000',
+    defaultValue: 'http://localhost:3000',
   );
 
   /// `dev` or `prod`.

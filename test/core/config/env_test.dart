@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('dev defaults', () {
-    expect(Env.apiBaseUrl, 'http://10.0.2.2:3000');
+    expect(Env.apiBaseUrl, 'http://localhost:3000');
     expect(Env.flavor, 'dev');
     expect(Env.isDev, isTrue);
   });
