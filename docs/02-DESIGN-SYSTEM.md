@@ -1,8 +1,25 @@
 # 02 — CYD Design System
 
-Source of truth for visuals: the Claude Design mockup `design/CYD Shop Mobile.dc.html` (theme block + component markup). Machine-readable values: `design/tokens.json`. This document explains them, adds the components the mockup does not show (P2P payment, chat, evidence, ID cards) and states the rules an implementer must follow.
+Source of truth for visuals: **design v2**, the prototype `design/CYD-Shop-Mobile-v2.dc.html` (theme object `th`, status map `ST`, component markup), summarised in `design/DESIGN-OVERVIEW-v2.md`. The original mockup `design/CYD Shop Mobile.dc.html` is historical. Machine-readable values: `design/tokens.json`. This document explains them, adds the components the mockup does not show (P2P payment, chat, evidence, ID cards) and states the rules an implementer must follow.
 
 Provenance legend used throughout: **[Mockup]** = measured from the mockup markup; **[Designed here]** = extension designed for this kit in the same visual language (no mockup artboard exists); **[Illustrative]** = Dart sketch, not compiled or run.
+
+
+> ### Design v2 overrides (2026-11-25, owner-approved): read this first
+> Where this section conflicts with the rest of this document, this section wins. Structure, behaviour, the four states, motion and accessibility below still apply. Exact values are in `design/tokens.json` and `lib/core/theme/`.
+> 1. **Fonts:** Instrument Serif (display, prices, initials; italic gold accent words) replaces Anton, and Manrope replaces Archivo. DM Mono stays. All three are bundled, not fetched at runtime. The serif ladder is 50 (hero), 46, 39, 34, 32, 30, 27 (dialog and sheet title), 25 (sub-screen title), 22, 18. Where §4 says "Anton uppercase", read serif in sentence case. Instrument Serif has no ₹ glyph, so ₹ falls back to Manrope.
+> 2. **Accent:** gold `#E8B04B` replaces saffron `#FFA51F`. accText is `#7E5410` in light and `#F0C77A` in dark. onAccent is `#0A0A0B`.
+> 3. **Backgrounds:** light (the primary design) is `#FFFFFF` with a cool top gradient; dark is `#0C0C0E` with a gold radial glow at the top.
+> 4. **Cards** have 24 px corners, a 1 px hairline and a soft lifted shadow. Inputs have no shadow, except the login password field.
+> 5. **Buttons:** primary is a 56 dp gold pill in Manrope 700 15 with a glow and a 1 px top highlight, and is disabled at opacity .4. Secondary is a 50 dp outlined pill. Destructive buttons are pills. Dialog buttons are 48 dp with radius 14, and the retry button is 44 dp with radius 12.
+> 6. **Tab bar (§9.19):** a frosted capsule (blur 22, `tabbg`, `line2` border, card shadow) holding five icon-only 54 dp circles with gap 6 and padding 7. The active tab is a gold circle with a glow and a `#141416` icon. The badge is 17 dp with a 2 px `raised` ring. There are no letter marks and no bottom gradient. Each tab keeps its semantic label. The first tab is **My Profile** (holder) or **Profiles** (admin/manager). Content bottom padding is 110.
+> 7. **Toast** background is `ink`. **Banners** have danger, ok, cod and accent tints. Login errors use a bordered one-line danger banner with a leading "!".
+> 8. **Empty and error cards:** a dashed `sunk` card, a 56 dp serif glyph tile, and a gold "Tap to retry" button. The **offline strip** is 28 dp, `sunk`, with DM Mono 10 "OFFLINE — SHOWING SAVED DATA".
+> 9. **Photo placeholder:** a gradient frame with an image icon and a mono caption. Avatars show serif initials until a photo exists.
+> 10. **Status chips** use Material icon glyphs plus text, never colour alone. Added keys: card validity, level, role and dispute states.
+> 11. **Copy row:** the label sits outside the card in DM Mono 10. The value is serif 27 (UPI ID) or mono 15 (note), with a trailing "Copy" text button.
+> 12. **Contrast:** v2 values that failed 4.5:1 are adjusted: the dark toast action, text on the dark red, and the `faint` alpha (see tokens.json).
+> 13. **Not yet built** (later milestones): timeline stepper, chat bubbles, evidence thumbnail, QR card, product card, key/value rows and address cards (§9.13, §9.23–9.26, §9.30–9.31). Build them in v2 style.
 
 ---
 

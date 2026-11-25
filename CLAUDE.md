@@ -19,7 +19,7 @@ The full specification is in `docs/`. Read `docs/00-OVERVIEW.md` first.
 4. **No unverified claims about payments.** The platform never holds money: buyers pay sellers directly by UPI and enter the UTR; sellers confirm.
 5. **Cart is client-side** (no cart API); revalidate with `POST /shop/products/lookup`.
 6. **Write names differ from read names for profiles**: send `father_name`, `mother_name`, `date_of_birth`; read `father`, `mother`, `dob`. Always go through the model's `toRequest()`/`fromJson()`.
-7. **Design tokens only.** Colours/typography/spacing come from `CydTokens` (`design/tokens.json`); no hard-coded hex or font sizes in screens. Fonts: Anton (display), Archivo (UI), DM Mono (labels). Accent saffron `#FFA51F`. Dark and light are both first-class.
+7. **Design tokens only.** Colours/typography/spacing come from `CydTokens` (`design/tokens.json`); no hard-coded hex or font sizes in screens. Fonts (design v2, bundled): Instrument Serif (display), Manrope (UI), DM Mono (labels). Accent gold `#E8B04B` (owner-confirmed 2026-11-25). Text meets 4.5:1 contrast. Dark and light are both first-class.
 8. **Four states everywhere**: loading skeleton, empty, error with retry, data. Mutations disable their button; no double-submit.
 9. **Widgets never call `dio`.** Layering: presentation → application (Riverpod) → data (repositories) → network.
 10. **Security/privacy**: tokens only in secure storage; never log tokens, passwords, UTRs, base64 or photos; release builds are HTTPS-only; sign-out wipes personal caches, the user's cart and wishlist.
