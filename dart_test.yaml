@@ -1,0 +1,4 @@
+tags:
+  # Pixel goldens are generated on macOS; Linux CI excludes them
+  # (`flutter test --exclude-tags golden`) and a macOS job runs them.
+  golden:

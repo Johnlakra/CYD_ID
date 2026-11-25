@@ -6,10 +6,12 @@ import 'app/app.dart';
 import 'core/config/env.dart';
 import 'core/config/riverpod_config.dart';
 import 'core/storage/prefs.dart';
+import 'core/theme/font_licenses.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Env.assertReleaseConfig();
+  registerFontLicenses();
   final prefs = await SharedPreferences.getInstance();
   runApp(
     ProviderScope(

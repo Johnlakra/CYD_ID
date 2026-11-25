@@ -36,6 +36,10 @@ class CydPathIcon extends StatelessWidget {
   final Color? color;
   final double strokeWidth;
 
+  /// Parsed paths are immutable once built; parse each icon once.
+  static final Map<String, Path> _cache = {};
+  static Path _parsed(String d) => _cache.putIfAbsent(d, () => parseSvgPath(d));
+
   @override
   Widget build(BuildContext context) {
     final c = color ?? IconTheme.of(context).color ?? context.tokens.ink;
@@ -44,7 +48,7 @@ class CydPathIcon extends StatelessWidget {
         width: size,
         height: size,
         child: CustomPaint(
-          painter: _PathPainter(parseSvgPath(pathData), c, strokeWidth),
+          painter: _PathPainter(pathData, _parsed(pathData), c, strokeWidth),
         ),
       ),
     );
@@ -52,7 +56,8 @@ class CydPathIcon extends StatelessWidget {
 }
 
 class _PathPainter extends CustomPainter {
-  _PathPainter(this.path, this.color, this.stroke);
+  _PathPainter(this.data, this.path, this.color, this.stroke);
+  final String data;
   final Path path;
   final Color color;
   final double stroke;
@@ -73,7 +78,7 @@ class _PathPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PathPainter old) =>
-      old.color != color || old.stroke != stroke || old.path != path;
+      old.color != color || old.stroke != stroke || old.data != data;
 }
 
 /// The glyph of a status chip as a small icon (icons render identically on

@@ -72,6 +72,10 @@ flutter:
   assets:
     - assets/idcard/
     - assets/data/
+    - assets/fonts/OFL-DMMono.txt
+    - assets/fonts/OFL-Gafata.txt
+    - assets/fonts/OFL-InstrumentSerif.txt
+    - assets/fonts/OFL-Manrope.txt
 
   fonts:
     - family: Gafata

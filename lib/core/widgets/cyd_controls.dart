@@ -100,15 +100,21 @@ class _RadioDot extends StatelessWidget {
 /// Switch: 44x26 pill, 22 px white knob, 200 ms. Off = line2 track, on =
 /// accent track. Prefer [CydSwitchRow] for settings.
 class CydSwitch extends StatelessWidget {
-  const CydSwitch({super.key, required this.value, required this.onChanged});
+  const CydSwitch({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.semanticLabel,
+  });
 
   final bool value;
   final ValueChanged<bool>? onChanged;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
-    return AnimatedContainer(
+    final track = AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       width: 44,
       height: 26,
@@ -124,6 +130,21 @@ class CydSwitch extends StatelessWidget {
         decoration: const BoxDecoration(
           color: CydTokens.white,
           shape: BoxShape.circle,
+        ),
+      ),
+    );
+    return Semantics(
+      toggled: value,
+      enabled: onChanged != null,
+      label: semanticLabel,
+      onTap: onChanged == null ? null : () => onChanged!(!value),
+      excludeSemantics: true,
+      child: HitSlop(
+        minSize: 44,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onChanged == null ? null : () => onChanged!(!value),
+          child: track,
         ),
       ),
     );
@@ -204,7 +225,6 @@ class QuantityStepper extends StatelessWidget {
       child: CydPressable(
         semanticLabel: label,
         excludeChildSemantics: true,
-        minSize: compact ? 34 : 44,
         onTap: on ? () => onChanged!(next) : null,
         child: SizedBox(
           width: bw,
@@ -213,7 +233,7 @@ class QuantityStepper extends StatelessWidget {
         ),
       ),
     );
-    return Container(
+    final box = Container(
       height: h,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(compact ? 10 : 14),
@@ -243,5 +263,8 @@ class QuantityStepper extends StatelessWidget {
         ],
       ),
     );
+    // The compact (cart) stepper is smaller than a finger: widen its hit area
+    // as a whole so the 32 dp buttons stay easy to hit.
+    return compact ? HitSlop(minSize: 44, child: box) : box;
   }
 }

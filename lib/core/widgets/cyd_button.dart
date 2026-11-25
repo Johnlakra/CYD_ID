@@ -102,7 +102,9 @@ class CydButton extends StatefulWidget {
   final String label;
 
   /// `null` = disabled. May return a Future: the button stays busy until it
-  /// completes.
+  /// completes. If the future throws, the button re-enables and the error is
+  /// reported with `FlutterError.reportError`; handle expected failures inside
+  /// the callback (the caller owns error UX).
   final FutureOr<void> Function()? onPressed;
   final CydButtonVariant variant;
   final CydButtonSize size;
@@ -136,6 +138,17 @@ class _CydButtonState extends State<CydButton> {
       setState(() => _busy = true);
       try {
         await r;
+      } catch (error, stack) {
+        // Callers own error UX (toast, inline message); the button only
+        // re-enables and reports so the failure is never silently lost.
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: error,
+            stack: stack,
+            library: 'cyd_button',
+            context: ErrorDescription('while running a button action'),
+          ),
+        );
       } finally {
         if (mounted) setState(() => _busy = false);
       }
@@ -173,7 +186,7 @@ class _CydButtonState extends State<CydButton> {
         enabled &&
         !_loading;
     final disabledOpacity = switch (v) {
-      CydButtonVariant.primary => .35,
+      CydButtonVariant.primary => .4,
       CydButtonVariant.destructiveFilled => .4,
       _ => .4,
     };
@@ -240,10 +253,10 @@ class _CydButtonState extends State<CydButton> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: const [
+                colors: [
                   CydTokens.accentHighlight,
-                  Color(0x00FFFFFF),
-                  Color(0x00FFFFFF),
+                  CydTokens.accentHighlight.withValues(alpha: 0),
+                  CydTokens.accentHighlight.withValues(alpha: 0),
                 ],
                 stops: [0, 1 / s.height, 1],
               ),

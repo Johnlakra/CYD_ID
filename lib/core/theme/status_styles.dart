@@ -27,6 +27,7 @@ class CydStatusStyle {
     required this.darkFg,
     required this.lightFg,
     required this.scope,
+    this.lightBgAlpha,
   });
 
   /// Label; `{n}` is replaced by the day count (card validity) and `N` by
@@ -37,13 +38,19 @@ class CydStatusStyle {
   final Color lightFg;
 
   /// `order.status`, `order.payment_status`, `shop.status`,
-  /// `product.status`, `product.stock` or `idcard.validity`.
+  /// `product.status`, `product.stock`, `idcard.validity`,
+  /// `dispute.status`, `profile.level` or `user.role`.
   final String scope;
+
+  /// Light-theme background alpha override (low stock is .22).
+  final double? lightBgAlpha;
 
   Color fg(Brightness b) => b == Brightness.dark ? darkFg : lightFg;
 
   /// Chip background: the dark foreground at .14 (dark) / .2 (light) alpha.
-  Color bg(Brightness b, double alpha) => darkFg.withValues(alpha: alpha);
+  Color bg(Brightness b, double alpha) => darkFg.withValues(
+    alpha: b == Brightness.light ? (lightBgAlpha ?? alpha) : alpha,
+  );
 }
 
 /// Status table keyed by the server value (order status, payment status,
@@ -251,6 +258,7 @@ const Map<String, CydStatusStyle> cydStatusStyles = {
     darkFg: Color(0xFFFFC53D),
     lightFg: Color(0xFF8A5A00),
     scope: 'product.stock',
+    lightBgAlpha: .22,
   ),
   'stock_ok': CydStatusStyle(
     label: 'In stock',
@@ -258,6 +266,69 @@ const Map<String, CydStatusStyle> cydStatusStyles = {
     darkFg: Color(0xFF3DD68C),
     lightFg: Color(0xFF1B7A3A),
     scope: 'product.stock',
+  ),
+  'p_expired': CydStatusStyle(
+    label: 'Expired',
+    glyph: StatusGlyph.alert,
+    darkFg: Color(0xFFFF6A55),
+    lightFg: Color(0xFFB82A18),
+    scope: 'order.payment_status',
+  ),
+  'd_open': CydStatusStyle(
+    label: 'Open',
+    glyph: StatusGlyph.alert,
+    darkFg: Color(0xFFFF6A55),
+    lightFg: Color(0xFFB82A18),
+    scope: 'dispute.status',
+  ),
+  'd_resolved': CydStatusStyle(
+    label: 'Resolved',
+    glyph: StatusGlyph.check,
+    darkFg: Color(0xFF3DD68C),
+    lightFg: Color(0xFF1B7A3A),
+    scope: 'dispute.status',
+  ),
+  'lvl_parish': CydStatusStyle(
+    label: 'Parish',
+    glyph: StatusGlyph.dot,
+    darkFg: Color(0xFF3DD68C),
+    lightFg: Color(0xFF1B7A3A),
+    scope: 'profile.level',
+  ),
+  'lvl_deanery': CydStatusStyle(
+    label: 'Deanery',
+    glyph: StatusGlyph.dot,
+    darkFg: Color(0xFFFFC53D),
+    lightFg: Color(0xFF8A5A00),
+    scope: 'profile.level',
+  ),
+  'lvl_dexco': CydStatusStyle(
+    label: 'Dexco',
+    glyph: StatusGlyph.dot,
+    darkFg: Color(0xFF7CB2FF),
+    lightFg: Color(0xFF1F5FC4),
+    scope: 'profile.level',
+  ),
+  'role_holder': CydStatusStyle(
+    label: 'Profile holder',
+    glyph: StatusGlyph.dot,
+    darkFg: Color(0xFFFFB547),
+    lightFg: Color(0xFFA35400),
+    scope: 'user.role',
+  ),
+  'role_admin': CydStatusStyle(
+    label: 'Administrator',
+    glyph: StatusGlyph.dot,
+    darkFg: Color(0xFFFFB547),
+    lightFg: Color(0xFFA35400),
+    scope: 'user.role',
+  ),
+  'role_user': CydStatusStyle(
+    label: 'Standard user',
+    glyph: StatusGlyph.dot,
+    darkFg: Color(0xFFFFB547),
+    lightFg: Color(0xFFA35400),
+    scope: 'user.role',
   ),
 };
 

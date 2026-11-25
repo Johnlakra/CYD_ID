@@ -50,7 +50,6 @@ GoRouter buildRouter({String initialLocation = Routes.splash}) {
         ),
         GoRoute(
           path: Routes.debugGallery,
-          parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => const GalleryScreen(),
         ),
       ],

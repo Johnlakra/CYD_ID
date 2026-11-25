@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../network/api_exception.dart';
+import '../strings.dart';
 import '../theme/cyd_tokens.dart';
 import '../theme/cyd_type.dart';
 import 'cyd_button.dart';
@@ -13,7 +15,8 @@ import 'cyd_sheet.dart';
 /// "Not now", "Keep it" for delete flows). [onConfirm] may be async: the
 /// confirm button shows a spinner, the dialog cannot be dismissed meanwhile
 /// and it closes with `true` when the future completes. If it throws, the
-/// dialog stays open and the error propagates to the caller's zone.
+/// dialog stays open, re-enables and shows the error under the body
+/// (`ApiException.message`, else the generic message).
 Future<bool?> showCydDialog(
   BuildContext context, {
   required String title,
@@ -75,12 +78,22 @@ class CydDialog extends StatefulWidget {
 
 class _CydDialogState extends State<CydDialog> {
   bool _busy = false;
+  String? _error;
 
   Future<void> _confirm() async {
-    setState(() => _busy = true);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
     try {
       await widget.onConfirm?.call();
       if (mounted) Navigator.of(context, rootNavigator: true).pop(true);
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () => _error = e is ApiException ? e.message : Strings.unknownError,
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -116,6 +129,13 @@ class _CydDialogState extends State<CydDialog> {
                     Text(widget.title, style: type.sheetTitle),
                     const SizedBox(height: 10),
                     Text(widget.body, style: type.body),
+                    if (_error != null) ...[
+                      const SizedBox(height: 12),
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(_error!, style: type.error),
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     Row(
                       children: [

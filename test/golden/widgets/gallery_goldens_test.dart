@@ -1,3 +1,6 @@
+@Tags(['golden'])
+library;
+
 import 'package:cyd_app/app/debug/gallery_sections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

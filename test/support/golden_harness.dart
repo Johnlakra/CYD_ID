@@ -16,6 +16,11 @@ Future<Finder> pumpGolden(
   double textScale = 1,
   EdgeInsets padding = const EdgeInsets.all(20),
 }) async {
+  // flutter_test turns shadows off by default, which hides the card shadows
+  // and the gold glows; render them in goldens.
+  final oldShadows = debugDisableShadows;
+  debugDisableShadows = false;
+  addTearDown(() => debugDisableShadows = oldShadows);
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = Size(width, 4000);
   addTearDown(tester.view.reset);

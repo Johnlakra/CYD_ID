@@ -28,6 +28,7 @@ class CydBackButton extends StatelessWidget {
           shape: BoxShape.circle,
           color: hero ? t.card : Colors.transparent,
           border: hero ? null : Border.all(color: t.line2),
+          boxShadow: hero ? t.shadow : null,
         ),
         child: Icon(Icons.arrow_back, size: 18, color: t.ink),
       ),

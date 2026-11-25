@@ -34,6 +34,9 @@ class CydTextField extends StatefulWidget {
     this.textStyle,
     this.height,
     this.autofocus = false,
+    this.shadow = false,
+    this.borderColor,
+    this.borderWidth = 1,
   });
 
   final String? label;
@@ -61,6 +64,13 @@ class CydTextField extends StatefulWidget {
   final TextStyle? textStyle;
   final double? height;
   final bool autofocus;
+
+  /// Lifted shadow (only the login password field has one in the design).
+  final bool shadow;
+
+  /// Overrides the state-driven border colour (UTR field).
+  final Color? borderColor;
+  final double borderWidth;
 
   @override
   State<CydTextField> createState() => _CydTextFieldState();
@@ -91,11 +101,13 @@ class _CydTextFieldState extends State<CydTextField> {
     final type = context.type;
     final hasError = widget.errorText != null && widget.errorText!.isNotEmpty;
     final multi = widget.maxLines > 1;
-    final borderColor = hasError
-        ? t.danger
-        : _focus.hasFocus
-        ? CydTokens.accent
-        : t.line2;
+    final borderColor =
+        widget.borderColor ??
+        (hasError
+            ? t.danger
+            : _focus.hasFocus
+            ? CydTokens.accent
+            : t.line2);
     final style = (widget.textStyle ?? type.inputText).copyWith(
       color: widget.enabled ? t.ink : t.mute,
     );
@@ -128,8 +140,8 @@ class _CydTextFieldState extends State<CydTextField> {
       decoration: BoxDecoration(
         color: widget.enabled ? t.card : t.sunk,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor),
-        boxShadow: widget.enabled ? t.shadow : null,
+        border: Border.all(color: borderColor, width: widget.borderWidth),
+        boxShadow: widget.enabled && widget.shadow ? t.shadow : null,
       ),
       padding: EdgeInsets.only(
         left: 14,
@@ -320,7 +332,7 @@ class CydUtrField extends StatelessWidget {
     this.errorText,
     this.onChanged,
     this.enabled = true,
-    this.label = 'UPI reference (UTR)',
+    this.label = 'UPI Ref No (12 digits)',
     this.helper =
         '12-digit UPI Ref No (not the Transaction ID). Find it in your UPI '
         'app under the payment details.',
@@ -344,14 +356,25 @@ class CydUtrField extends StatelessWidget {
           label: label,
           controller: controller,
           enabled: enabled,
-          height: 56,
+          height: 50,
+          borderWidth: 1.5,
+          borderColor: errorText != null
+              ? t.danger
+              : v.text.isEmpty
+              ? t.line
+              : CydTokens.accent,
           hint: '0000 0000 0000',
           helper: helper,
           errorText: errorText,
           keyboardType: TextInputType.number,
           inputFormatters: [_UtrFormatter()],
           onChanged: onChanged,
-          textStyle: context.type.mono(18, color: t.ink, tracking: .08),
+          textStyle: context.type.mono(
+            16,
+            color: t.ink,
+            tracking: .06,
+            height: 1,
+          ),
           suffix: valid
               ? Padding(
                   padding: const EdgeInsets.only(right: 10),

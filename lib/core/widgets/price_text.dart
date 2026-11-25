@@ -23,9 +23,9 @@ class PriceText extends StatelessWidget {
   final TextStyle? style;
   final bool showDiscount;
 
-  /// `round((1 - price/mrp) * 100)` with integer maths.
+  /// `round((1 - price/mrp) * 100)` with integer maths (halves round up).
   static int discountPercent(int paise, int comparePaise) =>
-      ((comparePaise - paise) * 100 / comparePaise).round();
+      ((comparePaise - paise) * 200 + comparePaise) ~/ (2 * comparePaise);
 
   @override
   Widget build(BuildContext context) {

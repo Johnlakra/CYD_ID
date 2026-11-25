@@ -78,7 +78,7 @@ class CydSheet extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             border: Border(top: BorderSide(color: t.line2)),
           ),
-          padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + mq.padding.bottom),
+          padding: EdgeInsets.fromLTRB(20, 12, 20, 30 + mq.padding.bottom),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

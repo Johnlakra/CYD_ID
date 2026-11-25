@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cyd_app/core/network/api_exception.dart';
+import 'package:cyd_app/core/strings.dart';
 import 'package:cyd_app/core/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,7 +27,7 @@ void main() {
       final handle = tester.ensureSemantics();
       await pumpThemed(tester, const CydButton(label: 'Go', onPressed: null));
       expect(
-        tester.getSemantics(find.byType(CydButton)),
+        tester.getSemantics(find.bySemanticsLabel('Go')),
         matchesSemantics(label: 'Go', isButton: true, hasEnabledState: true),
       );
       handle.dispose();
@@ -155,6 +156,14 @@ void main() {
     test('discountPercent rounds', () {
       expect(PriceText.discountPercent(124500, 149900), 17);
       expect(PriceText.discountPercent(50, 100), 50);
+      // Half rounds up; 1/3 and 2/3 round to nearest.
+      expect(PriceText.discountPercent(995, 1000), 1);
+      expect(PriceText.discountPercent(2, 3), 33);
+      expect(PriceText.discountPercent(1, 3), 67);
+      expect(PriceText.discountPercent(0, 1000), 100);
+      // Large paise values stay exact (no float).
+      expect(PriceText.discountPercent(990000000, 1000000000), 1);
+      expect(PriceText.discountPercent(999999990, 1000000000), 0);
     });
   });
 
@@ -283,7 +292,7 @@ void main() {
       tester,
     ) async {
       await pumpThemed(tester, const CopyRow(label: 'Amount', value: '₹10.00'));
-      expect(find.bySemanticsLabel('Copy Amount'), findsOneWidget);
+      expect(find.bySemanticsLabel('Amount ₹10.00, copy'), findsOneWidget);
     });
 
     testWidgets('a new toast replaces the old; action extends to 5 s', (
@@ -443,6 +452,84 @@ void main() {
     });
   });
 
+  group('AsyncListView virtualisation', () {
+    testWidgets('builds only visible items and keeps header and footer', (
+      tester,
+    ) async {
+      final built = <int>{};
+      await pumpThemed(
+        tester,
+        AsyncListView<int>(
+          value: AsyncData(List.generate(500, (i) => i)),
+          empty: const SizedBox(),
+          onRetry: () {},
+          header: const Text('HEAD'),
+          footer: const Text('FOOT'),
+          itemBuilder: (c, item, i) {
+            built.add(item);
+            return SizedBox(height: 60, child: Text('item $item'));
+          },
+        ),
+      );
+      expect(find.text('HEAD'), findsOneWidget);
+      expect(built.length, lessThan(40));
+      await tester.dragUntilVisible(
+        find.text('FOOT'),
+        find.byType(ListView),
+        const Offset(0, -2000),
+        maxIteration: 200,
+      );
+      expect(find.text('FOOT'), findsOneWidget);
+      expect(find.text('item 499'), findsOneWidget);
+    });
+
+    testWidgets('scroll position survives the offline strip toggling', (
+      tester,
+    ) async {
+      var calls = 0;
+      final provider = FutureProvider<List<int>>((ref) async {
+        calls++;
+        if (calls > 1) throw const ApiException.offline();
+        return List.generate(100, (i) => i);
+      });
+      late WidgetRef widgetRef;
+      await pumpThemed(
+        tester,
+        ProviderScope(
+          retry: (_, _) => null,
+          child: Consumer(
+            builder: (context, ref, _) {
+              widgetRef = ref;
+              return AsyncListView<int>(
+                value: ref.watch(provider),
+                empty: const SizedBox(),
+                onRetry: () {},
+                itemBuilder: (c, item, i) =>
+                    SizedBox(height: 60, child: Text('item $item')),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      await tester.drag(find.byType(ListView), const Offset(0, -600));
+      await tester.pump();
+      double offset() => tester
+          .state<ScrollableState>(find.byType(Scrollable))
+          .position
+          .pixels;
+      final before = offset();
+      expect(before, greaterThan(0));
+
+      widgetRef.invalidate(provider);
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(OfflineStrip), findsOneWidget);
+      expect(offset(), before);
+    });
+  });
+
   group('CydTextField', () {
     testWidgets('shows the label upper-cased and the error', (tester) async {
       await pumpThemed(
@@ -589,6 +676,96 @@ void main() {
     });
   });
 
+  group('throw paths', () {
+    testWidgets('dialog shows the ApiException message and re-enables', (
+      tester,
+    ) async {
+      late BuildContext ctx;
+      await pumpThemed(
+        tester,
+        Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      );
+      var n = 0;
+      unawaited(
+        showCydDialog(
+          ctx,
+          title: 'Delete?',
+          body: 'Body',
+          confirmLabel: 'Delete',
+          onConfirm: () async {
+            n++;
+            throw const ApiException(
+              kind: ApiErrorKind.conflict,
+              message: 'Already deleted',
+            );
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+      expect(find.text('Already deleted'), findsOneWidget);
+      expect(find.text('Delete?'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+      expect(n, 2);
+    });
+
+    testWidgets('dialog falls back to the generic message', (tester) async {
+      late BuildContext ctx;
+      await pumpThemed(
+        tester,
+        Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      );
+      unawaited(
+        showCydDialog(
+          ctx,
+          title: 'T',
+          body: 'B',
+          confirmLabel: 'Go',
+          onConfirm: () => throw StateError('x'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Go'));
+      await tester.pumpAndSettle();
+      expect(find.text(Strings.unknownError), findsOneWidget);
+    });
+
+    testWidgets('button reports a throwing action and re-enables', (
+      tester,
+    ) async {
+      final reported = <Object>[];
+      final old = FlutterError.onError;
+      FlutterError.onError = (d) => reported.add(d.exception);
+      addTearDown(() => FlutterError.onError = old);
+      await pumpThemed(
+        tester,
+        CydButton(label: 'Go', onPressed: () async => throw StateError('boom')),
+      );
+      await tester.tap(find.text('Go'));
+      await tester.pump();
+      await tester.pump();
+      expect(reported, hasLength(1));
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      await tester.tap(find.text('Go'));
+      await tester.pump();
+      await tester.pump();
+      expect(reported, hasLength(2));
+    });
+  });
+
   group('accessibility', () {
     testWidgets('icon-only controls carry semantic labels', (tester) async {
       await pumpThemed(
@@ -609,14 +786,77 @@ void main() {
       expect(find.bySemanticsLabel('Cart'), findsOneWidget);
     });
 
-    testWidgets('tappable widgets meet the 44 dp minimum', (tester) async {
+    testWidgets('small visuals still have a 44 dp hit area', (tester) async {
+      var chip = 0;
+      var step = 0;
+      var sw = false;
+      await pumpThemed(
+        tester,
+        Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              CydFilterChip(label: 'Any', selected: true, onTap: () => chip++),
+              const SizedBox(height: 20),
+              QuantityStepper(
+                value: 2,
+                compact: true,
+                onChanged: (_) => step++,
+              ),
+              const SizedBox(height: 20),
+              CydSwitch(value: sw, onChanged: (v) => sw = v),
+            ],
+          ),
+        ),
+      );
+      // Layout keeps the prototype's 36 / 34 / 26 dp ...
+      expect(tester.getSize(find.byType(CydFilterChip)).height, 36);
+      expect(tester.getSize(find.byType(QuantityStepper)).height, 34);
+      // ... but taps 4 dp outside the visual still land.
+      final chipRect = tester.getRect(find.byType(CydFilterChip));
+      await tester.tapAt(chipRect.topCenter - const Offset(0, 3));
+      expect(chip, 1);
+      final stepRect = tester.getRect(find.byType(QuantityStepper));
+      await tester.tapAt(stepRect.bottomRight + const Offset(-10, 4));
+      expect(step, 1);
+      final swRect = tester.getRect(find.byType(CydSwitch));
+      await tester.tapAt(swRect.center + const Offset(0, 11));
+      expect(sw, isTrue);
+      // Far away does nothing.
+      await tester.tapAt(chipRect.topCenter - const Offset(0, 12));
+      expect(chip, 1);
+    });
+
+    testWidgets('switch exposes toggled semantics', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpThemed(
+        tester,
+        CydSwitch(value: true, onChanged: (_) {}, semanticLabel: 'Active'),
+      );
+      expect(
+        tester.getSemantics(find.byType(CydSwitch)),
+        matchesSemantics(
+          label: 'Active',
+          hasToggledState: true,
+          isToggled: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          hasTapAction: true,
+        ),
+      );
+      handle.dispose();
+    });
+
+    testWidgets('back button and radio rows keep >= 44 dp layout', (
+      tester,
+    ) async {
       await pumpThemed(
         tester,
         Wrap(
           children: [
             const CydBackButton(),
-            CydFilterChip(label: 'Any', selected: true, onTap: () {}),
-            QuantityStepper(value: 2, compact: true, onChanged: (_) {}),
             CydRadioRow<int>(
               value: 1,
               groupValue: 1,
@@ -626,17 +866,8 @@ void main() {
           ],
         ),
       );
-      for (final f in [
-        find.byType(CydBackButton),
-        find.byType(CydFilterChip),
-        find.byType(CydRadioRow<int>),
-      ]) {
-        expect(tester.getSize(f).height, greaterThanOrEqualTo(44));
-      }
-      expect(
-        tester.getSize(find.byType(CydBackButton)).width,
-        greaterThanOrEqualTo(44),
-      );
+      expect(tester.getSize(find.byType(CydBackButton)).height, 44);
+      expect(tester.getSize(find.byType(CydRadioRow<int>)).height, 46);
     });
   });
 }

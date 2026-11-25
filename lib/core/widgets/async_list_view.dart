@@ -54,38 +54,47 @@ class AsyncListView<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> children;
+    // Each entry is built lazily by the ListView; header and footer are
+    // ordinary index items so long lists are virtualised.
+    final int count;
+    final Widget Function(BuildContext, int) build;
     var offlineStrip = false;
+    final hasHeader = header != null;
+    final hasFooter = footer != null;
 
     if (value.hasValue) {
       final items = value.requireValue;
       offlineStrip = value.hasError && _isOffline(value.error);
       if (items.isEmpty) {
-        children = [?header, empty, ?footer];
+        count = (hasHeader ? 1 : 0) + 1 + (hasFooter ? 1 : 0);
+        build = (ctx, i) => _single(i, empty);
       } else {
-        children = [
-          ?header,
-          for (var i = 0; i < items.length; i++) ...[
-            if (i > 0) SizedBox(height: separator),
-            itemBuilder(context, items[i], i),
-          ],
-          ?footer,
-        ];
+        // items interleaved with separators: i, sep, i, sep, ..., i
+        final body = items.length * 2 - 1;
+        count = (hasHeader ? 1 : 0) + body + (hasFooter ? 1 : 0);
+        build = (ctx, i) {
+          if (hasHeader && i == 0) return header!;
+          final j = i - (hasHeader ? 1 : 0);
+          if (j >= body) return footer!;
+          if (j.isOdd) return SizedBox(height: separator);
+          return itemBuilder(ctx, items[j ~/ 2], j ~/ 2);
+        };
       }
     } else if (value.hasError) {
-      children = [?header, _errorCard(value.error)];
+      count = (hasHeader ? 1 : 0) + 1;
+      build = (ctx, i) => _single(i, _errorCard(value.error));
     } else {
-      children = [
-        ?header,
-        DelayedSkeleton(delay: skeletonDelay, child: skeleton),
-      ];
+      count = (hasHeader ? 1 : 0) + 1;
+      build = (ctx, i) =>
+          _single(i, DelayedSkeleton(delay: skeletonDelay, child: skeleton));
     }
 
-    final list = ListView(
+    final list = ListView.builder(
       controller: controller,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: padding,
-      children: children,
+      itemCount: count,
+      itemBuilder: build,
     );
     final body = onRefresh == null
         ? list
@@ -95,13 +104,25 @@ class AsyncListView<T> extends StatelessWidget {
             onRefresh: onRefresh!,
             child: list,
           );
-    if (!offlineStrip) return body;
+    // Keyed so the list (and its scroll position) survives the strip
+    // appearing and disappearing.
     return Column(
       children: [
-        const OfflineStrip(),
-        Expanded(child: body),
+        if (offlineStrip) const OfflineStrip(key: ValueKey('offline-strip')),
+        Expanded(
+          child: KeyedSubtree(key: const ValueKey('body'), child: body),
+        ),
       ],
     );
+  }
+
+  /// Index mapping for the non-data states: [header?] then one body widget
+  /// then [footer?].
+  Widget _single(int i, Widget body) {
+    final hasHeader = header != null;
+    if (hasHeader && i == 0) return header!;
+    final j = i - (hasHeader ? 1 : 0);
+    return j == 0 ? body : footer!;
   }
 
   Widget _errorCard(Object? error) {

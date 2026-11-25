@@ -91,6 +91,10 @@ class _ToastViewState extends State<_ToastView>
     vsync: this,
     duration: const Duration(milliseconds: 300),
   );
+  late final CurvedAnimation _anim = CurvedAnimation(
+    parent: _c,
+    curve: cydCurve,
+  );
   bool _started = false;
   Timer? _timer;
 
@@ -117,6 +121,7 @@ class _ToastViewState extends State<_ToastView>
   @override
   void dispose() {
     _timer?.cancel();
+    _anim.dispose();
     _c.dispose();
     super.dispose();
   }
@@ -125,7 +130,7 @@ class _ToastViewState extends State<_ToastView>
   Widget build(BuildContext context) {
     final t = widget.tokens;
     final type = CydType(t);
-    final anim = CurvedAnimation(parent: _c, curve: cydCurve);
+    final anim = _anim;
     return Positioned(
       left: 16,
       right: 16,
@@ -165,21 +170,27 @@ class _ToastViewState extends State<_ToastView>
                     ),
                     if (widget.actionLabel != null) ...[
                       const SizedBox(width: 10),
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
+                      Semantics(
+                        button: true,
+                        label: widget.actionLabel,
+                        excludeSemantics: true,
                         onTap: widget.onAction,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minHeight: 44,
-                            minWidth: 44,
-                          ),
-                          child: Center(
-                            child: Text(
-                              widget.actionLabel!,
-                              style: type.ui(
-                                13,
-                                weight: FontWeight.w700,
-                                color: CydTokens.toastAction,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: widget.onAction,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minHeight: 44,
+                              minWidth: 44,
+                            ),
+                            child: Center(
+                              child: Text(
+                                widget.actionLabel!,
+                                style: type.ui(
+                                  13,
+                                  weight: FontWeight.w700,
+                                  color: CydTokens.toastAction,
+                                ),
                               ),
                             ),
                           ),

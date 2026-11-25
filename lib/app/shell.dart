@@ -88,33 +88,44 @@ class CydTabBar extends StatelessWidget {
       (ShellTab.orders, 'Orders', CydTabIcons.orders),
       (ShellTab.account, 'Account', CydTabIcons.account),
     ];
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(99),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-        child: Container(
-          key: const Key('cyd-tab-bar'),
-          padding: const EdgeInsets.all(7),
-          decoration: BoxDecoration(
-            color: t.tabbg,
-            borderRadius: BorderRadius.circular(99),
-            border: Border.all(color: t.line2),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 0; i < tabs.length; i++) ...[
-                if (i > 0) const SizedBox(width: 6),
-                _TabItem(
-                  key: Key('tab-${tabs[i].$1.name}'),
-                  label: tabs[i].$2,
-                  icon: tabs[i].$3,
-                  selected: i == selectedIndex,
-                  badge: badges[tabs[i].$1] ?? 0,
-                  onTap: () => onSelected(i),
-                ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(99),
+        boxShadow: t.shadow,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(99),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+          child: Container(
+            key: const Key('cyd-tab-bar'),
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: t.tabbg,
+              borderRadius: BorderRadius.circular(99),
+              border: Border.all(color: t.line2),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < tabs.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 6),
+                  _TabItem(
+                    key: Key('tab-${tabs[i].$1.name}'),
+                    label: tabs[i].$2,
+                    icon: tabs[i].$3,
+                    selected: i == selectedIndex,
+                    badge: badges[tabs[i].$1] ?? 0,
+                    badgeNoun: switch (tabs[i].$1) {
+                      ShellTab.cart => 'items',
+                      ShellTab.shop => 'need attention',
+                      _ => '',
+                    },
+                    onTap: () => onSelected(i),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -129,9 +140,11 @@ class _TabItem extends StatelessWidget {
     required this.icon,
     required this.selected,
     required this.badge,
+    required this.badgeNoun,
     required this.onTap,
   });
 
+  final String badgeNoun;
   final String label;
   final String icon;
   final bool selected;
@@ -144,7 +157,9 @@ class _TabItem extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: badge > 0 ? '$label, ${badge > 99 ? '99+' : badge}' : label,
+      label: badge > 0
+          ? '$label, ${badge > 99 ? '99+' : badge} $badgeNoun'
+          : label,
       excludeSemantics: true,
       onTap: onTap,
       child: GestureDetector(
@@ -166,6 +181,22 @@ class _TabItem extends StatelessWidget {
                   color: selected ? CydTokens.accent : Colors.transparent,
                   boxShadow: selected ? CydTokens.tabActiveGlow : const [],
                 ),
+                foregroundDecoration: selected
+                    ? BoxDecoration(
+                        shape: BoxShape.circle,
+                        // inset 0 1px 0 rgba(255,255,255,.5)
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            CydTokens.accentHighlight,
+                            CydTokens.accentHighlight.withValues(alpha: 0),
+                            CydTokens.accentHighlight.withValues(alpha: 0),
+                          ],
+                          stops: const [0, 1 / CydTabBar._size, 1],
+                        ),
+                      )
+                    : null,
                 child: CydPathIcon(
                   icon,
                   color: selected ? t.tabActiveFg : t.mute,
