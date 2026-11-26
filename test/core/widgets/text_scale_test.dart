@@ -8,18 +8,19 @@ import '../../support/golden_harness.dart';
 void main() {
   for (final section in gallerySections) {
     for (final brightness in Brightness.values) {
-      testWidgets('${section.id} at 1.3x text, 360 px, ${brightness.name}', (
-        tester,
-      ) async {
-        await pumpGolden(
-          tester,
-          Builder(builder: section.builder),
-          brightness: brightness,
-          width: 360,
-          textScale: 1.3,
-        );
-        expect(tester.takeException(), isNull);
-      });
+      testGoldenWidgets(
+        '${section.id} at 1.3x text, 360 px, ${brightness.name}',
+        (tester) async {
+          await pumpGolden(
+            tester,
+            Builder(builder: section.builder),
+            brightness: brightness,
+            width: 360,
+            textScale: 1.3,
+          );
+          expect(tester.takeException(), isNull);
+        },
+      );
     }
   }
 }

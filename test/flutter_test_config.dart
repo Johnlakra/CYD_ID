@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -42,5 +43,36 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
       await loader.load();
     }
   }
+  // Goldens are generated on a developer Mac and checked on the CI macOS
+  // runner; the two OS versions antialias text slightly differently (up to
+  // about 1.1% of pixels). Allow that much, no more.
+  final comparator = goldenFileComparator;
+  if (comparator is LocalFileComparator) {
+    goldenFileComparator = _TolerantGoldenComparator(
+      Uri.parse('${comparator.basedir}flutter_test_config.dart'),
+    );
+  }
   await testMain();
+}
+
+/// Maximum share of differing pixels a golden may have and still pass.
+const goldenTolerance = 0.015;
+
+class _TolerantGoldenComparator extends LocalFileComparator {
+  _TolerantGoldenComparator(super.testFile);
+
+  @override
+  Future<bool> compare(Uint8List imageBytes, Uri golden) async {
+    final result = await GoldenFileComparator.compareLists(
+      imageBytes,
+      await getGoldenBytes(golden),
+    );
+    if (result.passed || result.diffPercent <= goldenTolerance) {
+      result.dispose();
+      return true;
+    }
+    final error = await generateFailureOutput(result, golden, basedir);
+    result.dispose();
+    throw FlutterError(error);
+  }
 }

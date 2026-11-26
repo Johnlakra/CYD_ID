@@ -22,7 +22,9 @@ void main() {
     for (final brightness in Brightness.values) {
       final name = brightness.name;
       for (final width in [390.0, if (_dense.contains(section.id)) 360.0]) {
-        testWidgets('${section.id} · $name · ${width.toInt()}', (tester) async {
+        testGoldenWidgets('${section.id} · $name · ${width.toInt()}', (
+          tester,
+        ) async {
           final boundary = await pumpGolden(
             tester,
             Builder(builder: section.builder),
